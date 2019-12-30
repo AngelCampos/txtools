@@ -1,13 +1,14 @@
 Package: txTools
-Title: What the Package Does (One Line, Title Case)
-Version: 0.0.0.9000
+Title: An interface between genomic and transcriptomic coordinate systems 
+Version: 0.0.0.1
 Authors@R: 
-    person(given = "First",
-           family = "Last",
+    person(given = "Miguel-Angel",
+           family = "Garcia-Campos",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: What license it uses
+           email = "angel.campos@weizmann.ac.il",
+           comment = c(ORCID = "0000-0001-5223-8174"))
+Description: txTools is a utilities package for working with transcriptomic data and is meant to be an interface between genomic and transcriptomic RNA-seq data representation.
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
+RoxygenNote: 7.0.2

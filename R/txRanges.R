@@ -4,9 +4,9 @@ exonBlockGen <- function(iGene, geneAnnot){
   iEnd <- geneAnnot[iGene,]$end
   iStrand <- geneAnnot[iGene,]$strand
   tmpA <- geneAnnot[iGene,]$blockStarts %>% strsplit(split = ",") %>%
-          unlist() %>% as.numeric()
+    unlist() %>% as.numeric()
   tmpB <- geneAnnot[iGene,]$blockSizes %>% strsplit(split = ",") %>%
-          unlist() %>% as.numeric()
+    unlist() %>% as.numeric()
   iBlocks <- sapply(1:length(tmpA), function(i){
     c(tmpA[i],(tmpA[i] + tmpB[i] -1))
   }) %>% t
@@ -24,7 +24,21 @@ exonBlockGen <- function(iGene, geneAnnot){
   }else{stop(paste("Malformed exon structure at gene", iGene))}
 }
 
-# From transcriptomic range to genomic coordinates in BED format
+#
+#' Title
+#'
+#' From transcriptomic range to genomic coordinates in BED format
+#'
+#' @param Tgene character
+#' @param TrangeStart integer
+#' @param TrangeEnd integer
+#' @param geneAnnot dataframe
+#'
+#' @return dataframe
+#' @export
+#'
+#' @examples
+#' # Need to add examples
 txRangeToBED <- function(Tgene, TrangeStart, TrangeEnd, geneAnnot){
     genCoor <- exonBlockGen(Tgene, geneAnnot)[TrangeStart:TrangeEnd]
     if(geneAnnot[Tgene,]$strand == "-"){
