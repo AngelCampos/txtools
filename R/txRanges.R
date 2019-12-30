@@ -1,4 +1,13 @@
-# Generate exon coordinates block
+
+#' Generate exon coordinates block
+#'
+#' @param iGene Gene
+#' @param geneAnnot Gene annotation
+#'
+#' @return
+#' @export
+#'
+#' @examples
 exonBlockGen <- function(iGene, geneAnnot){
   iStart <- geneAnnot[iGene,]$start
   iEnd <- geneAnnot[iGene,]$end
@@ -25,16 +34,16 @@ exonBlockGen <- function(iGene, geneAnnot){
 }
 
 #
-#' Title
+#' Transcriptomic range to genomic coordinates
 #'
 #' From transcriptomic range to genomic coordinates in BED format
 #'
-#' @param Tgene character
-#' @param TrangeStart integer
-#' @param TrangeEnd integer
-#' @param geneAnnot dataframe
+#' @param Tgene The gene
+#' @param TrangeStart txRange start
+#' @param TrangeEnd txRange end
+#' @param geneAnnot The gene annotation in BED style
 #'
-#' @return dataframe
+#' @return vector
 #' @export
 #'
 #' @examples
@@ -53,4 +62,20 @@ txRangeToBED <- function(Tgene, TrangeStart, TrangeEnd, geneAnnot){
     c(geneAnnot[Tgene,]$chr, gStart, gEnd, Tgene, 0,
       geneAnnot[Tgene,]$strand, gStart, gEnd, "0", blockCount,
       blockSizes, blockStarts)
+}
+
+#' Catenate factors example function
+#'
+#' This is an example function
+#'
+#' @param a factors A
+#' @param b factors B
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#' fbind(iris$Species[c(1, 51, 101)], PlantGrowth$group[c(1, 11, 21)])
+fbind <- function(a, b) {
+  factor(c(as.character(a), as.character(b)))
 }

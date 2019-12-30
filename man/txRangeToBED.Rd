@@ -2,21 +2,21 @@
 % Please edit documentation in R/txRanges.R
 \name{txRangeToBED}
 \alias{txRangeToBED}
-\title{Title}
+\title{Transcriptomic range to genomic coordinates}
 \usage{
 txRangeToBED(Tgene, TrangeStart, TrangeEnd, geneAnnot)
 }
 \arguments{
-\item{Tgene}{character}
+\item{Tgene}{The gene}
 
-\item{TrangeStart}{integer}
+\item{TrangeStart}{txRange start}
 
-\item{TrangeEnd}{integer}
+\item{TrangeEnd}{txRange end}
 
-\item{geneAnnot}{dataframe}
+\item{geneAnnot}{The gene annotation in BED style}
 }
 \value{
-dataframe
+vector
 }
 \description{
 From transcriptomic range to genomic coordinates in BED format
