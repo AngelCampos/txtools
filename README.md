@@ -1,36 +1,40 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# txTools
+# tx\_tools
 
 <!-- badges: start -->
 
 <!-- badges: end -->
 
-The goal of txTools is to …
+The goal of tx\_tools is to …
 
 ## Installation
 
-You can install the released version of txTools from
-[CRAN](https://CRAN.R-project.org) with:
+Install tx\_tools dependencies with the following code
 
 ``` r
-install.packages("txTools")
+# CRAN packages
+install.packages(c("magrittr", "stringr", "devtools"))
+# Bioconductor packages
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install(c("GenomicRanges", "plyranges", "Rsamtools", "GenomicAlignments"))
 ```
 
-And the development version from [GitHub](https://github.com/) with:
+Install the development version from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
 devtools::install_github("AngelCampos/testRepo")
 ```
 
-## Example
+## Demo
 
 This is a basic example which shows you how to solve a common problem:
 
 ``` r
-library(txTools)
+# library(tx_tools)
 ## basic example code
 ```
 

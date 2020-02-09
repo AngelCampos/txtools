@@ -11,9 +11,6 @@ exonBlockGen(iGene, geneAnnot)
 
 \item{geneAnnot}{Gene annotation}
 }
-\value{
-
-}
 \description{
 Generate exon coordinates block
 }

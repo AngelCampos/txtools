@@ -7,7 +7,7 @@ Authors@R:
            role = c("aut", "cre"),
            email = "angel.campos@weizmann.ac.il",
            comment = c(ORCID = "0000-0001-5223-8174"))
-Description: txTools is a utilities package for working with transcriptomic data and is meant to be an interface between genomic and transcriptomic RNA-seq data representation.
+Description: tx_tools is a utilities package for working with transcriptomic data and is meant to be an interface between genomic and transcriptomic RNA-seq data representation.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -15,4 +15,5 @@ RoxygenNote: 7.0.2
 Suggests: 
     testthat (>= 2.1.0)
 Imports: 
-    magrittr
+    magrittr,
+    stringr
