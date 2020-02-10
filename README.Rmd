@@ -24,7 +24,7 @@ The goal of txtools is to ...
 
 Install txtools dependencies with the following code
 
-```{r, eval=F}
+```{r, eval = F}
 # CRAN packages
 install.packages(c("magrittr", "stringr", "devtools"))
 # Bioconductor packages
@@ -45,7 +45,7 @@ BiocManager::install("AngelCampos/txtools")
 This is a basic example which shows you how to solve a common problem:
 
 ```{r example}
-# library(txtools)
+library(txtools)
 ## basic example code
 ```
 
