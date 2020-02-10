@@ -11,6 +11,9 @@ fbind(a, b)
 
 \item{b}{factors B}
 }
+\value{
+
+}
 \description{
 This is an example function
 }

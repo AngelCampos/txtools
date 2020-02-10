@@ -1,17 +1,17 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# tx\_tools
+# txtools
 
 <!-- badges: start -->
 
 <!-- badges: end -->
 
-The goal of tx\_tools is to …
+The goal of txtools is to …
 
 ## Installation
 
-Install tx\_tools dependencies with the following code
+Install txtools dependencies with the following code
 
 ``` r
 # CRAN packages
@@ -27,6 +27,7 @@ Install the development version from [GitHub](https://github.com/) with:
 ``` r
 # install.packages("devtools")
 devtools::install_github("AngelCampos/testRepo")
+BiocManager::install("AngelCampos/txtools")
 ```
 
 ## Demo
@@ -34,7 +35,7 @@ devtools::install_github("AngelCampos/testRepo")
 This is a basic example which shows you how to solve a common problem:
 
 ``` r
-# library(tx_tools)
+# library(txtools)
 ## basic example code
 ```
 

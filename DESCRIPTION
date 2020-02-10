@@ -1,4 +1,4 @@
-Package: txTools
+Package: txtools
 Title: An interface between genomic and transcriptomic coordinate systems 
 Version: 0.0.0.1
 Authors@R: 
@@ -7,7 +7,7 @@ Authors@R:
            role = c("aut", "cre"),
            email = "angel.campos@weizmann.ac.il",
            comment = c(ORCID = "0000-0001-5223-8174"))
-Description: tx_tools is a utilities package for working with transcriptomic data and is meant to be an interface between genomic and transcriptomic RNA-seq data representation.
+Description: txtools is a utilities package for working with transcriptomic data and is meant to be an interface between genomic and transcriptomic RNA-seq data representation.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -16,4 +16,5 @@ Suggests:
     testthat (>= 2.1.0)
 Imports: 
     magrittr,
-    stringr
+    stringr,
+    GenomicRanges

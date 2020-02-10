@@ -8,29 +8,26 @@
 #' @export
 #'
 #' @examples
-exonBlockGen <- function(iGene, geneAnnot){
-  iStart <- geneAnnot[iGene,]$start
-  iEnd <- geneAnnot[iGene,]$end
-  iStrand <- geneAnnot[iGene,]$strand
-  tmpA <- geneAnnot[iGene,]$blockStarts %>% strsplit(split = ",") %>%
-    unlist() %>% as.numeric()
-  tmpB <- geneAnnot[iGene,]$blockSizes %>% strsplit(split = ",") %>%
-    unlist() %>% as.numeric()
-  iBlocks <- sapply(1:length(tmpA), function(i){
-    c(tmpA[i],(tmpA[i] + tmpB[i] -1))
-  }) %>% t
-  iBlocks <- iStart + iBlocks
-  if(iEnd %in% as.vector(iBlocks)){
-    if(iStrand == "+"){
-      sapply(1:nrow(iBlocks), function(k){
-        iBlocks[k,1]:iBlocks[k,2]
-      }) %>% unlist %>% as.numeric
-    }else if(iStrand == "-"){
-      sapply(1:nrow(iBlocks), function(k){
-        iBlocks[k,1]:iBlocks[k,2]
-      }) %>% unlist %>% rev %>% as.numeric
-    }
-  }else{stop(paste("Malformed exon structure at gene", iGene))}
+exonBlockGen <- function(iGene, geneAnnot_GR){
+    iStart <- start(geneAnnot_GR[geneAnnot_GR$name == iGene])
+    iEnd <- end(geneAnnot_GR[geneAnnot_GR$name == iGene])
+    iStrand <- strand(geneAnnot_GR[geneAnnot_GR$name == iGene]) %>% as.character()
+    tmpA <- unlist(start(geneAnnot_GR[geneAnnot_GR$name == iGene]$blocks)) -1
+    tmpB <- unlist(width(geneAnnot_GR[geneAnnot_GR$name == iGene]$blocks))
+    iBlocks <- sapply(1:length(tmpA), function(i){
+        c(tmpA[i], (tmpA[i] + tmpB[i] -1))
+    }) %>% t %>% add(iStart)
+    if(iEnd %in% as.vector(iBlocks)){
+        if(iStrand == "+"){
+            sapply(1:nrow(iBlocks), function(k){
+                iBlocks[k,1]:iBlocks[k,2]
+            }) %>% unlist %>% as.numeric
+        }else if(iStrand == "-"){
+            sapply(1:nrow(iBlocks), function(k){
+                iBlocks[k,1]:iBlocks[k,2]
+            }) %>% unlist %>% rev %>% as.numeric
+        }
+    }else{stop(paste("Malformed exon structure at gene", iGene))}
 }
 
 #
@@ -79,3 +76,4 @@ txRangeToBED <- function(Tgene, TrangeStart, TrangeEnd, geneAnnot){
 fbind <- function(a, b) {
   factor(c(as.character(a), as.character(b)))
 }
+

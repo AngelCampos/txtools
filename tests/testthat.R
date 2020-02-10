@@ -1,4 +1,4 @@
 library(testthat)
-library(txTools)
+library(txtools)
 
-test_check("txTools")
+test_check("txtools")

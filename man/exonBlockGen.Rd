@@ -4,12 +4,15 @@
 \alias{exonBlockGen}
 \title{Generate exon coordinates block}
 \usage{
-exonBlockGen(iGene, geneAnnot)
+exonBlockGen(iGene, geneAnnot_GR)
 }
 \arguments{
 \item{iGene}{Gene}
 
 \item{geneAnnot}{Gene annotation}
+}
+\value{
+
 }
 \description{
 Generate exon coordinates block
