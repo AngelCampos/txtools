@@ -20,57 +20,83 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of txtools is to ...
+**txtools** is a package that processes GenomicAlignments into transcriptomic 
+versions
 
 ## Installation
-
-Install txtools dependencies with the following code
-
-```{r, eval = F}
-# CRAN packages
-install.packages(c("magrittr", "stringr", "devtools"))
-# Bioconductor packages
-if (!requireNamespace("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
-BiocManager::install(c("GenomicRanges", "plyranges", "Rsamtools", "GenomicAlignments"))
-```
 
 Install the development version from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("AngelCampos/testRepo")
+devtools::install_github("AngelCampos/txtools")
+# install.packages("BiocManager")
 BiocManager::install("AngelCampos/txtools")
 ```
+
 ## Demo
 
-This is a basic example which shows you how to solve a common problem:
+The main input that we want to process are Genomic Alignments from **BAM files**, 
+into their transcriptomic homologues. To do this we require gene models
+provided in the form of **BED files**.
+
+In this basic example we use data provided within **txtools**.
+
+We first load the BAM file and the BED file's gene models. Then apply the 
+`tx_PEreads()` function to the reads and select to use the sequence.
 
 ```{r example}
 library(txtools)
+library(magrittr) # %>% Pipe operator 
+
 # This example files are installed along txtools
 bamFile <- system.file("extdata", "example_hg19.bam", package = "txtools")
 bedFile <- system.file("extdata", "twoUCSCgenes_hg19.bed", package = "txtools")
 
+# Loading files and processing them using the gene models
 reads <- load_pairedEnd_bam(bamFile, loadSeq = T, verbose = F)
 geneAnnot <- plyranges::read_bed(bedFile) # plyranges read_bed function
-txReads <- tx_PEreads(reads, geneAnnot, withSeq = T)
-txReads$uc003lam.1
+txReads <- tx_PEreads(reads, geneAnnot, withSeq = T, verbose = F) %>% 
+    tx_filter_max_width(500) # Filter out transcripts longer than 500 bases
 ```
 
+`txReads` will contain all reads that matched the gene models and their 
+respective sequences.
 
-The main object 
+```{r}
+names(txReads)
+txReads$uc010nap.1$seq[6]
+```
 
+The object is of class GenomicRanges but its coordinates belong to the used
+transcriptomic reference.
 
-```{r example2}
-library(magrittr) # %>% Pipe operator 
+---
 
+Another useful representation of RNA-seq information is to summarise reads into
+tables that span the whole transcript in order to extract useful information as:
+
+* Coverage
+* Starts or 5prime-ends counts
+* Ends or 3prime-ends counts
+* Nucleotide frequencies
+* Deletion frequencies
+
+```{r, example2}
 resTab <- hlp_cbind3Tabs(tx_genCoorTab(txReads, geneAnnot),
                          tx_covTab(txReads),
                          tx_nucFreqTab(txReads, simplify_IUPAC = "splitForceInt"))
+resTab$uc010nap.1[,-"."]
+```
 
-resTab$uc003lam.1[,..IUPAC_code_simpl] %>% data.frame() %>% t %>% 
+A graphical representation  can be done to represent coverage using the nucleotide 
+frequency tables
+
+```{r, example3}
+resTab$uc010nap.1[,..IUPAC_code_simpl] %>% data.frame() %>% t %>% 
     barplot(col = c(RColorBrewer::brewer.pal(4, "Set1"), 
-                    "black", "white", "gray"), border = NA, main= "uc003lam.1")
+                    "black", "white", "gray"), border = "gray",
+            main= "Coverage using nucleotide frequency for uc003lam.1")
+
 ```
 

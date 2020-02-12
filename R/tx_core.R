@@ -34,8 +34,10 @@ load_pairedEnd_bam <- function(file,
     if(yieldSize == "auto"){
         yieldSize <- ceiling(bC$records/25)
     }
-    if(verbose){cat("Loading BAM file \n")}
-    pb <- txtProgressBar(style = 3)
+    if(verbose){
+        cat("Loading BAM file \n")
+        pb <- txtProgressBar(style = 3)
+    }
     BAMFILE <- Rsamtools::BamFile(file, yieldSize = yieldSize)
     readCycles <- 1:ceiling(bC$records/(yieldSize*2))
     pbJumps <- seq(0,1, by = min(1/(length(readCycles)-1), 1))
@@ -53,11 +55,14 @@ load_pairedEnd_bam <- function(file,
         }else(stop("loadSeq parameter must be logical either FALSE or TRUE"))
     }) %>% do.call(what = c)
     close(BAMFILE)
-    close(pb)
+    if(verbose){close(pb)}
     bamData <- list(GAligns = reads, dumpedAmbigPairs = GenomicAlignments::getDumpedAlignments())
     if(verbose){cat(" \n")}
-    if(verbose){cat(length(bamData$GAligns), "reads succesfully loaded \n")}
-    cat("Dumped reads due to ambiguous pairs:", length(bamData$dumpedAmbigPairs), "\n")
+    if(verbose){
+        cat(length(bamData$GAligns), "reads succesfully loaded \n")
+        cat("Dumped reads due to ambiguous pairs:", length(bamData$dumpedAmbigPairs), "\n")
+    }
+
     if(recoverDumpedAligns == F){
         return(reads)
     }else{
