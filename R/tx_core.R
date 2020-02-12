@@ -379,7 +379,7 @@ tx_coverage <- function(x){
 #'
 #' @examples
 tx_covTab <- function(x){
-    if(class(x) != "SimpleGRangesList"){
+    if(class(x) != "SimpleGenomicRangesList"){
         stop("x must be of class SimpleGRangesList")
     }
     if(names(x) %>% duplicated() %>% sum() %>% magrittr::is_greater_than(0)){
@@ -412,7 +412,7 @@ tx_covTab <- function(x){
 #'
 #' @examples
 tx_covTab_mc <- function(x, nCores){
-    if(class(x) != "SimpleGRangesList"){
+    if(class(x) != "SimpleGenomicRangesList"){
         stop("x must be of class SimpleGRangesList")
     }
     if(names(x) %>% duplicated() %>% sum() %>% magrittr::is_greater_than(0)){
