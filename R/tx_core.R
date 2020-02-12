@@ -189,9 +189,6 @@ tx_PEreads <- function(reads, bedR, overlapType = "within", minReads = 50, withS
     if(class(bedR) != "GRanges"){
         stop("bedR argument should be of class GRanges \n")
     }
-    if(.Platform$OS.type != "unix"){
-        stop("This functions is only available for UNIX operative systems \n")
-    }
     if(verbose){
         cat("Processing", length(reads), "reads, using", length(bedR), "gene models \n")
     }
