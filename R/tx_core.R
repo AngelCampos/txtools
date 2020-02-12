@@ -75,7 +75,7 @@ load_pairedEnd_bam <- function(file,
 #'
 #' @examples
 exonGRanges <- function(geneAnnot_GR){
-    iChr <- seqnames(geneAnnot_GR) %>% as.character()
+    iChr <- GenomicAlignments::seqnames(geneAnnot_GR) %>% as.character()
     iStart <- BiocGenerics::start(geneAnnot_GR)
     iEnd <- BiocGenerics::end(geneAnnot_GR)
     iStrand <- strand(geneAnnot_GR)
@@ -490,7 +490,7 @@ tx_genCoorTab <- function(x, geneAnnot_GR){
     if(all(names(x) %in% geneAnnot_GR$name)){
         lapply(names(x), function(iGene){
             tmp2 <- geneAnnot_GR[which(geneAnnot_GR$name == iGene)]
-            tmp3 <- c(seqnames(tmp2), strand(tmp2)) %>% as.character() %>% c(iGene)
+            tmp3 <- c(GenomicAlignments::seqnames(tmp2), strand(tmp2)) %>% as.character() %>% c(iGene)
             rep(tmp3, seqlengths(x[[iGene]])) %>% matrix(ncol = 3, byrow = T) %>%
                 cbind(exonBlockGen(iGene, geneAnnot_GR)) %>%
                 cbind(seq(1, seqlengths(x[[iGene]]))) %>% .[,c(1,4,2,3,5)] %>%

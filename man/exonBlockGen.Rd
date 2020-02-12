@@ -2,18 +2,16 @@
 % Please edit documentation in R/txRanges.R
 \name{exonBlockGen}
 \alias{exonBlockGen}
-\title{Generate exon coordinates block}
+\title{Exonblock generator}
 \usage{
 exonBlockGen(iGene, geneAnnot_GR)
 }
 \arguments{
-\item{iGene}{Gene}
-
-\item{geneAnnot}{Gene annotation}
+\item{geneAnnot_GR}{}
 }
 \value{
 
 }
 \description{
-Generate exon coordinates block
+USe thid in this way
 }

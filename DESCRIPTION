@@ -1,13 +1,13 @@
 Package: txtools
-Title: An interface between genomic and transcriptomic coordinate systems 
+Title: An interface betwen GenomicAlignments and transcriptomic representations
 Version: 0.0.0.1
 Authors@R: 
-    person(given = "Miguel-Angel",
+    person(given = "Miguel Angel",
            family = "Garcia-Campos",
            role = c("aut", "cre"),
            email = "angel.campos@weizmann.ac.il",
            comment = c(ORCID = "0000-0001-5223-8174"))
-Description: txtools is a utilities package for working with transcriptomic data and is meant to be an interface between genomic and transcriptomic RNA-seq data representation.
+Description: txtools is a utilities package for extending the functionality of GenomicRanges to process RNA-seq reads into transcriptomic aware versions.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -17,4 +17,6 @@ Suggests:
 Imports: 
     magrittr,
     stringr,
-    GenomicRanges
+    GenomicRanges,
+    Rsamtools,
+    GenomicAlignments

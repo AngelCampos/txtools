@@ -46,13 +46,17 @@ This is a basic example which shows you how to solve a common problem:
 
 ```{r example}
 library(txtools)
-## basic example code
+bamFile <- system.file("extdata", "example_hg19.bam", package = "txtools")
+reads <- load_pairedEnd_bam(bamFile)
 ```
 
-What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
+
 
 ```{r cars}
-summary(cars)
+bedFile <- system.file("extdata", "twoUCSCgenes_hg19.bed", package = "txtools")
+geneAnnot <- plyranges::read_bed(bedFile)
+txReads <- tx_PEreads(reads, geneAnnot)
+
 ```
 
 You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date.

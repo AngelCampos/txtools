@@ -7,7 +7,12 @@
 
 <!-- badges: end -->
 
-The goal of txtools is to …
+The goal of txtools is to process paired-end reads data from a genomic space 
+into their transcriptomic versions. In doing so we need to allocate both reads
+into their corresponding gene model(s) resulting in a unified read. This 
+representation allows us to manipulate with greater confidence and ease 
+paired-end reads which may be skipping exons and/or transversing long intronic 
+regions.
 
 ## Installation
 

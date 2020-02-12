@@ -1,14 +1,16 @@
 
-#' Generate exon coordinates block
+#' Exonblock generator
 #'
-#' @param iGene Gene
-#' @param geneAnnot Gene annotation
+#' USe thid in this way
+#'
+#' @param iGene
+#' @param geneAnnot_GR
 #'
 #' @return
 #' @export
 #'
 #' @examples
-exonBlockGen <- function(iGene, geneAnnot_GR){
+exonBlockGen <- function(iGene = "auto", geneAnnot_GR){
     iStart <- start(geneAnnot_GR[geneAnnot_GR$name == iGene])
     iEnd <- end(geneAnnot_GR[geneAnnot_GR$name == iGene])
     iStrand <- strand(geneAnnot_GR[geneAnnot_GR$name == iGene]) %>% as.character()
