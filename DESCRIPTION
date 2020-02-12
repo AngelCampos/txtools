@@ -21,4 +21,5 @@ Imports:
     Rsamtools,
     GenomicAlignments,
     GenomeInfoDb,
-    data.table
+    data.table,
+    plyranges
