@@ -76,33 +76,33 @@ load_pairedEnd_bam <- function(file,
 #' @examples
 exonGRanges <- function(geneAnnot_GR){
     iChr <- GenomicAlignments::seqnames(geneAnnot_GR) %>% as.character()
-    iStart <- BiocGenerics::start(geneAnnot_GR)
-    iEnd <- BiocGenerics::end(geneAnnot_GR)
-    iStrand <- strand(geneAnnot_GR)
-    tmpA <- BiocGenerics::start(geneAnnot_GR$blocks) %>% subtract(1) %>% add(iStart)
-    tmpB <- width(geneAnnot_GR$blocks) %>% subtract(1) %>% add(tmpA)
+    iStart <- GenomicRanges::start(geneAnnot_GR)
+    iEnd <- GenomicRanges::end(geneAnnot_GR)
+    iStrand <- GenomicRanges::strand(geneAnnot_GR)
+    tmpA <- GenomicRanges::start(geneAnnot_GR$blocks) %>% magrittr::subtract(1) %>% magrittr::add(iStart)
+    tmpB <- GenomicAlignments::width(geneAnnot_GR$blocks) %>% magrittr::subtract(1) %>% magrittr::add(tmpA)
     listLen <- lapply(tmpA, length) %>% unlist
     group <- rep(1:length(geneAnnot_GR), times = listLen)
     data.frame(rep(iChr, times = listLen),
                unlist(tmpA),
                unlist(tmpB),
                rep(iStrand, times = listLen)) %>%
-        set_colnames(c("seqnames", "start", "end", "strand")) %>%
-        as_granges() %>%
+        magrittr::set_colnames(c("seqnames", "start", "end", "strand")) %>%
+        plyranges::as_granges() %>%
         split(group) %>%
-        GRangesList() %>% set_names(geneAnnot_GR$name)
+        GenomicRanges::GRangesList() %>% magrittr::set_names(geneAnnot_GR$name)
 }
 
 # Generate exon coordinates block
 exonBlockGen <- function(iGene, geneAnnot_GR){
-    iStart <- BiocGenerics::start(geneAnnot_GR[geneAnnot_GR$name == iGene])
-    iEnd <- BiocGenerics::end(geneAnnot_GR[geneAnnot_GR$name == iGene])
-    iStrand <- strand(geneAnnot_GR[geneAnnot_GR$name == iGene]) %>% as.character()
-    tmpA <- unlist(BiocGenerics::start(geneAnnot_GR[geneAnnot_GR$name == iGene]$blocks)) -1
-    tmpB <- unlist(width(geneAnnot_GR[geneAnnot_GR$name == iGene]$blocks))
+    iStart <- GenomicRanges::start(geneAnnot_GR[geneAnnot_GR$name == iGene])
+    iEnd <- GenomicRanges::end(geneAnnot_GR[geneAnnot_GR$name == iGene])
+    iStrand <- GenomicRanges::strand(geneAnnot_GR[geneAnnot_GR$name == iGene]) %>% as.character()
+    tmpA <- unlist(GenomicRanges::start(geneAnnot_GR[geneAnnot_GR$name == iGene]$blocks)) -1
+    tmpB <- unlist(GenomicAlignments::width(geneAnnot_GR[geneAnnot_GR$name == iGene]$blocks))
     iBlocks <- sapply(1:length(tmpA), function(i){
         c(tmpA[i], (tmpA[i] + tmpB[i] -1))
-    }) %>% t %>% add(iStart)
+    }) %>% t %>% magrittr::add(iStart)
     if(iEnd %in% as.vector(iBlocks)){
         if(iStrand == "+"){
             sapply(1:nrow(iBlocks), function(k){
@@ -155,8 +155,8 @@ tx_PEreads_mc <- function(reads, bedR, nCores, overlapType = "within",
                          minReads = minReads)
     })
     names(OUT) <- bedR$name
-    OUT <- OUT[lapply(OUT, length) %>% unlist %>% is_greater_than(minReads)] %>%
-        GenomicRangesList()
+    OUT <- OUT[lapply(OUT, length) %>% unlist %>% magrittr::is_greater_than(minReads)] %>%
+        GenomicRanges::GenomicRangesList()
     if(verbose){
         cat("Output contains:", lapply(OUT, names) %>% unlist %>% unique %>% length,
             "unique reads in", length(OUT), "gene models \n")
@@ -211,8 +211,8 @@ tx_PEreads <- function(reads, bedR, overlapType = "within", minReads = 50, withS
                               withSeq = withSeq,
                               minReads = minReads)
     names(OUT) <- bedR$name
-    OUT <- OUT[lapply(OUT, length) %>% unlist %>% is_greater_than(minReads)] %>%
-        GenomicRangesList()
+    OUT <- OUT[lapply(OUT, length) %>% unlist %>% magrittr::is_greater_than(minReads)] %>%
+        GenomicRanges::GenomicRangesList()
     if(verbose){
         cat("Output contains:", lapply(OUT, names) %>% unlist %>% unique %>% length,
             "unique reads in", length(OUT), "gene models \n")
@@ -240,7 +240,7 @@ hlpr_splitReadsByGenes <- function(reads, bedR, overlapType, minReads){
 }
 
 hlpr_ReadsInGene <- function(reads, iGene, bedR, split_i, allExons, minReads, withSeq){
-    iStrand <- bedR[which(bedR$name == iGene)] %>% strand %>% as.character()
+    iStrand <- bedR[which(bedR$name == iGene)] %>% GenomicRanges::strand() %>% as.character()
     iExon <- exonBlockGen(iGene = iGene, geneAnnot_GR = bedR)
     selReadsbyPair <- split_i[[iGene]]
     # Selecting paired reads to merge
@@ -248,12 +248,12 @@ hlpr_ReadsInGene <- function(reads, iGene, bedR, split_i, allExons, minReads, wi
     iReads_r2 <- reads@last[selReadsbyPair]
     # Filtering reads extrictly inside exons
     # Both ends of both reads fall into the gene model
-    stEndTable <- as.matrix(data.frame(r1_S = BiocGenerics::start(iReads_r1),
-                                       r1_E = BiocGenerics::end(iReads_r1),
-                                       r2_S = BiocGenerics::start(iReads_r2),
-                                       r2_E = BiocGenerics::end(iReads_r2)))
+    stEndTable <- as.matrix(data.frame(r1_S = GenomicRanges::start(iReads_r1),
+                                       r1_E = GenomicRanges::end(iReads_r1),
+                                       r2_S = GenomicRanges::start(iReads_r2),
+                                       r2_E = GenomicRanges::end(iReads_r2)))
     pass <- (stEndTable %in% iExon) %>% matrix(ncol = 4, byrow = F) %>%
-        rowSums %>% equals(4) %>% which
+        rowSums %>% magrittr::equals(4) %>% which()
     if(length(pass) < minReads){return(GRanges())} # No reads Return empty GA
     # Reads cover consecutive exons
     tmp <- GenomicRanges::findOverlaps(iReads_r1[pass], allExons[[iGene]])
@@ -267,88 +267,90 @@ hlpr_ReadsInGene <- function(reads, iGene, bedR, split_i, allExons, minReads, wi
     if(length(pass) < minReads){return(GRanges())} # No reads Return empty GA
     # Boundaries of merged reads
     if(iStrand == "+"){
-        tReads <- data.frame(start = match(BiocGenerics::start(iReads_r1[pass]), iExon),
-                             end      = match(BiocGenerics::end(iReads_r2[pass]), iExon),
-                             strand   = strand(iReads_r1[pass]),
-                             seqnames = iGene) %>% as_granges
+        tReads <- data.frame(start = match(GenomicRanges::start(iReads_r1[pass]), iExon),
+                             end      = match(GenomicRanges::end(iReads_r2[pass]), iExon),
+                             strand   = GenomicRanges::strand(iReads_r1[pass]),
+                             seqnames = iGene) %>% plyranges::as_granges()
     }else if(iStrand == "-"){
-        tReads <- data.frame(start = match(BiocGenerics::end(iReads_r1[pass]), iExon),
-                             end      = match(BiocGenerics::start(iReads_r2[pass]), iExon),
-                             strand   = strand(iReads_r1[pass]),
-                             seqnames = iGene) %>% as_granges
+        tReads <- data.frame(start = match(GenomicRanges::end(iReads_r1[pass]), iExon),
+                             end      = match(GenomicRanges::start(iReads_r2[pass]), iExon),
+                             strand   = GenomicRanges::strand(iReads_r1[pass]),
+                             seqnames = iGene) %>% plyranges::as_granges()
     }
     names(tReads) <- names(reads)[selReadsbyPair][pass]
-    seqlengths(tReads) <- length(iExon)
+    GenomeInfoDb::seqlengths(tReads) <- length(iExon)
     # Result if no sequence is input or required
     if(withSeq == F){
         return(tReads)
     }
     # Merging sequences
-    tReads$start_r1 <- BiocGenerics::start(iReads_r1[pass])
-    tReads$end_r1 <- BiocGenerics::end(iReads_r1[pass])
-    tReads$start_r2 <- BiocGenerics::start(iReads_r2[pass])
-    tReads$end_r2 <- BiocGenerics::end(iReads_r2[pass])
-    tReads$strand_r1 <- strand(iReads_r1[pass])
-    tReads$cigar_r1 <- cigar(iReads_r1[pass])
-    tReads$cigar_r2 <- cigar(iReads_r2[pass])
-    tReads$seq_r1 <- mcols(iReads_r1[pass])$seq
-    tReads$seq_r2 <- mcols(iReads_r2[pass])$seq
+    tReads$start_r1 <- GenomicRanges::start(iReads_r1[pass])
+    tReads$end_r1 <- GenomicRanges::end(iReads_r1[pass])
+    tReads$start_r2 <- GenomicRanges::start(iReads_r2[pass])
+    tReads$end_r2 <- GenomicRanges::end(iReads_r2[pass])
+    tReads$strand_r1 <- GenomicRanges::strand(iReads_r1[pass])
+    tReads$cigar_r1 <- GenomicAlignments::cigar(iReads_r1[pass])
+    tReads$cigar_r2 <- GenomicAlignments::cigar(iReads_r2[pass])
+    tReads$seq_r1 <- S4Vectors::mcols(iReads_r1[pass])$seq
+    tReads$seq_r2 <- S4Vectors::mcols(iReads_r2[pass])$seq
     # Constructing the merged read sequence
     if(iStrand == "+"){
-        tReads$seq1 <- sequenceLayer(mcols(tReads)$seq_r1,
-                                     mcols(tReads)$cigar_r1) %>%
-            str_remove_all(pattern = "\\.")
-        tReads$seq2 <- sequenceLayer(mcols(tReads)$seq_r2,
-                                     mcols(tReads)$cigar_r2) %>%
-            str_remove_all(pattern = "\\.")
+        tReads$seq1 <- GenomicAlignments::sequenceLayer(S4Vectors::mcols(tReads)$seq_r1,
+                                     S4Vectors::mcols(tReads)$cigar_r1) %>%
+            stringr::str_remove_all(pattern = "\\.")
+        tReads$seq2 <- GenomicAlignments::sequenceLayer(S4Vectors::mcols(tReads)$seq_r2,
+                                     S4Vectors::mcols(tReads)$cigar_r2) %>%
+            stringr::str_remove_all(pattern = "\\.")
     }else if(iStrand == "-"){
-        tReads$seq1 <- sequenceLayer(mcols(tReads)$seq_r1,
-                                     mcols(tReads)$cigar_r1) %>%
-            reverseComplement() %>% str_remove_all(pattern = "\\.")
-        tReads$seq2 <- sequenceLayer(mcols(tReads)$seq_r2,
-                                     mcols(tReads)$cigar_r2) %>%
-            reverseComplement() %>% str_remove_all(pattern = "\\.")
+        tReads$seq1 <- GenomicAlignments::sequenceLayer(S4Vectors::mcols(tReads)$seq_r1,
+                                     S4Vectors::mcols(tReads)$cigar_r1) %>%
+            Biostrings::reverseComplement() %>% stringr::str_remove_all(pattern = "\\.")
+        tReads$seq2 <- GenomicAlignments::sequenceLayer(S4Vectors::mcols(tReads)$seq_r2,
+                                     S4Vectors::mcols(tReads)$cigar_r2) %>%
+            Biostrings::reverseComplement() %>% stringr::str_remove_all(pattern = "\\.")
     }
     # Trim overflowing reads
-    i <- which(nchar(tReads$seq1) > width(tReads))
-    tReads[i]$seq1 <- str_sub(tReads[i]$seq1, start = 1, width(tReads[i]))
-    i <- which(nchar(tReads$seq2) > width(tReads))
-    tReads[i]$seq2 <- str_sub(tReads[i]$seq2, start = -width(tReads[i]))
+    i <- which(nchar(tReads$seq1) > GenomicAlignments::width(tReads))
+    tReads[i]$seq1 <- stringr::str_sub(tReads[i]$seq1, start = 1, GenomicAlignments::width(tReads[i]))
+    i <- which(nchar(tReads$seq2) > GenomicAlignments::width(tReads))
+    tReads[i]$seq2 <- stringr::str_sub(tReads[i]$seq2, start = -GenomicAlignments::width(tReads[i]))
     # Calculate overlap
-    tReads$diffSeq <- nchar(tReads$seq1) + nchar(tReads$seq2) - width(tReads)
-    tReads$oL <- tReads$diffSeq %>% is_greater_than(0)
+    tReads$diffSeq <- nchar(tReads$seq1) + nchar(tReads$seq2) - GenomicAlignments::width(tReads)
+    tReads$oL <- tReads$diffSeq %>% magrittr::is_greater_than(0)
     tReads$mergedSeq <- "." # Place holder
     # No overlap reads
     i <- which(!(tReads$oL))
     if(length(i) > 0){
-        gapLen <- width(tReads[i]) - nchar(tReads[i]$seq1) - nchar(tReads[i]$seq2)
-        insSeq <- str_dup(string = ".", gapLen)
+        gapLen <- GenomicAlignments::width(tReads[i]) - nchar(tReads[i]$seq1) - nchar(tReads[i]$seq2)
+        insSeq <- stringr::str_dup(string = ".", gapLen)
         tReads[i]$mergedSeq <- paste(tReads[i]$seq1, insSeq,
-                                     tReads[i]$seq2, sep = "") %>%
-            DNAStringSet()
+                                     tReads[i]$seq2, sep = "") %>% Biostrings::DNAStringSet()
     }
     # Overlapped reads
     i <- which(tReads$oL)
     if(length(i) > 0){
-        tmp1 <- str_sub(tReads[i]$seq1, start = -tReads[i]$diffSeq)
-        tmp2 <- str_sub(tReads[i]$seq2, start = 1, end = tReads[i]$diffSeq)
+        tmp1 <- stringr::str_sub(tReads[i]$seq1, start = -tReads[i]$diffSeq)
+        tmp2 <- stringr::str_sub(tReads[i]$seq2, start = 1, end = tReads[i]$diffSeq)
         ovSeq <- rep(".", length(i))
         for(j in 1:length(i)){
             if(tmp1[j] == tmp2[j]){
                 ovSeq[j] <- tmp1[j]
             }else{
-                ovSeq[j] <- DNAStringSet(c(tmp1[j], tmp2[j])) %>%
-                    consensusMatrix %>%
-                    consensusString(ambiguityMap = IUPAC_CODE_MAP_extended, threshold = 0.2)
+                ovSeq[j] <- Biostrings::DNAStringSet(c(tmp1[j], tmp2[j])) %>%
+                    Biostrings::consensusMatrix() %>%
+                    Biostrings::consensusString(ambiguityMap = IUPAC_CODE_MAP_extended, threshold = 0.2)
             }
         }
-        tReads[i]$mergedSeq <- paste0(str_sub(tReads[i]$seq1, start = 1, end = nchar(tReads[i]$seq1) - tReads[i]$diffSeq),
-                                      ovSeq,
-                                      str_sub(tReads[i]$seq2, start = tReads[i]$diffSeq + 1, end = nchar(tReads[i]$seq2)))
+        tReads[i]$mergedSeq <- paste0(stringr::str_sub(tReads[i]$seq1,
+                                                       start = 1,
+                                                       end = nchar(tReads[i]$seq1) - tReads[i]$diffSeq),
+                                      ovSeq, stringr::str_sub(tReads[i]$seq2,
+                                                              start = tReads[i]$diffSeq + 1,
+                                                              end = nchar(tReads[i]$seq2)))
     }
     # Final reads
     fReads <- tReads
-    mcols(fReads) <- NULL
+    S4Vectors::mcols(fReads) <- NULL
     fReads$seq <- tReads$mergedSeq
     return(fReads)
 }
@@ -366,7 +368,14 @@ tx_coverage <- function(x){
     suppressWarnings(unlist(x)) %>% GenomicRanges::coverage()
 }
 
-# Calculate coverage table (cov, ends, starts) for all gene models
+#' Calculate coverage table cov, ends, starts for all gene models
+#'
+#' @param x
+#'
+#' @return
+#' @export
+#'
+#' @examples
 tx_covTab <- function(x){
     if(class(x) != "SimpleGenomicRangesList"){
         stop("x must be of class SimpleGenomicRangesList")
@@ -375,23 +384,31 @@ tx_covTab <- function(x){
         stop("List contains duplicated gene models")
     }
     cov <- tx_coverage(x) %>% lapply(as.vector)
-    sta <- BiocGenerics::start(x) %>% lapply(table) %>% set_names(names(x))
-    end <- BiocGenerics::end(x) %>% lapply(table) %>% set_names(names(x))
-    len <- lapply(x, seqlengths) %>% unlist
+    sta <- GenomicRanges::start(x) %>% lapply(table) %>% magrittr::set_names(names(x))
+    end <- GenomicRanges::end(x) %>% lapply(table) %>% magrittr::set_names(names(x))
+    len <- lapply(x, GenomeInfoDb::seqlengths) %>% unlist
     OUT <- lapply(1:length(x), function(i){
-        tmpMat <- matrix(0, nrow = len[i], ncol = 3) %>% data.frame() %>% set_rownames(1:len[i]) %>%
-            set_colnames(c("cov", "start_5p", "end_3p"))
+        tmpMat <- matrix(0, nrow = len[i], ncol = 3) %>% data.frame() %>% magrittr::set_rownames(1:len[i]) %>%
+            magrittr::set_colnames(c("cov", "start_5p", "end_3p"))
         tmpMat[names(sta[[i]]), "start_5p"] <- sta[[i]]
         tmpMat[names(end[[i]]), "end_3p"] <- end[[i]]
         tmpMat[, "cov"] <- cov[[i]] %>% as.numeric()
         # tmpMat[,"start_5p"] <- Rle(tmpMat[,"start_5p"])
         # tmpMat[,"end_3p"] <- Rle(tmpMat[,"end_3p"])
-        tmpMat %>% data.table()
-    }) %>% set_names(names(x))
+        tmpMat %>% data.table::data.table()
+    }) %>% magrittr::set_names(names(x))
     return(OUT)
 }
 
-# Calculate coverage table (cov, ends, starts) for all gene models (Multicore)
+#' Calculate coverage table (cov, ends, starts) for all gene models (Multicore)
+#'
+#' @param x
+#' @param nCores
+#'
+#' @return
+#' @export
+#'
+#' @examples
 tx_covTab_mc <- function(x, nCores){
     if(class(x) != "SimpleGenomicRangesList"){
         stop("x must be of class SimpleGenomicRangesList")
@@ -400,23 +417,31 @@ tx_covTab_mc <- function(x, nCores){
         stop("List contains duplicated gene models")
     }
     cov <- tx_coverage(x) %>% mclapply(as.vector, mc.cores = nCores)
-    sta <- BiocGenerics::start(x) %>% lapply(table) %>% set_names(names(x))
-    end <- BiocGenerics::end(x) %>% lapply(table) %>% set_names(names(x))
+    sta <- GenomicRanges::start(x) %>% lapply(table) %>% magrittr::set_names(names(x))
+    end <- GenomicRanges::end(x) %>% lapply(table) %>% magrittr::set_names(names(x))
     len <- lapply(cov, length) %>% unlist
     OUT <- mclapply(mc.cores = nCores, 1:length(x), function(i){
-        tmpMat <- matrix(0, nrow = len[i], ncol = 3) %>% data.frame() %>% set_rownames(1:len[i]) %>%
-            set_colnames(c("cov", "start_5p", "end_3p"))
+        tmpMat <- matrix(0, nrow = len[i], ncol = 3) %>% data.frame() %>% magrittr::set_rownames(1:len[i]) %>%
+            magrittr::set_colnames(c("cov", "start_5p", "end_3p"))
         tmpMat[names(sta[[i]]), "start_5p"] <- sta[[i]]
         tmpMat[names(end[[i]]), "end_3p"] <- end[[i]]
         tmpMat[, "cov"] <- cov[[i]] %>% as.numeric()
         # tmpMat[,"start_5p"] <- Rle(tmpMat[,"start_5p"])
         # tmpMat[,"end_3p"] <- Rle(tmpMat[,"end_3p"])
-        tmpMat %>% data.table()
-    }) %>% set_names(names(x))
+        tmpMat %>% data.table::data.table()
+    }) %>% magrittr::set_names(names(x))
     return(OUT)
 }
 
-# Filter by width
+#' Filter ranges by a maximum width
+#'
+#' @param x
+#' @param thr
+#'
+#' @return
+#' @export
+#'
+#' @examples
 tx_filter_max_width <- function(x, thr){
     tmp <- GenomicAlignments::width(x) %>% magrittr::is_weakly_less_than(thr)
     lapply(seq(1, length(x)), function(i){
@@ -425,30 +450,37 @@ tx_filter_max_width <- function(x, thr){
         }else{
             x[[i]][tmp[[i]]]
         }
-    }) %>% GenomicRangesList() %>% set_names(names(x))
+    }) %>% GenomicRanges::GenomicRangesList() %>% magrittr::set_names(names(x))
 }
 
-# Calculate nucleotide frequency pileup for all gene models
-
+#' Calculate nucleotide frequency pileup for all gene models
+#'
+#' @param x
+#' @param simplify_IUPAC
+#'
+#' @return
+#' @export
+#'
+#' @examples
 tx_nucFreqTab <- function(x, simplify_IUPAC = "not"){
-    OUT <- lapply(seq(1, length(x)), function(i){
-        y <- Biostrings::consensusMatrix(x[[i]]$seq, shift = BiocGenerics::start(x[[i]]) -1,
-                                         width = seqlengths(x[[i]]))
+    lapply(seq(1, length(x)), function(i){
+        y <- Biostrings::consensusMatrix(x[[i]]$seq, shift = GenomicRanges::start(x[[i]]) -1,
+                                         width = GenomeInfoDb::seqlengths(x[[i]]))
         if(simplify_IUPAC == "not"){
-            hlp_addMissingNucs(y) %>% t %>% data.table()
+            hlp_addMissingNucs(y) %>% t %>% data.table::data.table()
         }else if(simplify_IUPAC == "splitHalf"){
-            hlp_splitNucsHalf(y) %>% t %>% data.table()
+            hlp_splitNucsHalf(y) %>% t %>% data.table::data.table()
         }else if(simplify_IUPAC == "splitForceInt"){
-            hlp_splitNucsForceInt(y) %>% t %>% data.table()
+            hlp_splitNucsForceInt(y) %>% t %>% data.table::data.table()
         }
-    }) %>% set_names(names(x))
+    }) %>% magrittr::set_names(names(x))
 }
 
 hlp_addMissingNucs <- function(x){
     misNucs <- IUPAC_code_2nucs[which(!(IUPAC_code_2nucs %in% rownames(x)))]
     if(length(misNucs) > 0){
         matrix(0, nrow = length(misNucs), ncol = ncol(x)) %>%
-            set_rownames(misNucs) %>% rbind(x) %>% .[IUPAC_code_2nucs,]
+            magrittr::set_rownames(misNucs) %>% rbind(x) %>% .[IUPAC_code_2nucs,]
     }else{
         x
     }
@@ -459,7 +491,7 @@ hlp_splitNucsHalf <- function(x){
     altNucs <- intersect(IUPAC_code_2nucs[5:10], rownames(x))
     x <- hlp_addMissingNucs(x)
     for(i in altNucs){
-        resNuc <- IUPAC_CODE_MAP[i] %>% str_split("") %>% unlist
+        resNuc <- Biostrings::IUPAC_CODE_MAP[i] %>% stringr::str_split("") %>% unlist
         x[resNuc[1],] <- x[resNuc[1],] + (x[i, ] / 2)
         x[resNuc[2],] <- x[resNuc[2],] + (x[i, ] / 2)
     }
@@ -472,53 +504,84 @@ hlp_splitNucsForceInt <- function(x){
     x <- hlp_addMissingNucs(x)
     for(i in altNucs){
         if(all(x[i,] %% 2 == 0)){
-            resNuc <- IUPAC_CODE_MAP[i] %>% str_split("") %>% unlist
+            resNuc <- Biostrings::IUPAC_CODE_MAP[i] %>% stringr::str_split("") %>% unlist
             x[resNuc[1],] <- x[resNuc[1],] + (x[i,] / 2)
             x[resNuc[2],] <- x[resNuc[2],] + (x[i,] / 2)
         }else{
-            resNuc <- IUPAC_CODE_MAP[i] %>% str_split("") %>% unlist
-            x[resNuc[1],] <- x[resNuc[1],] + (x[i,] %>% divide_by(2) %>% floor)
-            x[resNuc[2],] <- x[resNuc[2],] + (x[i,] %>% divide_by(2) %>% floor)
-            x["N", ] <- x["N",] + (x[i,] - (x[i,] %>% divide_by(2) %>% floor %>% multiply_by(2)))
+            resNuc <- Biostrings::IUPAC_CODE_MAP[i] %>% stringr::str_split("") %>% unlist
+            x[resNuc[1],] <- x[resNuc[1],] + (x[i,] %>% magrittr::divide_by(2) %>% floor)
+            x[resNuc[2],] <- x[resNuc[2],] + (x[i,] %>% magrittr::divide_by(2) %>% floor)
+            x["N", ] <- x["N",] + (x[i,] - (x[i,] %>% magrittr::divide_by(2) %>% floor %>% magrittr::multiply_by(2)))
         }
     }
     x[IUPAC_code_simpl,]
 }
 
-# Table with genomic and transcriptomic coordinates
+#' Table with genomic and transcriptomic coordinates
+#'
+#' @param x
+#' @param geneAnnot_GR
+#'
+#' @return
+#' @export
+#'
+#' @examples
 tx_genCoorTab <- function(x, geneAnnot_GR){
     if(all(names(x) %in% geneAnnot_GR$name)){
         lapply(names(x), function(iGene){
             tmp2 <- geneAnnot_GR[which(geneAnnot_GR$name == iGene)]
-            tmp3 <- c(GenomicAlignments::seqnames(tmp2), strand(tmp2)) %>% as.character() %>% c(iGene)
-            rep(tmp3, seqlengths(x[[iGene]])) %>% matrix(ncol = 3, byrow = T) %>%
+            tmp3 <- c(GenomicAlignments::seqnames(tmp2), GenomicRanges::strand(tmp2)) %>% as.character() %>% c(iGene)
+            rep(tmp3, GenomeInfoDb::seqlengths(x[[iGene]])) %>% matrix(ncol = 3, byrow = T) %>%
                 cbind(exonBlockGen(iGene, geneAnnot_GR)) %>%
-                cbind(seq(1, seqlengths(x[[iGene]]))) %>% .[,c(1,4,2,3,5)] %>%
-                data.table() %>% set_colnames(c("chr", "gencoor", "strand", "gene", "txcoor"))
-        }) %>% set_names(names(x))
+                cbind(seq(1, GenomeInfoDb::seqlengths(x[[iGene]]))) %>% .[,c(1,4,2,3,5)] %>%
+                data.table::data.table() %>% magrittr::set_colnames(c("chr", "gencoor", "strand", "gene", "txcoor"))
+        }) %>% magrittr::set_names(names(x))
     }else{
         stop("Names of x are not contained in geneAnnot_GR$name")
     }
 }
 
-# Helper bind three results tables
+
+#' Helper bind three results tables
+#'
+#' @param gencoorT
+#' @param tab1
+#' @param tab2
+#'
+#' @return
+#' @export
+#'
+#' @examples
 hlp_cbind3Tabs <- function(gencoorT, tab1, tab2){
     if(all(names(gencoorT) == names(tab1) &
            names(tab2) == names(gencoorT))){
         lapply(seq(1, length(gencoorT)), function(i){
             cbind(gencoorT[[i]], tab1[[i]], tab2[[i]])
-        }) %>% set_names(names(gencoorT))
+        }) %>% magrittr::set_names(names(gencoorT))
     }
 }
-# Helper bind two results tables
+#
+#' Helper bind two results tables
+#'
+#' @param gencoorT
+#' @param tab1
+#'
+#' @return
+#' @export
+#'
+#' @examples
 hlp_cbind2Tabs <- function(gencoorT, tab1){
     if(all(names(gencoorT) == names(tab1))){
         lapply(seq(1, length(gencoorT)), function(i){
             cbind(gencoorT[[i]], tab1[[i]])
-        }) %>% set_names(names(gencoorT))
+        }) %>% magrittr::set_names(names(gencoorT))
     }
 }
 
 # Vectorized intersect
 vIntersect <- Vectorize(intersect, c("x", "y"), SIMPLIFY = F)
+
+# Pipe
+`%>%` <- magrittr::`%>%`
+
 

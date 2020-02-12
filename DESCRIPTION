@@ -19,4 +19,6 @@ Imports:
     stringr,
     GenomicRanges,
     Rsamtools,
-    GenomicAlignments
+    GenomicAlignments,
+    GenomeInfoDb,
+    data.table
