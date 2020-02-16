@@ -586,4 +586,20 @@ vIntersect <- Vectorize(intersect, c("x", "y"), SIMPLIFY = F)
 # Pipe
 `%>%` <- magrittr::`%>%`
 
+# Function to create data.table objects with summarized metrics
+tx_coverage_DT <- function(x, geneAnnot){
+    hlp_cbind2Tabs(tx_genCoorTab(x, geneAnnot),
+                   tx_covTab(x))
+}
+
+tx_nucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt"){
+    hlp_cbind2Tabs(tx_genCoorTab(x, geneAnnot),
+                   tx_nucFreqTab(x, simplify_IUPAC))
+}
+
+tx_covNucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt"){
+    hlp_cbind3Tabs(tx_genCoorTab(txReads, geneAnnot),
+                   tx_covTab(txReads),
+                   tx_nucFreqTab(txReads, simplify_IUPAC))
+}
 
