@@ -161,7 +161,7 @@ tx_PEreads_mc <- function(reads, bedR, nCores, overlapType = "within",
     })
     names(OUT) <- bedR$name
     OUT <- OUT[lapply(OUT, length) %>% unlist %>% magrittr::is_greater_than(minReads)] %>%
-        GenomicRanges::GenomicRangesList()
+        GenomicRanges::GRangesList()
     if(verbose){
         cat("Output contains:", lapply(OUT, names) %>% unlist %>% unique %>% length,
             "unique reads in", length(OUT), "gene models \n")
@@ -214,7 +214,7 @@ tx_PEreads <- function(reads, bedR, overlapType = "within", minReads = 50, withS
                               minReads = minReads)
     names(OUT) <- bedR$name
     OUT <- OUT[lapply(OUT, length) %>% unlist %>% magrittr::is_greater_than(minReads)] %>%
-        GenomicRanges::GenomicRangesList()
+        GenomicRanges::GRangesList()
     if(verbose){
         cat("Output contains:", lapply(OUT, names) %>% unlist %>% unique %>% length,
             "unique reads in", length(OUT), "gene models \n")
@@ -379,7 +379,7 @@ tx_coverage <- function(x){
 #'
 #' @examples
 tx_covTab <- function(x){
-    if(class(x) != "SimpleGenomicRangesList"){
+    if(class(x) != "CompressedGRangesList"){
         stop("x must be of class SimpleGRangesList")
     }
     if(names(x) %>% duplicated() %>% sum() %>% magrittr::is_greater_than(0)){
@@ -388,7 +388,7 @@ tx_covTab <- function(x){
     cov <- tx_coverage(x) %>% lapply(as.vector)
     sta <- GenomicRanges::start(x) %>% lapply(table) %>% magrittr::set_names(names(x))
     end <- GenomicRanges::end(x) %>% lapply(table) %>% magrittr::set_names(names(x))
-    len <- lapply(x, GenomeInfoDb::seqlengths) %>% unlist
+    len <- GenomeInfoDb::seqlengths(x)
     OUT <- lapply(1:length(x), function(i){
         tmpMat <- matrix(0, nrow = len[i], ncol = 3) %>% data.frame() %>% magrittr::set_rownames(1:len[i]) %>%
             magrittr::set_colnames(c("cov", "start_5p", "end_3p"))
@@ -412,7 +412,7 @@ tx_covTab <- function(x){
 #'
 #' @examples
 tx_covTab_mc <- function(x, nCores){
-    if(class(x) != "SimpleGenomicRangesList"){
+    if(class(x) != "CompressedGRangesList"){
         stop("x must be of class SimpleGRangesList")
     }
     if(names(x) %>% duplicated() %>% sum() %>% magrittr::is_greater_than(0)){
@@ -452,7 +452,7 @@ tx_filter_max_width <- function(x, thr){
         }else{
             x[[i]][tmp[[i]]]
         }
-    }) %>% GenomicRanges::GenomicRangesList() %>% magrittr::set_names(names(x))
+    }) %>% GenomicRanges::GRangesList() %>% magrittr::set_names(names(x))
 }
 
 #' Calculate nucleotide frequency pileup for all gene models
@@ -465,9 +465,10 @@ tx_filter_max_width <- function(x, thr){
 #'
 #' @examples
 tx_nucFreqTab <- function(x, simplify_IUPAC = "not"){
-    lapply(seq(1, length(x)), function(i){
-        y <- Biostrings::consensusMatrix(x[[i]]$seq, shift = GenomicRanges::start(x[[i]]) -1,
-                                         width = GenomeInfoDb::seqlengths(x[[i]]))
+    iGenes <- names(x)
+    lapply(iGenes, function(iGene){
+        y <- Biostrings::consensusMatrix(x[[iGene]]$seq, shift = GenomicRanges::start(x[[iGene]]) -1,
+                                         width = GenomeInfoDb::seqlengths(x[[iGene]][iGene]))
         if(simplify_IUPAC == "not"){
             hlp_addMissingNucs(y) %>% t %>% data.table::data.table()
         }else if(simplify_IUPAC == "splitHalf"){
@@ -533,9 +534,9 @@ tx_genCoorTab <- function(x, geneAnnot_GR){
         lapply(names(x), function(iGene){
             tmp2 <- geneAnnot_GR[which(geneAnnot_GR$name == iGene)]
             tmp3 <- c(GenomicAlignments::seqnames(tmp2), GenomicRanges::strand(tmp2)) %>% as.character() %>% c(iGene)
-            rep(tmp3, GenomeInfoDb::seqlengths(x[[iGene]])) %>% matrix(ncol = 3, byrow = T) %>%
+            rep(tmp3, GenomeInfoDb::seqlengths(x[[iGene]][iGene])) %>% matrix(ncol = 3, byrow = T) %>%
                 cbind(exonBlockGen(iGene, geneAnnot_GR)) %>%
-                cbind(seq(1, GenomeInfoDb::seqlengths(x[[iGene]]))) %>% .[,c(1,4,2,3,5)] %>%
+                cbind(seq(1, GenomeInfoDb::seqlengths(x[[iGene]][iGene]))) %>% .[,c(1,4,2,3,5)] %>%
                 data.table::data.table() %>% magrittr::set_colnames(c("chr", "gencoor", "strand", "gene", "txcoor"))
         }) %>% magrittr::set_names(names(x))
     }else{
