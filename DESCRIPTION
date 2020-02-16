@@ -7,7 +7,9 @@ Authors@R:
            role = c("aut", "cre"),
            email = "angel.campos@weizmann.ac.il",
            comment = c(ORCID = "0000-0001-5223-8174"))
-Description: txtools is a utilities package for extending the functionality of GenomicRanges to process RNA-seq reads into transcriptomic aware versions.
+Description: txtools extends the functionality of GenomicAlignments filtering 
+    and processing RNA-seq reads aligned to a genome into their relevant 
+    transcript(s) of origin.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
