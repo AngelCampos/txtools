@@ -15,3 +15,6 @@ tx_genCoorTab(x, geneAnnot_GR)
 \description{
 Table with genomic and transcriptomic coordinates
 }
+\author{
+Miguel Angel Garcia-Campos
+}

@@ -16,9 +16,9 @@ tx_load_bam(
 \arguments{
 \item{file}{character. The path to the file to read}
 
-\item{yieldSize}{numeric. Size of chunck of reads processed at a time}
+\item{yieldSize}{numeric. Number of reads to be processed at a time}
 
-\item{scanFlag}{integer. Flag used to filter reads check: ?scanBamFlag()}
+\item{scanFlag}{integer. Flag used to filter reads. Check ?scanBamFlag()}
 
 \item{loadSeq}{logical. Set to TRUE for loading the sequences contained
 in the BAM file}
@@ -33,5 +33,15 @@ will be retrieved and output along correctly paired reads. More info:
 
 }
 \description{
-Read paired end bam file by yield size
+Reads a file in BAM format by blocks of lines equal to a yield size, either
+automatically calculated or specified by the user, and loads it as a
+GenomicAlignments object.
+}
+\examples{
+# Loading  in-package BAM file
+bamFile <- system.file("extdata", "example_hg19.bam", package = "txtools")
+tx_load_bam(bamFile, loadSeq = T, verbose = F)
+}
+\author{
+Miguel Angel Garcia-Campos
 }

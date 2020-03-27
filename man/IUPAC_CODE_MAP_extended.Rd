@@ -4,12 +4,14 @@
 \name{IUPAC_CODE_MAP_extended}
 \alias{IUPAC_CODE_MAP_extended}
 \title{IUPAC code extended to consider deletions}
-\format{Character vector
+\format{
+Character vector
 \describe{
   \item{price}{price, in US dollars}
   \item{carat}{weight of the diamond, in carats}
   ...
-}}
+}
+}
 \source{
 Adapted from Biostrings::IUPAC_CODE_MAP
 }

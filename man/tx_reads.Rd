@@ -22,3 +22,6 @@ tx_reads(
 \description{
 Merge paired-end reads and assign them to gene models
 }
+\author{
+Miguel Angel Garcia-Campos
+}

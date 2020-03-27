@@ -7,11 +7,14 @@
 tx_counts(x)
 }
 \arguments{
-\item{x}{}
+\item{x}{GenomicRanges.}
 }
 \value{
 
 }
 \description{
 Quantifies reads by gene model from a tx_reads list
+}
+\author{
+Miguel Angel Garcia-Campos
 }

@@ -27,3 +27,6 @@ data.table
 \description{
 Summarized Nucleotide Frequency data.table
 }
+\author{
+Miguel Angel Garcia-Campos
+}

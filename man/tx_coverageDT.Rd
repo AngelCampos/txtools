@@ -15,3 +15,6 @@ data.table
 \description{
 Summarized Coverage data.table
 }
+\author{
+Miguel Angel Garcia-Campos
+}

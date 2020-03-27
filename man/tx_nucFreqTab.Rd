@@ -15,3 +15,6 @@ tx_nucFreqTab(x, simplify_IUPAC = "not")
 \description{
 Calculate nucleotide frequency pileup for all gene models
 }
+\author{
+Miguel Angel Garcia-Campos
+}

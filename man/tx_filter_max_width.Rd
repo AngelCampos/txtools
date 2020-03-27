@@ -15,3 +15,6 @@ tx_filter_max_width(x, thr)
 \description{
 Filter ranges by a maximum width
 }
+\author{
+Miguel Angel Garcia-Campos
+}

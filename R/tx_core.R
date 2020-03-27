@@ -1,8 +1,12 @@
 #' Read paired end bam file by yield size
 #'
+#' Reads a file in BAM format by blocks of lines equal to a yield size, either
+#' automatically calculated or specified by the user, and loads it as a
+#' GenomicAlignments object.
+#'
 #' @param file character. The path to the file to read
-#' @param yieldSize numeric. Size of chunck of reads processed at a time
-#' @param scanFlag integer. Flag used to filter reads check: ?scanBamFlag()
+#' @param yieldSize numeric. Number of reads to be processed at a time
+#' @param scanFlag integer. Flag used to filter reads. Check ?scanBamFlag()
 #' @param loadSeq logical. Set to TRUE for loading the sequences contained
 #' in the BAM file
 #' @param recoverDumpedAligns logical. If set to TRUE ambiguous alignments
@@ -13,13 +17,18 @@
 #' @return
 #' @export
 #'
+#' @author Miguel Angel Garcia-Campos
+#'
 #' @examples
+#' # Loading  in-package BAM file
+#' bamFile <- system.file("extdata", "example_hg19.bam", package = "txtools")
+#' tx_load_bam(bamFile, loadSeq = T, verbose = F)
 tx_load_bam <- function(file,
-                               yieldSize = "auto",
-                               scanFlag = "default",
-                               loadSeq = FALSE,
-                               recoverDumpedAligns = F,
-                               verbose = TRUE){
+                        yieldSize = "auto",
+                        scanFlag = "default",
+                        loadSeq = FALSE,
+                        recoverDumpedAligns = F,
+                        verbose = TRUE){
     if(verbose){cat("Reading number of records in file \n")}
     #Remove optical duplicates, low quality reads, low quality reads, non-paired
     if(scanFlag == "default"){
@@ -36,7 +45,7 @@ tx_load_bam <- function(file,
     }
     if(verbose){
         cat("Loading BAM file \n")
-        pb <- txtProgressBar(style = 3)
+        pb <- utils::txtProgressBar(style = 3)
     }
     BAMFILE <- Rsamtools::BamFile(file, yieldSize = yieldSize)
     readCycles <- 1:ceiling(bC$records/(yieldSize*2))
@@ -48,7 +57,8 @@ tx_load_bam <- function(file,
         if(verbose){setTxtProgressBar(pb, i)}
         if(loadSeq){
             GenomicAlignments::readGAlignmentPairs(BAMFILE, use.names = TRUE,
-                                                   param = Rsamtools::ScanBamParam(flag = scanFlag, what = "seq"))
+                                                   param = Rsamtools::ScanBamParam(flag = scanFlag,
+                                                                                   what = "seq"))
         }else if(loadSeq == F){
             GenomicAlignments::readGAlignmentPairs(BAMFILE, use.names = TRUE,
                                                    param = Rsamtools::ScanBamParam(flag = scanFlag))
@@ -56,7 +66,8 @@ tx_load_bam <- function(file,
     }) %>% do.call(what = c)
     close(BAMFILE)
     if(verbose){close(pb)}
-    bamData <- list(GAligns = reads, dumpedAmbigPairs = GenomicAlignments::getDumpedAlignments())
+    bamData <- list(GAligns = reads,
+                    dumpedAmbigPairs = GenomicAlignments::getDumpedAlignments())
     if(verbose){cat(" \n")}
     if(verbose){
         cat(length(bamData$GAligns), "reads succesfully loaded \n")
@@ -70,7 +81,9 @@ tx_load_bam <- function(file,
     }
 }
 
-#' Load gene models from bed-12 files
+#' Load gene models from bed-12 and bed-6 files
+#'
+#' Reads and checks bed files to complie with bed file structure
 #'
 #' @param bedfile
 #'
@@ -79,6 +92,7 @@ tx_load_bam <- function(file,
 #'
 #' @examples
 tx_load_bed <- function(bedfile){
+    readLines(bedfile)
     plyranges::read_bed(bedfile)
 }
 
@@ -94,8 +108,11 @@ tx_load_bed <- function(bedfile){
 #' @return
 #' @export
 #'
+#' @author Miguel Angel Garcia-Campos
+#'
 #' @examples
-tx_reads <- function(reads, bedR, overlapType = "within", minReads = 50, withSeq = F, verbose = T){
+tx_reads <- function(reads, bedR, overlapType = "within", minReads = 50,
+                     withSeq = F, verbose = T){
     if(class(reads) != "GAlignmentPairs"){
         stop("reads argument should be of class GAlignmentPairs \n")
     }
@@ -103,7 +120,8 @@ tx_reads <- function(reads, bedR, overlapType = "within", minReads = 50, withSeq
         stop("bedR argument should be of class GRanges \n")
     }
     if(verbose){
-        cat("Processing", length(reads), "reads, using", length(bedR), "gene models \n")
+        cat("Processing", length(reads), "reads, using", length(bedR),
+            "gene models \n")
     }
     split_i <- hlpr_splitReadsByGenes(reads, bedR, overlapType, minReads)
     bedR <- bedR[which(bedR$name %in% names(split_i))]
@@ -126,7 +144,8 @@ tx_reads <- function(reads, bedR, overlapType = "within", minReads = 50, withSeq
                               withSeq = withSeq,
                               minReads = minReads)
     names(OUT) <- bedR$name
-    OUT <- OUT[lapply(OUT, length) %>% unlist %>% magrittr::is_greater_than(minReads)] %>%
+    OUT <- OUT[lapply(OUT, length) %>% unlist %>%
+                   magrittr::is_greater_than(minReads)] %>%
         GenomicRanges::GRangesList()
     if(verbose){
         cat("Output contains:", lapply(OUT, names) %>% unlist %>% unique %>% length,
@@ -148,6 +167,8 @@ tx_reads <- function(reads, bedR, overlapType = "within", minReads = 50, withSeq
 #' @return
 #' @export
 #'
+#' @author Miguel Angel Garcia-Campos
+#'
 #' @examples
 tx_reads_mc <- function(reads, bedR, nCores, overlapType = "within",
                         minReads = 50, withSeq = F, verbose = T){
@@ -161,7 +182,8 @@ tx_reads_mc <- function(reads, bedR, nCores, overlapType = "within",
         stop("This functions is only available for UNIX operative systems \n")
     }
     if(verbose){
-        cat("Processing", length(reads), "paired-end reads, using", length(bedR), "gene models \n")
+        cat("Processing", length(reads), "paired-end reads, using", length(bedR),
+            "gene models \n")
     }
     split_i <- hlpr_splitReadsByGenes(reads, bedR, overlapType,
                                       minReads)
@@ -204,6 +226,8 @@ tx_reads_mc <- function(reads, bedR, nCores, overlapType = "within",
 #' @return
 #' @export
 #'
+#' @author Miguel Angel Garcia-Campos
+#'
 #' @examples
 tx_filter_max_width <- function(x, thr){
     tmp <- GenomicAlignments::width(x) %>% magrittr::is_weakly_less_than(thr)
@@ -223,6 +247,8 @@ tx_filter_max_width <- function(x, thr){
 #' @return
 #' @export
 #'
+#' @author Miguel Angel Garcia-Campos
+#'
 #' @examples
 tx_coverageTab <- function(x){
     if(class(x) != "CompressedGRangesList"){
@@ -236,7 +262,8 @@ tx_coverageTab <- function(x){
     end <- GenomicRanges::end(x) %>% lapply(table) %>% magrittr::set_names(names(x))
     len <- GenomeInfoDb::seqlengths(x)
     OUT <- lapply(1:length(x), function(i){
-        tmpMat <- matrix(0, nrow = len[i], ncol = 3) %>% data.frame() %>% magrittr::set_rownames(1:len[i]) %>%
+        tmpMat <- matrix(0, nrow = len[i], ncol = 3) %>% data.frame() %>%
+            magrittr::set_rownames(1:len[i]) %>%
             magrittr::set_colnames(c("cov", "start_5p", "end_3p"))
         tmpMat[names(sta[[i]]), "start_5p"] <- sta[[i]]
         tmpMat[names(end[[i]]), "end_3p"] <- end[[i]]
@@ -256,6 +283,8 @@ tx_coverageTab <- function(x){
 #' @return
 #' @export
 #'
+#' @author Miguel Angel Garcia-Campos
+#'
 #' @examples
 tx_coverageTab_mc <- function(x, nCores){
     if(class(x) != "CompressedGRangesList"){
@@ -268,8 +297,9 @@ tx_coverageTab_mc <- function(x, nCores){
     sta <- GenomicRanges::start(x) %>% lapply(table) %>% magrittr::set_names(names(x))
     end <- GenomicRanges::end(x) %>% lapply(table) %>% magrittr::set_names(names(x))
     len <- lapply(cov, length) %>% unlist
-    OUT <- mclapply(mc.cores = nCores, 1:length(x), function(i){
-        tmpMat <- matrix(0, nrow = len[i], ncol = 3) %>% data.frame() %>% magrittr::set_rownames(1:len[i]) %>%
+    OUT <- parallel::mclapply(mc.cores = nCores, 1:length(x), function(i){
+        tmpMat <- matrix(0, nrow = len[i], ncol = 3) %>% data.frame() %>%
+            magrittr::set_rownames(1:len[i]) %>%
             magrittr::set_colnames(c("cov", "start_5p", "end_3p"))
         tmpMat[names(sta[[i]]), "start_5p"] <- sta[[i]]
         tmpMat[names(end[[i]]), "end_3p"] <- end[[i]]
@@ -281,7 +311,6 @@ tx_coverageTab_mc <- function(x, nCores){
     return(OUT)
 }
 
-
 #' Calculate nucleotide frequency pileup for all gene models
 #'
 #' @param x
@@ -290,11 +319,14 @@ tx_coverageTab_mc <- function(x, nCores){
 #' @return
 #' @export
 #'
+#' @author Miguel Angel Garcia-Campos
+#'
 #' @examples
 tx_nucFreqTab <- function(x, simplify_IUPAC = "not"){
     iGenes <- names(x)
     lapply(iGenes, function(iGene){
-        y <- Biostrings::consensusMatrix(x[[iGene]]$seq, shift = GenomicRanges::start(x[[iGene]]) -1,
+        y <- Biostrings::consensusMatrix(x = x[[iGene]]$seq,
+                                         shift = GenomicRanges::start(x[[iGene]]) -1,
                                          width = GenomeInfoDb::seqlengths(x[[iGene]])[iGene])
         if(simplify_IUPAC == "not"){
             hlp_addMissingNucs(y) %>% t %>% data.table::data.table()
@@ -306,7 +338,6 @@ tx_nucFreqTab <- function(x, simplify_IUPAC = "not"){
     }) %>% magrittr::set_names(names(x))
 }
 
-
 #' Table with genomic and transcriptomic coordinates
 #'
 #' @param x
@@ -315,13 +346,16 @@ tx_nucFreqTab <- function(x, simplify_IUPAC = "not"){
 #' @return
 #' @export
 #'
+#' @author Miguel Angel Garcia-Campos
+#'
 #' @examples
 tx_genCoorTab <- function(x, geneAnnot_GR){
     if(all(names(x) %in% geneAnnot_GR$name)){
         lapply(names(x), function(iGene){
             tmp2 <- geneAnnot_GR[which(geneAnnot_GR$name == iGene)]
             tmp3 <- c(GenomicAlignments::seqnames(tmp2), GenomicRanges::strand(tmp2)) %>% as.character() %>% c(iGene)
-            rep(tmp3, GenomeInfoDb::seqlengths(x[[iGene]])[iGene]) %>% matrix(ncol = 3, byrow = T) %>%
+            rep(tmp3, GenomeInfoDb::seqlengths(x[[iGene]])[iGene]) %>%
+                matrix(ncol = 3, byrow = T) %>%
                 cbind(exonBlockGen(iGene, geneAnnot_GR)) %>%
                 cbind(seq(1, GenomeInfoDb::seqlengths(x[[iGene]])[iGene])) %>% .[,c(1,4,2,3,5)] %>%
                 data.table::data.table() %>% magrittr::set_colnames(c("chr", "gencoor", "strand", "gene", "txcoor"))
@@ -338,6 +372,8 @@ tx_genCoorTab <- function(x, geneAnnot_GR){
 #'
 #' @return data.table
 #' @export
+#'
+#' @author Miguel Angel Garcia-Campos
 #'
 #' @examples
 tx_coverageDT <- function(x, geneAnnot){
@@ -364,6 +400,8 @@ tx_coverageDT <- function(x, geneAnnot){
 #' @return data.table
 #' @export
 #'
+#' @author Miguel Angel Garcia-Campos
+#'
 #' @examples
 tx_nucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt"){
     hlp_cbind2Tabs(tx_genCoorTab(x, geneAnnot),
@@ -386,15 +424,16 @@ tx_covNucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt"){
                    tx_nucFreqTab(txReads, simplify_IUPAC))
 }
 
-
 #' Quantifies reads by gene model from a tx_reads list
 #'
-#' @param x
+#' @param x GenomicRanges.
 #'
 #' @return
 #' @export
 #'
+#' @author Miguel Angel Garcia-Campos
+#'
 #' @examples
 tx_counts <- function(x){
-    suppressWarnings(unlist(x)) %>% seqnames %>% table
+    suppressWarnings(unlist(x)) %>% GenomeInfoDb::seqnames() %>% table
 }

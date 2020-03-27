@@ -15,3 +15,6 @@ tx_coverageTab(x)
 \description{
 Calculate coverage table cov, ends, starts for all gene models
 }
+\author{
+Miguel Angel Garcia-Campos
+}

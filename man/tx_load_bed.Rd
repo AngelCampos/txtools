@@ -2,7 +2,7 @@
 % Please edit documentation in R/tx_core.R
 \name{tx_load_bed}
 \alias{tx_load_bed}
-\title{Load gene models from bed-12 files}
+\title{Load gene models from bed-12 and bed-6 files}
 \usage{
 tx_load_bed(bedfile)
 }
@@ -13,5 +13,5 @@ tx_load_bed(bedfile)
 
 }
 \description{
-Load gene models from bed-12 files
+Create
 }
