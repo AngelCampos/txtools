@@ -4,8 +4,6 @@ editor_options:
   chunk_output_type: console
 ---
 
-<!-- README.md is generated from README.Rmd. Please edit that file -->
-
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
@@ -99,7 +97,6 @@ For example:
 * The names of the gene models in the list
 
 ```{r, message=F}
-library(GenomicAlignments)
 names(txReads)
 ```
 
@@ -118,38 +115,42 @@ txReads$uc010nap.1$seq[6]
 ### Raw Gene Counts
 
 A common task in RNA-seq analysis workflows is simply counting the reads (or
-mappings) that cover a gene. 
-this is now easily done and provided as the `tx_counts()` function.
+mappings) that fall into a gene model. This can be done using the `tx_counts()` 
+function.
 
 ```{r}
 tx_counts(txReads)
+class(txReads)
 ```
 
 ### RNA-seq reads summary tables
 
-Another useful representation of RNA-seq information is to summarise reads into
-tables that span the whole transcript with summarized information such as:
+Another useful representation of RNA-seq information is to summarise reads 
+metrics into tables spanning the whole transcript with information per 
+nucleotide. The `tx_covNucFreqDT()` function creates such tables adding both the 
+genomic and transcriptomic coordinates system and the following metrics:
 
 * Coverage
-* Starts or 5prime-ends counts
-* Ends or 3prime-ends counts
+* Starts or 5'-ends counts
+* Ends or 3'-ends counts
 * Nucleotide frequencies
 * Deletion frequencies
 
-The `tx_covNucFreqDT()` function creates such tables adding both the genomic
-and transcriptomic coordinates system.
-
 ```{r, example2}
-resTab <- tx_covNucFreqDT(txReads, geneAnnot, simplify_IUPAC = "splitForceInt")
-resTab$uc010nap.1[,-"."]
+resTab <- tx_covNucFreqDT(txReads, geneAnnot)
+
+# This will show the summarized data table for the "uc010nap.1" gene
+resTab$uc010nap.1
+
 ```
 
-The resulting object is of class `data.table`, as one can perform many tasks
+The resulting object is of class `data.table`, as one can perform many tasks 
 using this data structure, as well as writing them to disk in a faster way 
-than using the base R functions.
+than using the base R functions. 
 
-The resulting data.table enables easy and fast access to data, ready for
-manipulation and analysis, for example:
+The resulting data.table enables easy and fast access to data, ready for 
+manipulation and analysis, for example, creating a barplot with the coverage 
+column:
 
 * Coverage barplot
 
@@ -163,7 +164,7 @@ barplot(resTab[[iGene]]$cov, main= paste(iGene, "reads coverage"))
 ```{r}
 iGene <- "uc010nap.1"
 barplot(t(data.frame(resTab[[iGene]][,c("A", "T", "G", "C", "N")])),
-        col = c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "black"), border = "gray",
+        col = c("#E41A  -.,1C", "#377EB8", "#4DAF4A", "#984EA3", "black"), border = "gray",
         main = paste(iGene, "nucleotide frequency"))
 ```
 
@@ -174,9 +175,7 @@ disk using the function `fwrite()`
 data.table::fwrite(resTab, "tableName.txt", sep "\t")
 ```
 
-<!-- Using the aforementioned table we can easily reconstruct the genomic sequence -->
-<!-- based on the consensus of nucleotides read in RNA-seq data. -->
-
+                                   
 ```{r, eval=F, echo = F}
 library(GenomicRanges)
 cols <- paste(rev(IUPAC_code_2nucs), sep = "")
@@ -234,4 +233,3 @@ of RNA-seq libraries which are not strad-aware.
 because insertions are not part of the original trasncriptomic reference space
 as they would alter the length of the gene model. This could be fixed in
 future versions but is not a priority. 
-
