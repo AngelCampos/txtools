@@ -95,7 +95,7 @@ tx_load_bam <- function(file,
 #' @examples
 tx_load_bed <- function(bedfile){
     tmp <- plyranges::read_bed(bedfile)
-    if(length(mcols(tmp)) == 2){
+    if(length(S4Vectors::mcols(tmp)) == 2){
         tmp$itemRGgb <- NA
         tmp$thick <- tmp@ranges
         tmp$blocks <- IRanges::IRanges(start = 1,
