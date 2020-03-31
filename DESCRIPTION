@@ -24,4 +24,7 @@ Imports:
     GenomicAlignments,
     GenomeInfoDb,
     data.table,
-    plyranges
+    plyranges,
+    S4Vectors,
+    Biostrings,
+    IRanges
