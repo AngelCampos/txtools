@@ -30,7 +30,7 @@ the reads that diverse RNA-seq-based methodologies provide.
 
 Install the development version from [GitHub](https://github.com/) with:
 
-``` r
+```{r, installation, eval = F}
 if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 
@@ -120,7 +120,6 @@ function.
 
 ```{r}
 tx_counts(txReads)
-class(txReads)
 ```
 
 ### RNA-seq reads summary tables
@@ -156,7 +155,8 @@ column:
 
 ```{r}
 iGene <- "uc003lam.1"
-barplot(resTab[[iGene]]$cov, main= paste(iGene, "reads coverage"))
+barplot(resTab[[iGene]]$cov, main = paste(iGene, "Coverage"),
+        ylab = "Counts", xlab = iGene)
 ```
 
 * Nucleotide frequency barplot
@@ -164,8 +164,8 @@ barplot(resTab[[iGene]]$cov, main= paste(iGene, "reads coverage"))
 ```{r}
 iGene <- "uc010nap.1"
 barplot(t(data.frame(resTab[[iGene]][,c("A", "T", "G", "C", "N")])),
-        col = c("#E41A  -.,1C", "#377EB8", "#4DAF4A", "#984EA3", "black"), border = "gray",
-        main = paste(iGene, "nucleotide frequency"))
+        col = c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "black"), border = "gray",
+        main = paste("Nucleotide Frequency"), ylab = "Counts", xlab = iGene)
 ```
 
 Additionally the **data.table** package allows for fast writing of tables in 

@@ -1,6 +1,4 @@
 
-<!-- README.md is generated from README.Rmd. Please edit that file -->
-
 # txtools
 
 <!-- badges: start -->
@@ -97,7 +95,6 @@ For example:
 <!-- end list -->
 
 ``` r
-library(GenomicAlignments)
 names(txReads)
 #> [1] "uc003lam.1" "uc010nap.1"
 ```
@@ -136,8 +133,8 @@ txReads$uc010nap.1$seq[6]
 ### Raw Gene Counts
 
 A common task in RNA-seq analysis workflows is simply counting the reads
-(or mappings) that cover a gene. this is now easily done and provided as
-the `tx_counts()` function.
+(or mappings) that fall into a gene model. This can be done using the
+`tx_counts()` function.
 
 ``` r
 tx_counts(txReads)
@@ -149,22 +146,24 @@ tx_counts(txReads)
 ### RNA-seq reads summary tables
 
 Another useful representation of RNA-seq information is to summarise
-reads into tables that span the whole transcript with summarized
-information such as:
+reads metrics into tables spanning the whole transcript with information
+per nucleotide. The `tx_covNucFreqDT()` function creates such tables
+adding both the genomic and transcriptomic coordinates system and the
+following metrics:
 
   - Coverage
-  - Starts or 5prime-ends counts
-  - Ends or 3prime-ends counts
+  - Starts or 5’-ends counts
+  - Ends or 3’-ends counts
   - Nucleotide frequencies
   - Deletion frequencies
 
-The `tx_covNucFreqDT()` function creates such tables adding both the
-genomic and transcriptomic coordinates
-system.
+<!-- end list -->
 
 ``` r
-resTab <- tx_covNucFreqDT(txReads, geneAnnot, simplify_IUPAC = "splitForceInt")
-resTab$uc010nap.1[,-"."]
+resTab <- tx_covNucFreqDT(txReads, geneAnnot)
+
+# This will show the summarized data table for the "uc010nap.1" gene
+resTab$uc010nap.1
 #>       chr   gencoor strand       gene txcoor cov start_5p end_3p A C  G  T N -
 #>   1: chr9 137029686      - uc010nap.1      1  38       38      0 0 0 38  0 0 0
 #>   2: chr9 137029685      - uc010nap.1      2  38        0      0 0 0  0 38 0 0
@@ -177,6 +176,18 @@ resTab$uc010nap.1[,-"."]
 #> 123: chr9 137029564      - uc010nap.1    123   5        0      1 0 0  0  5 0 0
 #> 124: chr9 137029563      - uc010nap.1    124   4        0      0 0 0  0  4 0 0
 #> 125: chr9 137029562      - uc010nap.1    125   4        0      4 0 0  0  4 0 0
+#>      .
+#>   1: 0
+#>   2: 0
+#>   3: 0
+#>   4: 0
+#>   5: 0
+#>  ---  
+#> 121: 0
+#> 122: 0
+#> 123: 0
+#> 124: 0
+#> 125: 0
 ```
 
 The resulting object is of class `data.table`, as one can perform many
@@ -184,7 +195,8 @@ tasks using this data structure, as well as writing them to disk in a
 faster way than using the base R functions.
 
 The resulting data.table enables easy and fast access to data, ready for
-manipulation and analysis, for example:
+manipulation and analysis, for example, creating a barplot with the
+coverage column:
 
   - Coverage barplot
 
@@ -192,7 +204,8 @@ manipulation and analysis, for example:
 
 ``` r
 iGene <- "uc003lam.1"
-barplot(resTab[[iGene]]$cov, main= paste(iGene, "reads coverage"))
+barplot(resTab[[iGene]]$cov, main = paste(iGene, "Coverage"),
+        ylab = "Counts", xlab = iGene)
 ```
 
 <img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
@@ -205,7 +218,7 @@ barplot(resTab[[iGene]]$cov, main= paste(iGene, "reads coverage"))
 iGene <- "uc010nap.1"
 barplot(t(data.frame(resTab[[iGene]][,c("A", "T", "G", "C", "N")])),
         col = c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "black"), border = "gray",
-        main = paste(iGene, "nucleotide frequency"))
+        main = paste("Nucleotide Frequency"), ylab = "Counts", xlab = iGene)
 ```
 
 <img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
@@ -217,10 +230,6 @@ tables in disk using the function
 ``` r
 data.table::fwrite(resTab, "tableName.txt", sep "\t")
 ```
-
-<!-- Using the aforementioned table we can easily reconstruct the genomic sequence -->
-
-<!-- based on the consensus of nucleotides read in RNA-seq data. -->
 
 <!-- Looking for the gene in the UCSC genome browser we can check that indeed our  -->
 
