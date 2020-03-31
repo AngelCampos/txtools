@@ -7,11 +7,14 @@
 tx_load_bed(bedfile)
 }
 \arguments{
-\item{bedfile}{}
+\item{bedfile}{character. Gene annotation file in bed-6 or bed-12 format}
 }
 \value{
 
 }
 \description{
-Create
+Reads and loads bed files checking for compliance with bed file structure
+}
+\author{
+Miguel Angel Garcia-Campos
 }

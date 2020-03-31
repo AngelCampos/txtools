@@ -22,7 +22,7 @@
 #' @examples
 #' # Loading  in-package BAM file
 #' bamFile <- system.file("extdata", "example_hg19.bam", package = "txtools")
-#' tx_load_bam(bamFile, loadSeq = T, verbose = F)
+#' tx_load_bam(bamFile, loadSeq = TRUE, verbose = FALSE)
 tx_load_bam <- function(file,
                         yieldSize = "auto",
                         scanFlag = "default",
@@ -83,18 +83,28 @@ tx_load_bam <- function(file,
 
 #' Load gene models from bed-12 and bed-6 files
 #'
-#' Reads and checks bed files to complie with bed file structure
+#' Reads and loads bed files checking for compliance with bed file structure
 #'
-#' @param bedfile
+#' @param bedfile character. Gene annotation file in bed-6 or bed-12 format
 #'
 #' @return
 #' @export
 #'
+#' @author Miguel Angel Garcia-Campos
+#'
 #' @examples
 tx_load_bed <- function(bedfile){
-    readLines(bedfile)
-    plyranges::read_bed(bedfile)
+    tmp <- plyranges::read_bed(bedfile)
+    if(length(mcols(tmp)) == 2){
+        tmp$itemRGgb <- NA
+        tmp$thick <- tmp@ranges
+        tmp$blocks <- IRanges::IRanges(start = 1,
+                                       end = IRanges::end(tmp) -
+                                           IRanges::start(tmp) + 1)
+    }
+    return(tmp)
 }
+
 
 #' Merge paired-end reads and assign them to gene models
 #'
@@ -423,6 +433,8 @@ tx_covNucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt"){
                    tx_coverageTab(txReads),
                    tx_nucFreqTab(txReads, simplify_IUPAC))
 }
+
+
 
 #' Quantifies reads by gene model from a tx_reads list
 #'

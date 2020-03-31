@@ -40,7 +40,7 @@ GenomicAlignments object.
 \examples{
 # Loading  in-package BAM file
 bamFile <- system.file("extdata", "example_hg19.bam", package = "txtools")
-tx_load_bam(bamFile, loadSeq = T, verbose = F)
+tx_load_bam(bamFile, loadSeq = TRUE, verbose = FALSE)
 }
 \author{
 Miguel Angel Garcia-Campos
