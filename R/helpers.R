@@ -223,10 +223,20 @@ hlp_splitNucsForceInt <- function(x){
             resNuc <- Biostrings::IUPAC_CODE_MAP[i] %>% stringr::str_split("") %>% unlist
             x[resNuc[1],] <- x[resNuc[1],] + (x[i,] %>% magrittr::divide_by(2) %>% floor)
             x[resNuc[2],] <- x[resNuc[2],] + (x[i,] %>% magrittr::divide_by(2) %>% floor)
-            x["N", ] <- x["N",] + (x[i,] - (x[i,] %>% magrittr::divide_by(2) %>% floor %>% magrittr::multiply_by(2)))
+            x["N", ] <- x["N",] + (x[i,] - (x[i,] %>% magrittr::divide_by(2) %>%
+                                                floor %>% magrittr::multiply_by(2)))
         }
     }
     x[IUPAC_code_simpl,]
+}
+
+# Helper bind two results tables
+hlp_cbind2Tabs <- function(gencoorT, tab1){
+    if(all(names(gencoorT) == names(tab1))){
+        lapply(seq(1, length(gencoorT)), function(i){
+            cbind(gencoorT[[i]], tab1[[i]])
+        }) %>% magrittr::set_names(names(gencoorT))
+    }
 }
 
 # Helper bind three results tables
@@ -239,17 +249,13 @@ hlp_cbind3Tabs <- function(gencoorT, tab1, tab2){
     }
 }
 
-# Helper bind two results tables
-hlp_cbind2Tabs <- function(gencoorT, tab1){
-    if(all(names(gencoorT) == names(tab1))){
-        lapply(seq(1, length(gencoorT)), function(i){
-            cbind(gencoorT[[i]], tab1[[i]])
-        }) %>% magrittr::set_names(names(gencoorT))
-    }
-}
-
 # Vectorized intersect
 vIntersect <- Vectorize(intersect, c("x", "y"), SIMPLIFY = F)
 
 # Pipe
 `%>%` <- magrittr::`%>%`
+
+# Object size
+oSize <- function(x){
+    print(object.size(x), units = "auto")
+}
