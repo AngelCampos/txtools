@@ -4,7 +4,7 @@
 #' automatically calculated or specified by the user, and loads it as a
 #' GenomicAlignments object.
 #'
-#' @param file character. The path to the file to read
+#' @param file character. Path to the file to read
 #' @param yieldSize numeric. Number of reads to be processed at a time
 #' @param scanFlag integer. Flag used to filter reads. Check ?scanBamFlag()
 #' @param loadSeq logical. Set to TRUE for loading the sequences contained
@@ -230,7 +230,7 @@ tx_reads_mc <- function(reads, bedR, nCores, overlapType = "within",
 
 #' Filter ranges by a maximum width
 #'
-#' @param x
+#' @param x GenomicAlignment
 #' @param thr
 #'
 #' @return
@@ -257,7 +257,7 @@ tx_filter_max_width <- function(x, thr){
 #' @return
 #' @export
 #'
-#' @author Miguel Angel Garcia-Campos
+#' @author M.A. Garcia-Campos
 #'
 #' @examples
 tx_coverageTab <- function(x){
@@ -278,10 +278,13 @@ tx_coverageTab <- function(x){
         tmpMat[names(sta[[i]]), "start_5p"] <- sta[[i]]
         tmpMat[names(end[[i]]), "end_3p"] <- end[[i]]
         tmpMat[, "cov"] <- cov[[i]] %>% as.numeric()
-        # tmpMat[,"start_5p"] <- Rle(tmpMat[,"start_5p"])
-        # tmpMat[,"end_3p"] <- Rle(tmpMat[,"end_3p"])
-        tmpMat %>% data.table::data.table()
+        tmpMat <- tmpMat %>% data.table::data.table()
+        tmpMat$cov <- as.integer(tmpMat$cov)
+        tmpMat$start_5p <- as.integer(tmpMat$start_5p)
+        tmpMat$end_3p <- as.integer(tmpMat$end_3p)
+        return(tmpMat)
     }) %>% magrittr::set_names(names(x))
+
     return(OUT)
 }
 
@@ -314,9 +317,11 @@ tx_coverageTab_mc <- function(x, nCores){
         tmpMat[names(sta[[i]]), "start_5p"] <- sta[[i]]
         tmpMat[names(end[[i]]), "end_3p"] <- end[[i]]
         tmpMat[, "cov"] <- cov[[i]] %>% as.numeric()
-        # tmpMat[,"start_5p"] <- Rle(tmpMat[,"start_5p"])
-        # tmpMat[,"end_3p"] <- Rle(tmpMat[,"end_3p"])
-        tmpMat %>% data.table::data.table()
+        tmpMat <- tmpMat %>% data.table::data.table()
+        tmpMat$cov <- as.integer(tmpMat$cov)
+        tmpMat$start_5p <- as.integer(tmpMat$start_5p)
+        tmpMat$end_3p <- as.integer(tmpMat$end_3p)
+        return(tmpMat)
     }) %>% magrittr::set_names(names(x))
     return(OUT)
 }
@@ -363,12 +368,20 @@ tx_genCoorTab <- function(x, geneAnnot_GR){
     if(all(names(x) %in% geneAnnot_GR$name)){
         lapply(names(x), function(iGene){
             tmp2 <- geneAnnot_GR[which(geneAnnot_GR$name == iGene)]
-            tmp3 <- c(GenomicAlignments::seqnames(tmp2), GenomicRanges::strand(tmp2)) %>% as.character() %>% c(iGene)
-            rep(tmp3, GenomeInfoDb::seqlengths(x[[iGene]])[iGene]) %>%
+            tmp3 <- c(GenomicAlignments::seqnames(tmp2),
+                      GenomicRanges::strand(tmp2)) %>% as.character() %>% c(iGene)
+            tmpDT <- rep(tmp3, GenomeInfoDb::seqlengths(x[[iGene]])[iGene]) %>%
                 matrix(ncol = 3, byrow = T) %>%
                 cbind(exonBlockGen(iGene, geneAnnot_GR)) %>%
-                cbind(seq(1, GenomeInfoDb::seqlengths(x[[iGene]])[iGene])) %>% .[,c(1,4,2,3,5)] %>%
-                data.table::data.table() %>% magrittr::set_colnames(c("chr", "gencoor", "strand", "gene", "txcoor"))
+                cbind(seq(1, GenomeInfoDb::seqlengths(x[[iGene]])[iGene])) %>%
+                .[,c(1,4,2,3,5)] %>% data.table::data.table() %>%
+                magrittr::set_colnames(c("chr", "gencoor", "strand", "gene", "txcoor"))
+            tmpDT$chr <- as.factor(tmpDT$chr)
+            tmpDT$gencoor <- as.integer(tmpDT$gencoor)
+            tmpDT$strand <- as.factor(tmpDT$strand)
+            tmpDT$gene <- as.factor(tmpDT$gene)
+            tmpDT$txcoor <- as.integer(tmpDT$txcoor)
+            return(tmpDT)
         }) %>% magrittr::set_names(names(x))
     }else{
         stop("Names of x are not contained in geneAnnot_GR$name")
@@ -422,7 +435,17 @@ tx_nucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt"){
 #'
 #' @param x
 #' @param geneAnnot
-#' @param simplify_IUPAC
+#' @param simplify_IUPAC string. Available options are :
+#' \itemize{
+#' \item "not": Will output the complete nucleotide frequency table including
+#' ambiguous reads using the IUPAC ambiguity code. Check: ?Biostrings::IUPAC_CODE_MAP
+#' \item "splitForceInt": Will force an integers split in which ambiguous codes
+#' will be split and assigned half the frequency into their respective nucleotides,
+#' if the frequency is an odd number the uneven count will be assigned as "N".
+#' \item "splitHalf": Ambiguous nucleotide frequencies will be split in half to
+#' their corresponding nucleotides, in cases where frequency is odd creating
+#' non-integer frequencies.
+#' }
 #'
 #' @return data.table
 #' @export
@@ -433,8 +456,6 @@ tx_covNucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt"){
                    tx_coverageTab(txReads),
                    tx_nucFreqTab(txReads, simplify_IUPAC))
 }
-
-
 
 #' Quantifies reads by gene model from a tx_reads list
 #'
@@ -447,5 +468,6 @@ tx_covNucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt"){
 #'
 #' @examples
 tx_counts <- function(x){
-    suppressWarnings(unlist(x)) %>% GenomeInfoDb::seqnames() %>% table
+    suppressWarnings(unlist(x)) %>% GenomeInfoDb::seqnames() %>% table()
 }
+
