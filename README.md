@@ -5,15 +5,15 @@
 
 <!-- badges: end -->
 
-**txtools** is a package that processes GenomicAlignments into their
-transcriptomic versions.
+**txtools** is a package that processes GenomicAlignments objects into
+their transcriptomic versions.
 
 **txtools** is meant to expand the functionality of the
 [**GenomicAlignments**](https://bioconductor.org/packages/release/bioc/html/GenomicRanges.html)
-package, as currently it does not suppot transcriptomic convertion,
-which is being increasingly needed to process and analyze RNA-seq data
-as we closely inspect the reads that diverse RNA-seq-based methodologies
-provide.
+package, as currently it does not support transcriptomic convertion.
+This type of convertion is increasingly needed to process and analyze
+RNA-seq data in which transcript-structure awareness and close
+nucleotide-level inspection is required.
 
 ## Installation
 
@@ -47,7 +47,14 @@ bamFile <- system.file("extdata", "example_hg19.bam", package = "txtools")
 bedFile <- system.file("extdata", "twoUCSCgenes_hg19.bed", package = "txtools")
 
 # Loading files and processing them using the gene models
-reads <- tx_load_bam(bamFile, loadSeq = T, verbose = F)
+reads <- tx_load_bam(bamFile, loadSeq = T, verbose = T, yieldSize = 10000)
+#> Reading number of records in file 
+#> 5061 number of BAM records 
+#> Loading BAM file 
+#>   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+#>  
+#> 2530 reads succesfully loaded 
+#> Dumped reads due to ambiguous pairs: 0
 geneAnnot <- tx_load_bed(bedFile) # plyranges read_bed function
 ```
 
@@ -58,14 +65,15 @@ AND if they are consistent with the exon structure of the gene model,
 perfectly distinguishing isoforms.
 
 Currently that means that txtools is designed for and requires RNA-seq
-libraries that are strand-specific.
+libraries that are **strand-specific**.
 
-<span style="background-color: #B3F2FF">*To accelerate processing the
-multi-core* *function* `tx_reads_mc()` *is available for UNIX
-systems*</span>
+**To accelerate processing the multi-core function** `tx_reads_mc()`
+**is available for UNIX systems**
 
-To control for spurious mappings we can filter for too long mappings, in
-this case we set the threshold to 500, just to show an example.
+To control for spurious mappings we can filter for too long mappings
+with the `tx_filter_max_width()` function. In this example we set the
+threshold to 500, removing mappings longer than 500 nucleotides at the
+transcript level.
 
 ``` r
 txReads <- tx_reads(reads, geneAnnot, withSeq = T, verbose = T)
@@ -74,7 +82,9 @@ txReads <- tx_reads(reads, geneAnnot, withSeq = T, verbose = T)
 #> Filtering reads by gene model... 
 #> Processing sequences. This may take several minutes... 
 #> Output contains: 1676 unique reads in 2 gene models
-txReads <- tx_filter_max_width(txReads, 500) # Filter out transcripts longer than 500 bases
+
+# Filter out transcripts longer than 500 bases
+txReads <- tx_filter_max_width(txReads, 500) 
 ```
 
 Now `txReads` contains a list with all paired-end RNA-seq mappings
@@ -160,34 +170,52 @@ following metrics:
 <!-- end list -->
 
 ``` r
-resTab <- tx_covNucFreqDT(txReads, geneAnnot)
+resTab1 <- tx_coverageDT(txReads, geneAnnot)
+resTab1[[1]]
+#>        chr   gencoor strand       gene txcoor cov start_5p end_3p
+#>    1: chr5 134734928      - uc003lam.1      1   1        1      0
+#>    2: chr5 134734927      - uc003lam.1      2   1        0      0
+#>    3: chr5 134734926      - uc003lam.1      3   2        1      0
+#>    4: chr5 134734925      - uc003lam.1      4   3        1      0
+#>    5: chr5 134734924      - uc003lam.1      5   3        0      0
+#>   ---                                                            
+#> 1920: chr5 134670075      - uc003lam.1   1920   7        0      0
+#> 1921: chr5 134670074      - uc003lam.1   1921   7        0      0
+#> 1922: chr5 134670073      - uc003lam.1   1922   7        0      0
+#> 1923: chr5 134670072      - uc003lam.1   1923   7        0      1
+#> 1924: chr5 134670071      - uc003lam.1   1924   6        0      6
+
+resTab2 <- tx_nucFreqDT(txReads, geneAnnot)
+resTab2[[1]]
+#>        chr   gencoor strand       gene txcoor A C G T N - .
+#>    1: chr5 134734928      - uc003lam.1      1 1 0 0 0 0 0 0
+#>    2: chr5 134734927      - uc003lam.1      2 0 1 0 0 0 0 0
+#>    3: chr5 134734926      - uc003lam.1      3 0 0 0 2 0 0 0
+#>    4: chr5 134734925      - uc003lam.1      4 0 0 3 0 0 0 0
+#>    5: chr5 134734924      - uc003lam.1      5 0 0 3 0 0 0 0
+#>   ---                                                      
+#> 1920: chr5 134670075      - uc003lam.1   1920 0 7 0 0 0 0 0
+#> 1921: chr5 134670074      - uc003lam.1   1921 0 7 0 0 0 0 0
+#> 1922: chr5 134670073      - uc003lam.1   1922 0 0 7 0 0 0 0
+#> 1923: chr5 134670072      - uc003lam.1   1923 0 0 0 7 0 0 0
+#> 1924: chr5 134670071      - uc003lam.1   1924 0 0 0 6 0 0 0
+
+resTab3 <- tx_covNucFreqDT(txReads, geneAnnot)
+resTab3[[1]]
+#>        chr   gencoor strand       gene txcoor cov start_5p end_3p A C G T N - .
+#>    1: chr5 134734928      - uc003lam.1      1   1        1      0 1 0 0 0 0 0 0
+#>    2: chr5 134734927      - uc003lam.1      2   1        0      0 0 1 0 0 0 0 0
+#>    3: chr5 134734926      - uc003lam.1      3   2        1      0 0 0 0 2 0 0 0
+#>    4: chr5 134734925      - uc003lam.1      4   3        1      0 0 0 3 0 0 0 0
+#>    5: chr5 134734924      - uc003lam.1      5   3        0      0 0 0 3 0 0 0 0
+#>   ---                                                                          
+#> 1920: chr5 134670075      - uc003lam.1   1920   7        0      0 0 7 0 0 0 0 0
+#> 1921: chr5 134670074      - uc003lam.1   1921   7        0      0 0 7 0 0 0 0 0
+#> 1922: chr5 134670073      - uc003lam.1   1922   7        0      0 0 0 7 0 0 0 0
+#> 1923: chr5 134670072      - uc003lam.1   1923   7        0      1 0 0 0 7 0 0 0
+#> 1924: chr5 134670071      - uc003lam.1   1924   6        0      6 0 0 0 6 0 0 0
 
 # This will show the summarized data table for the "uc010nap.1" gene
-resTab$uc010nap.1
-#>       chr   gencoor strand       gene txcoor cov start_5p end_3p A C  G  T N -
-#>   1: chr9 137029686      - uc010nap.1      1  38       38      0 0 0 38  0 0 0
-#>   2: chr9 137029685      - uc010nap.1      2  38        0      0 0 0  0 38 0 0
-#>   3: chr9 137029684      - uc010nap.1      3  38        0      0 0 0 38  0 0 0
-#>   4: chr9 137029683      - uc010nap.1      4  39        1      0 0 0  0 39 0 0
-#>   5: chr9 137029682      - uc010nap.1      5  40        1      0 0 0  0 40 0 0
-#>  ---                                                                          
-#> 121: chr9 137029566      - uc010nap.1    121   5        0      0 0 0  0  5 0 0
-#> 122: chr9 137029565      - uc010nap.1    122   5        0      0 0 0  0  5 0 0
-#> 123: chr9 137029564      - uc010nap.1    123   5        0      1 0 0  0  5 0 0
-#> 124: chr9 137029563      - uc010nap.1    124   4        0      0 0 0  0  4 0 0
-#> 125: chr9 137029562      - uc010nap.1    125   4        0      4 0 0  0  4 0 0
-#>      .
-#>   1: 0
-#>   2: 0
-#>   3: 0
-#>   4: 0
-#>   5: 0
-#>  ---  
-#> 121: 0
-#> 122: 0
-#> 123: 0
-#> 124: 0
-#> 125: 0
 ```
 
 The resulting object is of class `data.table`, as one can perform many
@@ -204,7 +232,7 @@ coverage column:
 
 ``` r
 iGene <- "uc003lam.1"
-barplot(resTab[[iGene]]$cov, main = paste(iGene, "Coverage"),
+barplot(resTab3[[iGene]]$cov, main = paste(iGene, "Coverage"),
         ylab = "Counts", xlab = iGene)
 ```
 
@@ -216,19 +244,72 @@ barplot(resTab[[iGene]]$cov, main = paste(iGene, "Coverage"),
 
 ``` r
 iGene <- "uc010nap.1"
-barplot(t(data.frame(resTab[[iGene]][,c("A", "T", "G", "C", "N")])),
+barplot(t(data.frame(resTab3[[iGene]][,c("A", "T", "G", "C", "N")])),
         col = c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "black"), border = "gray",
         main = paste("Nucleotide Frequency"), ylab = "Counts", xlab = iGene)
 ```
 
 <img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
 
-Additionally the **data.table** package allows for fast writing of
-tables in disk using the function
-`fwrite()`
+### Adding the reference sequence
+
+When working with transcriptomic data one would like to easily extract
+the relevant sequence to work with. To do this while working with a
+summarized data.table, as the ones created above, we can use the
+`tx_addRefSeq()` function.
+
+To use the `tx_addRefSeq()` function we need a reference genome. The
+BSgenome project has prepackaged several genomes for easy installation.
+In this case we will use the packaged reference genome for human
+“BSgenome.Hsapiens.UCSC.hg19”.
 
 ``` r
-data.table::fwrite(resTab, "tableName.txt", sep "\t")
+# BiocManager::install("BSgenome.Hsapiens.UCSC.hg19") # Uncomment if you need to install
+# Loading reference genome
+genome <- BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19
+
+# Adding the reference sequence to the summarized DT object
+newDT <- tx_addRefSeqDT(resTab3, genome, geneAnnot)
+
+# We can check how our nucleotide frequency information coincides with the
+# reference sequence
+newDT[[2]]
+#>       chr   gencoor strand       gene txcoor refSeq cov start_5p end_3p A C  G
+#>   1: chr9 137029686      - uc010nap.1      1      G  38       38      0 0 0 38
+#>   2: chr9 137029685      - uc010nap.1      2      T  38        0      0 0 0  0
+#>   3: chr9 137029684      - uc010nap.1      3      G  38        0      0 0 0 38
+#>   4: chr9 137029683      - uc010nap.1      4      T  39        1      0 0 0  0
+#>   5: chr9 137029682      - uc010nap.1      5      T  40        1      0 0 0  0
+#>  ---                                                                          
+#> 121: chr9 137029566      - uc010nap.1    121      T   5        0      0 0 0  0
+#> 122: chr9 137029565      - uc010nap.1    122      T   5        0      0 0 0  0
+#> 123: chr9 137029564      - uc010nap.1    123      T   5        0      1 0 0  0
+#> 124: chr9 137029563      - uc010nap.1    124      T   4        0      0 0 0  0
+#> 125: chr9 137029562      - uc010nap.1    125      T   4        0      4 0 0  0
+#>       T N - .
+#>   1:  0 0 0 0
+#>   2: 38 0 0 0
+#>   3:  0 0 0 0
+#>   4: 39 0 0 0
+#>   5: 40 0 0 0
+#>  ---         
+#> 121:  5 0 0 0
+#> 122:  5 0 0 0
+#> 123:  5 0 0 0
+#> 124:  4 0 0 0
+#> 125:  4 0 0 0
+```
+
+### Writing individual DTs to files
+
+Additionally, storing the tables in a file for later use can be done
+using the **data.table** package, which allows for fast writing of data
+tables using the function `fwrite()`
+
+``` r
+# Writes datatable to file
+mergedTable <- do.call(resTab3, what = rbind)
+data.table::fwrite(mergedTable, "tableName.txt", sep = "\t")
 ```
 
 <!-- Looking for the gene in the UCSC genome browser we can check that indeed our  -->
@@ -257,7 +338,7 @@ data.table::fwrite(resTab, "tableName.txt", sep "\t")
 
 -----
 
-**Current limitations:**
+## Current limitations:
 
   - Strand specific RNA-seq library preparation: State of the art
     RNA-seq protocols provide strand awareness from the original RNA.
@@ -270,3 +351,58 @@ data.table::fwrite(resTab, "tableName.txt", sep "\t")
     trasncriptomic reference space as they would alter the length of the
     gene model. This could be fixed in future versions but is not a
     priority.
+
+## Session Info
+
+``` r
+utils::sessionInfo()
+#> R version 3.6.3 (2020-02-29)
+#> Platform: x86_64-w64-mingw32/x64 (64-bit)
+#> Running under: Windows 10 x64 (build 10240)
+#> 
+#> Matrix products: default
+#> 
+#> locale:
+#> [1] LC_COLLATE=English_United States.1252 
+#> [2] LC_CTYPE=English_United States.1252   
+#> [3] LC_MONETARY=English_United States.1252
+#> [4] LC_NUMERIC=C                          
+#> [5] LC_TIME=English_United States.1252    
+#> 
+#> attached base packages:
+#> [1] stats     graphics  grDevices utils     datasets  methods   base     
+#> 
+#> other attached packages:
+#> [1] txtools_0.0.0.1
+#> 
+#> loaded via a namespace (and not attached):
+#>  [1] Rcpp_1.0.4                        pillar_1.4.3                     
+#>  [3] compiler_3.6.3                    GenomeInfoDb_1.22.1              
+#>  [5] XVector_0.26.0                    bitops_1.0-6                     
+#>  [7] tools_3.6.3                       zlibbioc_1.32.0                  
+#>  [9] digest_0.6.25                     BSgenome_1.54.0                  
+#> [11] lifecycle_0.2.0                   tibble_3.0.0                     
+#> [13] evaluate_0.14                     lattice_0.20-38                  
+#> [15] pkgconfig_2.0.3                   rlang_0.4.5                      
+#> [17] Matrix_1.2-18                     cli_2.0.2                        
+#> [19] DelayedArray_0.12.2               yaml_2.2.1                       
+#> [21] parallel_3.6.3                    xfun_0.12                        
+#> [23] GenomeInfoDbData_1.2.2            rtracklayer_1.46.0               
+#> [25] stringr_1.4.0                     dplyr_0.8.5                      
+#> [27] knitr_1.28                        vctrs_0.2.4                      
+#> [29] Biostrings_2.54.0                 plyranges_1.6.10                 
+#> [31] S4Vectors_0.24.3                  IRanges_2.20.2                   
+#> [33] tidyselect_1.0.0                  stats4_3.6.3                     
+#> [35] grid_3.6.3                        data.table_1.12.8                
+#> [37] glue_1.3.2                        Biobase_2.46.0                   
+#> [39] R6_2.4.1                          BSgenome.Hsapiens.UCSC.hg19_1.4.0
+#> [41] fansi_0.4.1                       XML_3.99-0.3                     
+#> [43] BiocParallel_1.20.1               rmarkdown_2.1                    
+#> [45] purrr_0.3.3                       magrittr_1.5                     
+#> [47] ellipsis_0.3.0                    Rsamtools_2.2.3                  
+#> [49] htmltools_0.4.0                   matrixStats_0.56.0               
+#> [51] BiocGenerics_0.32.0               GenomicRanges_1.38.0             
+#> [53] GenomicAlignments_1.22.1          assertthat_0.2.1                 
+#> [55] SummarizedExperiment_1.16.1       stringi_1.4.6                    
+#> [57] RCurl_1.98-1.1                    crayon_1.3.4
+```

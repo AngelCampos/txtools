@@ -141,13 +141,15 @@ genomic and transcriptomic coordinates system and the following metrics:
 
 ```{r, example2}
 resTab1 <- tx_coverageDT(txReads, geneAnnot)
+resTab1[[1]]
 
 resTab2 <- tx_nucFreqDT(txReads, geneAnnot)
+resTab2[[1]]
 
 resTab3 <- tx_covNucFreqDT(txReads, geneAnnot)
+resTab3[[1]]
 
 # This will show the summarized data table for the "uc010nap.1" gene
-resTab3$uc010nap.1
 
 ```
 
@@ -175,6 +177,31 @@ barplot(t(data.frame(resTab3[[iGene]][,c("A", "T", "G", "C", "N")])),
         col = c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "black"), border = "gray",
         main = paste("Nucleotide Frequency"), ylab = "Counts", xlab = iGene)
 ```
+
+### Adding the reference sequence
+
+When working with transcriptomic data one would like to easily extract the 
+relevant sequence to work with. To do this while working with a summarized
+data.table, as the ones created above, we can use the `tx_addRefSeq()` function.
+
+To use the `tx_addRefSeq()` function we need a reference genome. The BSgenome 
+project has prepackaged several genomes for easy installation. In this case
+we will use the packaged reference genome for human "BSgenome.Hsapiens.UCSC.hg19".
+
+```{r}
+# BiocManager::install("BSgenome.Hsapiens.UCSC.hg19") # Uncomment if you need to install
+# Loading reference genome
+genome <- BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19
+
+# Adding the reference sequence to the summarized DT object
+newDT <- tx_addRefSeqDT(resTab3, genome, geneAnnot)
+
+# We can check how our nucleotide frequency information coincides with the
+# reference sequence
+newDT[[2]]
+```
+
+### Writing individual DTs to files
 
 Additionally, storing the tables in a file for later use can be done using the
 **data.table** package, which allows for fast writing of data tables using the

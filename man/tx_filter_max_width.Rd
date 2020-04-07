@@ -7,6 +7,8 @@
 tx_filter_max_width(x, thr)
 }
 \arguments{
+\item{x}{GenomicAlignment}
+
 \item{thr}{}
 }
 \value{

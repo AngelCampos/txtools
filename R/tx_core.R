@@ -471,3 +471,48 @@ tx_counts <- function(x){
     suppressWarnings(unlist(x)) %>% GenomeInfoDb::seqnames() %>% table()
 }
 
+#' Add reference sequence
+#'
+#' @param DT data.table. A summarized data.table object. See tx_coverageDT(),
+#' tx_nucFreq() and tx_covNucFreqDT() functions.
+#' @param fastaGenome list. The full reference genome sequences, as prepackaged
+#' by BSgenome. See ?BSgenome::available.genomes()
+#' @param geneAnnot GRanges. Gene annotation loaded as a GenomicRanges object,
+#'  see tx_load_bed().
+#'
+#' @return
+#' @export
+#'
+#' @author Miguel Angel Garcia-Campos
+#'
+#' @examples
+tx_addRefSeqDT <- function(DT, fastaGenome, geneAnnot){
+    if(class(DT) != "list"){
+        stop("DT must be of class list")
+    }
+    allDT <- lapply(DT, function(x){
+        "data.table" %in% class(x)
+    }) %>% unlist %>% mean %>% magrittr::is_less_than(1)
+    if(allDT){
+        stop("All elements of DT must be of data.table class")
+    }
+    lapply(seq(DT), function(i){
+        iGene <- as.character(unique(DT[[i]]$gene))
+        if(length(iGene) != 1){stop("Each element in DT must be a data.table
+                                    pertaining only one gene")}
+        iChr <- as.character(DT[[i]]$chr[1])
+        iStr <- as.character(DT[[i]]$strand[1])
+        iGA <- geneAnnot[geneAnnot$name == iGene]
+        iBlocks <- S4Vectors::mcols(iGA)$blocks %>% unlist %>%
+            IRanges::shift(IRanges::start(iGA) - 1)
+        tmp <- stringr::str_sub(fastaGenome[[iChr]],
+                                start = IRanges::start(iBlocks),
+                                end = IRanges::end(iBlocks)) %>%
+            paste(collapse = "") %>% Biostrings::DNAString()
+        if(iStr == "-"){
+            tmp <- Biostrings::reverseComplement(tmp)
+        }
+        tmp <- stringr::str_split(as.character(tmp), "") %>% unlist
+        tibble::add_column(DT[[i]], refSeq = tmp, .after = "txcoor")
+    })
+}

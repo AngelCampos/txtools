@@ -18,7 +18,7 @@ Suggests:
     testthat (>= 2.1.0)
 Imports: 
     magrittr,
-    stringr,
+    stringr (>= 1.4.0),
     GenomicRanges,
     Rsamtools,
     GenomicAlignments,
@@ -27,4 +27,5 @@ Imports:
     plyranges,
     S4Vectors,
     Biostrings,
-    IRanges
+    IRanges,
+    tibble (>= 3.0.0)

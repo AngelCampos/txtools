@@ -14,7 +14,7 @@ tx_load_bam(
 )
 }
 \arguments{
-\item{file}{character. The path to the file to read}
+\item{file}{character. Path to the file to read}
 
 \item{yieldSize}{numeric. Number of reads to be processed at a time}
 
