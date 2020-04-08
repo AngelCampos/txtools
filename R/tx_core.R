@@ -6,7 +6,7 @@
 #'
 #' @param file character. Path to the file to read
 #' @param yieldSize numeric. Number of reads to be processed at a time
-#' @param scanFlag integer. Flag used to filter reads. Check ?scanBamFlag()
+#' @param scanFlag integer. Flag used to filter reads. Check \code{\link[Rsamtools]{ScanBamParam}}
 #' @param loadSeq logical. Set to TRUE for loading the sequences contained
 #' in the BAM file
 #' @param recoverDumpedAligns logical. If set to TRUE ambiguous alignments
@@ -54,7 +54,7 @@ tx_load_bam <- function(file,
     #  Opens and reads BAM files in chunks of length = yieldSize
     open(BAMFILE)
     reads <- lapply(pbJumps, function(i){
-        if(verbose){setTxtProgressBar(pb, i)}
+        if(verbose){utils::setTxtProgressBar(pb, i)}
         if(loadSeq){
             GenomicAlignments::readGAlignmentPairs(BAMFILE, use.names = TRUE,
                                                    param = Rsamtools::ScanBamParam(flag = scanFlag,
@@ -514,5 +514,6 @@ tx_addRefSeqDT <- function(DT, fastaGenome, geneAnnot){
         }
         tmp <- stringr::str_split(as.character(tmp), "") %>% unlist
         tibble::add_column(DT[[i]], refSeq = tmp, .after = "txcoor")
-    })
+    }) %>% magrittr::set_names(names(DT))
 }
+

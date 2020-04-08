@@ -1,15 +1,16 @@
 Package: txtools
 Title: An interface betwen GenomicAlignments and transcriptomic representations
-Version: 0.0.0.1
+Version: 0.0.0.9000
 Authors@R: 
     person(given = "Miguel Angel",
            family = "Garcia-Campos",
            role = c("aut", "cre"),
            email = "angel.campos@weizmann.ac.il",
-           comment = c(ORCID = "0000-0001-5223-8174"))
+           comment = c(ORCID = "0000-0001-5223-8174", 
+                       webpage = "https://angelcampos.github.io/"))
 Description: txtools extends the functionality of GenomicAlignments filtering 
-    and processing RNA-seq reads aligned to a genome into their relevant 
-    transcript(s) of origin.
+    and processing RNA-seq reads aligned to a genome into their transcriptomic
+    versions and allows data to be represented in a transcriptomic oriented way.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -17,15 +18,15 @@ RoxygenNote: 7.1.0
 Suggests: 
     testthat (>= 2.1.0)
 Imports: 
-    magrittr,
+    magrittr (>= 1.5),
     stringr (>= 1.4.0),
-    GenomicRanges,
-    Rsamtools,
-    GenomicAlignments,
-    GenomeInfoDb,
-    data.table,
-    plyranges,
-    S4Vectors,
-    Biostrings,
-    IRanges,
+    GenomicRanges (>= 1.38.0),
+    Rsamtools (>= 2.2.3),
+    GenomicAlignments (>= 1.22.1),
+    GenomeInfoDb (>= 1.22.1),
+    data.table (>= 1.12.8),
+    plyranges (>= 1.6.10),
+    S4Vectors (>= 0.24.3),
+    Biostrings (>= 2.54.0),
+    IRanges (>= 2.20.2),
     tibble (>= 3.0.0)

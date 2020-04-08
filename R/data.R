@@ -17,7 +17,6 @@ Biostrings::IUPAC_CODE_MAP
 #' @source Adapted from Biostrings::IUPAC_CODE_MAP
 "IUPAC_CODE_MAP_extended"
 
-"IUPAC_code_2nucs"
+#"IUPAC_code_2nucs"
 
-
-"IUPAC_code_simpl"
+#"IUPAC_code_simpl"
