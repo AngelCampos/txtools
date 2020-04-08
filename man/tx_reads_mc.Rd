@@ -24,5 +24,5 @@ tx_reads_mc(
 Merge paired-end reads and assign them to gene models (Multicore)
 }
 \author{
-Miguel Angel Garcia-Campos
+M.A. Garcia-Campos
 }

@@ -17,12 +17,12 @@
 #' @return
 #' @export
 #'
-#' @author Miguel Angel Garcia-Campos
+#' @author M.A. Garcia-Campos
 #'
 #' @examples
 #' # Loading  in-package BAM file
 #' bamFile <- system.file("extdata", "example_hg19.bam", package = "txtools")
-#' tx_load_bam(bamFile, loadSeq = TRUE, verbose = FALSE)
+#' tx_load_bam(bamFile, loadSeq = TRUE, verbose = TRUE)
 tx_load_bam <- function(file,
                         yieldSize = "auto",
                         scanFlag = "default",
@@ -90,7 +90,7 @@ tx_load_bam <- function(file,
 #' @return
 #' @export
 #'
-#' @author Miguel Angel Garcia-Campos
+#' @author M.A. Garcia-Campos
 #'
 #' @examples
 tx_load_bed <- function(bedfile){
@@ -118,7 +118,7 @@ tx_load_bed <- function(bedfile){
 #' @return
 #' @export
 #'
-#' @author Miguel Angel Garcia-Campos
+#' @author M.A. Garcia-Campos
 #'
 #' @examples
 tx_reads <- function(reads, bedR, overlapType = "within", minReads = 50,
@@ -177,7 +177,7 @@ tx_reads <- function(reads, bedR, overlapType = "within", minReads = 50,
 #' @return
 #' @export
 #'
-#' @author Miguel Angel Garcia-Campos
+#' @author M.A. Garcia-Campos
 #'
 #' @examples
 tx_reads_mc <- function(reads, bedR, nCores, overlapType = "within",
@@ -236,7 +236,7 @@ tx_reads_mc <- function(reads, bedR, nCores, overlapType = "within",
 #' @return
 #' @export
 #'
-#' @author Miguel Angel Garcia-Campos
+#' @author M.A. Garcia-Campos
 #'
 #' @examples
 tx_filter_max_width <- function(x, thr){
@@ -296,7 +296,7 @@ tx_coverageTab <- function(x){
 #' @return
 #' @export
 #'
-#' @author Miguel Angel Garcia-Campos
+#' @author M.A. Garcia-Campos
 #'
 #' @examples
 tx_coverageTab_mc <- function(x, nCores){
@@ -334,7 +334,7 @@ tx_coverageTab_mc <- function(x, nCores){
 #' @return
 #' @export
 #'
-#' @author Miguel Angel Garcia-Campos
+#' @author M.A. Garcia-Campos
 #'
 #' @examples
 tx_nucFreqTab <- function(x, simplify_IUPAC = "not"){
@@ -361,7 +361,7 @@ tx_nucFreqTab <- function(x, simplify_IUPAC = "not"){
 #' @return
 #' @export
 #'
-#' @author Miguel Angel Garcia-Campos
+#' @author M.A. Garcia-Campos
 #'
 #' @examples
 tx_genCoorTab <- function(x, geneAnnot_GR){
@@ -396,7 +396,7 @@ tx_genCoorTab <- function(x, geneAnnot_GR){
 #' @return data.table
 #' @export
 #'
-#' @author Miguel Angel Garcia-Campos
+#' @author M.A. Garcia-Campos
 #'
 #' @examples
 tx_coverageDT <- function(x, geneAnnot){
@@ -423,7 +423,7 @@ tx_coverageDT <- function(x, geneAnnot){
 #' @return data.table
 #' @export
 #'
-#' @author Miguel Angel Garcia-Campos
+#' @author M.A. Garcia-Campos
 #'
 #' @examples
 tx_nucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt"){
@@ -464,7 +464,7 @@ tx_covNucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt"){
 #' @return
 #' @export
 #'
-#' @author Miguel Angel Garcia-Campos
+#' @author M.A. Garcia-Campos
 #'
 #' @examples
 tx_counts <- function(x){
@@ -483,7 +483,7 @@ tx_counts <- function(x){
 #' @return
 #' @export
 #'
-#' @author Miguel Angel Garcia-Campos
+#' @author M.A. Garcia-Campos
 #'
 #' @examples
 tx_addRefSeqDT <- function(DT, fastaGenome, geneAnnot){

@@ -22,3 +22,6 @@ see tx_load_bed().}
 \description{
 Add reference sequence
 }
+\author{
+M.A. Garcia-Campos
+}

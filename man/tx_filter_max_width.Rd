@@ -18,5 +18,5 @@ tx_filter_max_width(x, thr)
 Filter ranges by a maximum width
 }
 \author{
-Miguel Angel Garcia-Campos
+M.A. Garcia-Campos
 }

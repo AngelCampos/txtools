@@ -16,5 +16,5 @@ tx_counts(x)
 Quantifies reads by gene model from a tx_reads list
 }
 \author{
-Miguel Angel Garcia-Campos
+M.A. Garcia-Campos
 }

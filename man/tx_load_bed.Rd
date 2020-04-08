@@ -16,5 +16,5 @@ tx_load_bed(bedfile)
 Reads and loads bed files checking for compliance with bed file structure
 }
 \author{
-Miguel Angel Garcia-Campos
+M.A. Garcia-Campos
 }

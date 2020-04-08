@@ -16,5 +16,5 @@ tx_coverageTab_mc(x, nCores)
 Calculate coverage table (cov, ends, starts) for all gene models (Multicore)
 }
 \author{
-Miguel Angel Garcia-Campos
+M.A. Garcia-Campos
 }

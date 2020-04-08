@@ -16,5 +16,5 @@ data.table
 Summarized Coverage data.table
 }
 \author{
-Miguel Angel Garcia-Campos
+M.A. Garcia-Campos
 }

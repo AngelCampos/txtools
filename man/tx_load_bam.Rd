@@ -18,7 +18,7 @@ tx_load_bam(
 
 \item{yieldSize}{numeric. Number of reads to be processed at a time}
 
-\item{scanFlag}{integer. Flag used to filter reads. Check ?scanBamFlag()}
+\item{scanFlag}{integer. Flag used to filter reads. Check \code{\link[Rsamtools]{ScanBamParam}}}
 
 \item{loadSeq}{logical. Set to TRUE for loading the sequences contained
 in the BAM file}
@@ -40,8 +40,8 @@ GenomicAlignments object.
 \examples{
 # Loading  in-package BAM file
 bamFile <- system.file("extdata", "example_hg19.bam", package = "txtools")
-tx_load_bam(bamFile, loadSeq = TRUE, verbose = FALSE)
+tx_load_bam(bamFile, loadSeq = TRUE, verbose = TRUE)
 }
 \author{
-Miguel Angel Garcia-Campos
+M.A. Garcia-Campos
 }
