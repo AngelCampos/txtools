@@ -11,6 +11,7 @@ Authors@R:
 Description: txtools extends the functionality of GenomicAlignments filtering 
     and processing RNA-seq reads aligned to a genome into their transcriptomic
     versions and allows data to be represented in a transcriptomic oriented way.
+Depends: R (>= 3.0.0)
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -18,15 +19,16 @@ RoxygenNote: 7.1.0
 Suggests: 
     testthat (>= 2.1.0)
 Imports: 
-    magrittr (>= 1.5),
-    stringr (>= 1.4.0),
-    GenomicRanges (>= 1.38.0),
-    Rsamtools (>= 2.2.3),
-    GenomicAlignments (>= 1.22.1),
-    GenomeInfoDb (>= 1.22.1),
-    data.table (>= 1.12.8),
-    plyranges (>= 1.6.10),
-    S4Vectors (>= 0.24.3),
-    Biostrings (>= 2.54.0),
-    IRanges (>= 2.20.2),
-    tibble (>= 3.0.0)
+    magrittr,
+    stringr,
+    GenomicRanges,
+    Rsamtools,
+    GenomicAlignments,
+    GenomeInfoDb,
+    data.table,
+    plyranges,
+    S4Vectors,
+    Biostrings,
+    IRanges,
+    tibble,
+    utils
