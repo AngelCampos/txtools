@@ -6,7 +6,7 @@
 \usage{
 tx_reads_mc(
   reads,
-  bedR,
+  geneAnnot,
   nCores,
   overlapType = "within",
   minReads = 50,
@@ -15,7 +15,19 @@ tx_reads_mc(
 )
 }
 \arguments{
-\item{verbose}{}
+\item{reads}{GAlignmentPairs. Paired end genomic alignments to be processed}
+
+\item{geneAnnot}{GenomicRanges. Gene annotation loaded via the tx_load_bed()}
+
+\item{nCores}{integer. Number of cores to be used.}
+
+\item{overlapType}{character. Overlap type to filter reads by gene
+model.}
+
+\item{minReads}{integer. Minimum number of reads required to overlap a gene
+model to be part of the output object.}
+
+\item{verbose}{logical. Set to FALSE to show less information.}
 }
 \value{
 

@@ -4,10 +4,10 @@
 \alias{tx_genCoorTab}
 \title{Table with genomic and transcriptomic coordinates}
 \usage{
-tx_genCoorTab(x, geneAnnot_GR)
+tx_genCoorTab(x, geneAnnot)
 }
 \arguments{
-\item{geneAnnot_GR}{}
+\item{geneAnnot}{GenomicRanges. Gene annotation loaded via the tx_load_bed()}
 }
 \value{
 

@@ -7,7 +7,7 @@
 tx_coverageDT(x, geneAnnot)
 }
 \arguments{
-\item{geneAnnot}{}
+\item{geneAnnot}{GenomicRanges. Gene annotation loaded via the tx_load_bed()}
 }
 \value{
 data.table

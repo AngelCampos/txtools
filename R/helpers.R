@@ -257,5 +257,5 @@ vIntersect <- Vectorize(intersect, c("x", "y"), SIMPLIFY = F)
 
 # Object size
 oSize <- function(x){
-    print(object.size(x), units = "auto")
+    print(utils::object.size(x), units = "auto")
 }

@@ -7,6 +7,13 @@
 tx_covNucFreqDT(x, geneAnnot, simplify_IUPAC = "splitForceInt")
 }
 \arguments{
+\item{x}{CompressedGRangesList. Genomic Ranges list containing genomic
+alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
+functions.}
+
+\item{geneAnnot}{GenomicRanges. Gene annotation loaded via the tx_load_bed()
+function.}
+
 \item{simplify_IUPAC}{string. Available options are :
 \itemize{
 \item "not": Will output the complete nucleotide frequency table including

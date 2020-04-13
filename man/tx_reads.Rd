@@ -14,7 +14,7 @@ tx_reads(
 )
 }
 \arguments{
-\item{verbose}{}
+\item{verbose}{logical. Set to FALSE to show less information}
 }
 \value{
 
