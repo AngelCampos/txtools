@@ -61,9 +61,9 @@ hlpr_splitReadsByGenes <- function(reads, bedR, overlapType, minReads){
 }
 
 # Process reads into transcripts
-hlpr_ReadsInGene <- function(reads, iGene, bedR, split_i, allExons, minReads, withSeq){
-    iStrand <- bedR[which(bedR$name == iGene)] %>% GenomicRanges::strand() %>% as.character()
-    iExon <- exonBlockGen(iGene = iGene, geneAnnot_GR = bedR)
+hlpr_ReadsInGene <- function(reads, iGene, geneAnnot, split_i, allExons, minReads, withSeq){
+    iStrand <- geneAnnot[which(geneAnnot$name == iGene)] %>% GenomicRanges::strand() %>% as.character()
+    iExon <- exonBlockGen(iGene = iGene, geneAnnot_GR = geneAnnot)
     selReadsbyPair <- split_i[[iGene]]
     # Selecting paired reads to merge
     iReads_r1 <- reads@first[selReadsbyPair]
@@ -76,7 +76,7 @@ hlpr_ReadsInGene <- function(reads, iGene, bedR, split_i, allExons, minReads, wi
                                        r2_E = GenomicRanges::end(iReads_r2)))
     pass <- (stEndTable %in% iExon) %>% matrix(ncol = 4, byrow = F) %>%
         rowSums %>% magrittr::equals(4) %>% which()
-    if(length(pass) < minReads){return(GRanges())} # No reads Return empty GA
+    if(length(pass) < minReads){return(GenomicRanges::GRanges())} # No reads Return empty GA
     # Reads cover consecutive exons
     tmp <- GenomicRanges::findOverlaps(iReads_r1[pass], allExons[[iGene]])
     passPos <- split(tmp@to, tmp@from) %>% lapply(diff) %>%
@@ -86,7 +86,7 @@ hlpr_ReadsInGene <- function(reads, iGene, bedR, split_i, allExons, minReads, wi
     passNeg <- split(tmp@to, tmp@from) %>% lapply(diff) %>%
         lapply(function(x) all(x == 1)) %>% unlist %>% which
     pass <- pass[as.numeric(intersect(passNeg, passPos))]
-    if(length(pass) < minReads){return(GRanges())} # No reads Return empty GA
+    if(length(pass) < minReads){return(GenomicRanges::GRanges())} # No reads Return empty GA
     # Boundaries of merged reads
     if(iStrand == "+"){
         tReads <- data.frame(start = match(GenomicRanges::start(iReads_r1[pass]), iExon),
@@ -160,7 +160,7 @@ hlpr_ReadsInGene <- function(reads, iGene, bedR, split_i, allExons, minReads, wi
             }else{
                 ovSeq[j] <- Biostrings::DNAStringSet(c(tmp1[j], tmp2[j])) %>%
                     Biostrings::consensusMatrix() %>%
-                    Biostrings::consensusString(ambiguityMap = IUPAC_CODE_MAP_extended, threshold = 0.2)
+                    Biostrings::consensusString(ambiguityMap = txtools::IUPAC_CODE_MAP_extended, threshold = 0.2)
             }
         }
         tReads[i]$mergedSeq <- paste0(stringr::str_sub(tReads[i]$seq1,
@@ -187,10 +187,10 @@ tx_coverage <- function(x){
 
 # Add missing nucleotides in nuc frequency table
 hlp_addMissingNucs <- function(x){
-    misNucs <- IUPAC_code_2nucs[which(!(IUPAC_code_2nucs %in% rownames(x)))]
+    misNucs <- txtools::IUPAC_code_2nucs[which(!(txtools::IUPAC_code_2nucs %in% rownames(x)))]
     if(length(misNucs) > 0){
         matrix(0, nrow = length(misNucs), ncol = ncol(x)) %>%
-            magrittr::set_rownames(misNucs) %>% rbind(x) %>% .[IUPAC_code_2nucs,]
+            magrittr::set_rownames(misNucs) %>% rbind(x) %>% .[txtools::IUPAC_code_2nucs,]
     }else{
         x
     }
@@ -198,21 +198,21 @@ hlp_addMissingNucs <- function(x){
 
 # Split nucleotides in half
 hlp_splitNucsHalf <- function(x){
-    misNucs <- IUPAC_code_simpl[which(!(IUPAC_code_simpl %in% rownames(x)))]
-    altNucs <- intersect(IUPAC_code_2nucs[5:10], rownames(x))
+    misNucs <- txtools::IUPAC_code_simpl[which(!(txtools::IUPAC_code_simpl %in% rownames(x)))]
+    altNucs <- intersect(txtools::IUPAC_code_2nucs[5:10], rownames(x))
     x <- hlp_addMissingNucs(x)
     for(i in altNucs){
         resNuc <- Biostrings::IUPAC_CODE_MAP[i] %>% stringr::str_split("") %>% unlist
         x[resNuc[1],] <- x[resNuc[1],] + (x[i, ] / 2)
         x[resNuc[2],] <- x[resNuc[2],] + (x[i, ] / 2)
     }
-    x[IUPAC_code_simpl,]
+    x[txtools::IUPAC_code_simpl,]
 }
 
 # Split nucleotides in half, forcing integers
 hlp_splitNucsForceInt <- function(x){
-    misNucs <- IUPAC_code_simpl[which(!(IUPAC_code_simpl %in% rownames(x)))]
-    altNucs <- intersect(IUPAC_code_2nucs[5:10], rownames(x))
+    misNucs <- txtools::IUPAC_code_simpl[which(!(txtools::IUPAC_code_simpl %in% rownames(x)))]
+    altNucs <- intersect(txtools::IUPAC_code_2nucs[5:10], rownames(x))
     x <- hlp_addMissingNucs(x)
     for(i in altNucs){
         if(all(x[i,] %% 2 == 0)){
@@ -227,7 +227,7 @@ hlp_splitNucsForceInt <- function(x){
                                                 floor %>% magrittr::multiply_by(2)))
         }
     }
-    x[IUPAC_code_simpl,]
+    x[txtools::IUPAC_code_simpl,]
 }
 
 # Helper bind two results tables
