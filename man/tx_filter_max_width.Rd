@@ -7,9 +7,11 @@
 tx_filter_max_width(x, thr)
 }
 \arguments{
-\item{x}{GenomicAlignment}
+\item{x}{CompressedGRangesList. Genomic Ranges list containing genomic
+alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
+functions.}
 
-\item{thr}{}
+\item{thr}{numeric. Threshold for maximum width size allowed on output.}
 }
 \value{
 

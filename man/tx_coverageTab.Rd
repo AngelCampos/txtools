@@ -2,18 +2,18 @@
 % Please edit documentation in R/tx_core.R
 \name{tx_coverageTab}
 \alias{tx_coverageTab}
-\title{Calculate coverage table cov, ends, starts for all gene models}
+\title{Calculate coverage table: coverage, 5prime-starts, and 3prime-ends}
 \usage{
 tx_coverageTab(x)
 }
 \arguments{
-\item{x}{}
+\item{x}{CompressedGRangesList}
 }
 \value{
-
+data.table
 }
 \description{
-Calculate coverage table cov, ends, starts for all gene models
+Calculate coverage table: coverage, 5prime-starts, and 3prime-ends
 }
 \author{
 M.A. Garcia-Campos

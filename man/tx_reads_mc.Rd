@@ -21,11 +21,13 @@ tx_reads_mc(
 
 \item{nCores}{integer. Number of cores to be used.}
 
-\item{overlapType}{character. Overlap type to filter reads by gene
-model.}
+\item{overlapType}{character. Overlap type to filter reads by gene model.}
 
 \item{minReads}{integer. Minimum number of reads required to overlap a gene
 model to be part of the output object.}
+
+\item{withSeq}{logical. Set to TRUE if sequence should be preserved; 'reads'
+object should contain sequences.}
 
 \item{verbose}{logical. Set to FALSE to show less information.}
 }

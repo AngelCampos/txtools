@@ -127,14 +127,29 @@ tx_load_bed <- function(bedfile){
     return(tmp)
 }
 
+#' Loading genome as DNAStrinSet
+#'
+#' @param fastaFile path to FASTA format genome sequences
+#'
+#' @return
+#' @export
+#'
+#' @examples
+tx_load_genome <- function(fastaFile){
+    Biostrings::readDNAStringSet(fastaFile)
+}
+
 
 #' Merge paired-end reads and assign them to gene models
 #'
-#' @param reads
-#' @param bedR
-#' @param overlapType
-#' @param minReads
-#' @param withSeq
+#' @param reads GenomicRanges
+#' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed()
+#' @param overlapType character. Overlap type to filter reads by gene
+#' model.
+#' @param minReads integer. Minimum number of reads required to overlap a gene
+#' model to be part of the output object.
+#' @param withSeq logical. Set to TRUE if sequence should be preserved; 'reads'
+#' object should contain sequences.
 #' @param verbose logical. Set to FALSE to show less information
 #'
 #' @return
@@ -143,39 +158,39 @@ tx_load_bed <- function(bedfile){
 #' @author M.A. Garcia-Campos
 #'
 #' @examples
-tx_reads <- function(reads, bedR, overlapType = "within", minReads = 50,
+tx_reads <- function(reads, geneAnnot, overlapType = "within", minReads = 50,
                      withSeq = F, verbose = T){
     if(class(reads) != "GAlignmentPairs"){
         stop("reads argument should be of class GAlignmentPairs \n")
     }
-    if(class(bedR) != "GRanges"){
-        stop("bedR argument should be of class GRanges \n")
+    if(class(geneAnnot) != "GRanges"){
+        stop("geneAnnot argument should be of class GRanges \n")
     }
     if(verbose){
-        cat("Processing", length(reads), "reads, using", length(bedR),
+        cat("Processing", length(reads), "reads, using", length(geneAnnot),
             "gene models \n")
     }
-    split_i <- hlpr_splitReadsByGenes(reads, bedR, overlapType, minReads)
-    bedR <- bedR[which(bedR$name %in% names(split_i))]
-    if(length(bedR) > 0){
+    split_i <- hlpr_splitReadsByGenes(reads, geneAnnot, overlapType, minReads)
+    geneAnnot <- geneAnnot[which(geneAnnot$name %in% names(split_i))]
+    if(length(geneAnnot) > 0){
         if(verbose){
             cat(length(unique(unlist(split_i))), "paired-end reads overlap",
-                length(bedR), "gene models \n")
+                length(geneAnnot), "gene models \n")
             cat("Filtering reads by gene model... \n")
             if(withSeq){
                 cat("Processing sequences. This may take several minutes... \n")
             }
         }
     }else{stop("No genes with overlapped paired-end reads \n")}
-    allExons <- exonGRanges(bedR) # All exons in gene models
+    allExons <- exonGRanges(geneAnnot) # All exons in gene models
     OUT <- v_hlpr_ReadsInGene(reads = reads,
-                              iGene = bedR$name,
-                              bedR = bedR,
+                              iGene = geneAnnot$name,
+                              geneAnnot = geneAnnot,
                               split_i = split_i,
                               allExons = allExons,
                               withSeq = withSeq,
                               minReads = minReads)
-    names(OUT) <- bedR$name
+    names(OUT) <- geneAnnot$name
     OUT <- OUT[lapply(OUT, length) %>% unlist %>%
                    magrittr::is_greater_than(minReads)] %>%
         GenomicRanges::GRangesList()
@@ -191,11 +206,11 @@ tx_reads <- function(reads, bedR, overlapType = "within", minReads = 50,
 #' @param reads GAlignmentPairs. Paired end genomic alignments to be processed
 #' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed()
 #' @param nCores integer. Number of cores to be used.
-#' @param overlapType character. Overlap type to filter reads by gene
-#' model.
+#' @param overlapType character. Overlap type to filter reads by gene model.
 #' @param minReads integer. Minimum number of reads required to overlap a gene
 #' model to be part of the output object.
-#' @param withSeq
+#' @param withSeq logical. Set to TRUE if sequence should be preserved; 'reads'
+#' object should contain sequences.
 #' @param verbose logical. Set to FALSE to show less information.
 #'
 #' @return
@@ -233,7 +248,7 @@ tx_reads_mc <- function(reads, geneAnnot, nCores, overlapType = "within",
         }
     }else{stop("No genes with overlapped paired-end reads \n")}
     allExons <- exonGRanges(geneAnnot) # All exons in gene models
-    OUT <- mclapply(mc.cores = nCores, geneAnnot$name, function(iGene){
+    OUT <- parallel::mclapply(mc.cores = nCores, geneAnnot$name, function(iGene){
         hlpr_ReadsInGene(reads = reads,
                          iGene = iGene,
                          geneAnnot = geneAnnot,
@@ -254,8 +269,10 @@ tx_reads_mc <- function(reads, geneAnnot, nCores, overlapType = "within",
 
 #' Filter ranges by a maximum width
 #'
-#' @param x GenomicAlignment
-#' @param thr
+#' @param x CompressedGRangesList. Genomic Ranges list containing genomic
+#' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
+#' functions.
+#' @param thr numeric. Threshold for maximum width size allowed on output.
 #'
 #' @return
 #' @export
@@ -308,14 +325,16 @@ tx_coverageTab <- function(x){
         tmpMat$end_3p <- as.integer(tmpMat$end_3p)
         return(tmpMat)
     }) %>% magrittr::set_names(names(x))
-
     return(OUT)
 }
 
-#' Calculate coverage table (cov, ends, starts) for all gene models (Multicore)
+#' Calculate coverage table (coverage, ends, starts) for all gene models
+#' without gene coordinates (Multicore)
 #'
-#' @param x
-#' @param nCores
+#' @param x CompressedGRangesList. Genomic Ranges list containing genomic
+#' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
+#' functions.
+#' @param nCores integer. Number of cores to use.
 #'
 #' @return
 #' @export
@@ -352,8 +371,16 @@ tx_coverageTab_mc <- function(x, nCores){
 
 #' Calculate nucleotide frequency pileup for all gene models
 #'
-#' @param x
-#' @param simplify_IUPAC
+#' @param x CompressedGRangesList. Genomic Ranges list containing genomic
+#' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
+#' functions.
+#' @param simplify_IUPAC character. Method to simplify ambiguous reads:
+#' 1) 'not': Ambiguous reads will be left as their IUPAC_ambiguous code, e.g.
+#' for positions in which a 'G' and and 'A' where read an 'R' will note this.
+#' 2) "splitHalf': Ambiguous reads will be divided in half, in odd cases having
+#' fractions of reads assigned.
+#' 3) "splitForceInt": Ambiguous reads will be divided in half, but forced to be
+#' integers, unassigned fraction of reads will be summed and assigned as 'N'.
 #'
 #' @return
 #' @export
@@ -379,7 +406,9 @@ tx_nucFreqTab <- function(x, simplify_IUPAC = "not"){
 
 #' Table with genomic and transcriptomic coordinates
 #'
-#' @param x
+#' @param x CompressedGRangesList. Genomic Ranges list containing genomic
+#' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
+#' functions.
 #' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed()
 #'
 #' @return
@@ -414,7 +443,9 @@ tx_genCoorTab <- function(x, geneAnnot){
 
 #' Summarized Coverage data.table
 #'
-#' @param x
+#' @param x CompressedGRangesList. Genomic Ranges list containing genomic
+#' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
+#' functions.
 #' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed()
 #'
 #' @return data.table
@@ -430,7 +461,9 @@ tx_coverageDT <- function(x, geneAnnot){
 
 #' Summarized Nucleotide Frequency data.table
 #'
-#' @param x GAlignmentPairs.
+#' @param x CompressedGRangesList. Genomic Ranges list containing genomic
+#' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
+#' functions.
 #' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed()
 #' @param simplify_IUPAC string. Available options are :
 #' \itemize{
@@ -488,7 +521,9 @@ tx_covNucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt"){
 
 #' Quantifies reads by gene model from a tx_reads list
 #'
-#' @param x GenomicRanges.
+#' @param x CompressedGRangesList. Genomic Ranges list containing genomic
+#' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
+#' functions.
 #'
 #' @return
 #' @export
@@ -500,7 +535,74 @@ tx_counts <- function(x){
     suppressWarnings(unlist(x)) %>% GenomeInfoDb::seqnames() %>% table()
 }
 
-#' Add reference sequence
+#' Add startRatio to data.table
+#'
+#' Add read-starts ratio over coverage.
+#'
+#' @param x data.table. Output of txtools data.tables with coverage information
+#' as output of tx_coverageDT() and tx_covNucFreqDT()
+#'
+#' @return
+#' @export
+#'
+#' @examples
+tx_add_startRatio <- function(x){
+    tibble::add_column(x, startRatio = x$start_5p / x$cov, .after = "start_5p")
+}
+
+#' Add endRatio to data.table
+#'
+#' Add read-ends ratio over coverage.
+#'
+#' @param x data.table. Output of txtools data.tables with coverage information
+#' as output of tx_coverageDT() and tx_covNucFreqDT()
+#'
+#' @return
+#' @export
+#'
+#' @examples
+tx_add_endRatio <- function(x){
+    tibble::add_column(x, endRatio = x$end_3p / x$cov, .after = "end_3p")
+}
+
+
+#' Add site annotation
+#'
+#' Add a logical variable column in which desired genomic coordinates are
+#' marked as TRUE. Useful for example when distinguishing between known
+#' modified sites.
+#'
+#' @param x data.table. Output of txtools data.tables with coverage information
+#' as output of tx_coverageDT() and tx_covNucFreqDT()
+#' @param GR GenomicRanges. Length 1 ranges which want to be marked in the
+#' data.tables objects.
+#' @param type character. Type of variable to be added:
+#' 1) 'logical': Found coordinates will be marked as TRUE while the rest will be
+#' left as FALSE.
+#' @param colName character. Name of the new column to be added.
+#'
+#' @return
+#' @export
+#'
+#' @examples
+tx_add_siteAnnotation <- function(x, GR, type = "logical", colName){
+    if(class(GR) != "GRanges"){stop("GR must be of class GRanges")}
+    if(class(x)[1] != "data.table"){stop("x must be of class data.table")}
+    subGR <- GR[as.character(x$chr[1]) == GenomicRanges::seqnames(GR)]
+    if(length(subGR) == 0){stop("No coinciding chromosomes, stopped searching")}
+    if(!all(GenomicRanges::start(subGR) == GenomicRanges::end(subGR))){stop("start and ends are not the same in GR, only 1-nuc-long sites allowed")}
+    oNames <- names(x)
+    foundGenLoc <- GenomicRanges::start(subGR)[which(GenomicRanges::start(subGR) %in% x$gencoor)]
+    if(length(foundGenLoc) == 0){stop("No coinciding location in chromosome, stopped searching")}
+
+    if(type == "logical"){
+        addAnnot <- rep(FALSE, nrow(x))
+    }
+    addAnnot[match(foundGenLoc, x$gencoor)] <- TRUE
+    tibble::add_column(x, addAnnot) %>% magrittr::set_names(c(oNames, colName))
+}
+
+#' Add reference sequence to data.table
 #'
 #' @param DT data.table. A summarized data.table object. See tx_coverageDT(),
 #' tx_nucFreq() and tx_covNucFreqDT() functions.
@@ -515,33 +617,83 @@ tx_counts <- function(x){
 #' @author M.A. Garcia-Campos
 #'
 #' @examples
-tx_addRefSeqDT <- function(DT, fastaGenome, geneAnnot){
-    if(class(DT) != "list"){
+tx_add_refSeqDT <- function (DT, fastaGenome, geneAnnot){
+    if (class(DT)[1] != "data.table") {
         stop("DT must be of class list")
     }
-    allDT <- lapply(DT, function(x){
-        "data.table" %in% class(x)
-    }) %>% unlist %>% mean %>% magrittr::is_less_than(1)
-    if(allDT){
-        stop("All elements of DT must be of data.table class")
+    iGene <- as.character(unique(DT$gene))
+    if (length(iGene) != 1) {
+        stop("DT must be a data.table pertaining only one gene")
     }
-    lapply(seq(DT), function(i){
-        iGene <- as.character(unique(DT[[i]]$gene))
-        if(length(iGene) != 1){stop("Each element in DT must be a data.table
-                                    pertaining only one gene")}
-        iChr <- as.character(DT[[i]]$chr[1])
-        iStr <- as.character(DT[[i]]$strand[1])
-        iGA <- geneAnnot[geneAnnot$name == iGene]
-        iBlocks <- S4Vectors::mcols(iGA)$blocks %>% unlist %>%
-            IRanges::shift(IRanges::start(iGA) - 1)
-        tmp <- stringr::str_sub(fastaGenome[[iChr]],
-                                start = IRanges::start(iBlocks),
-                                end = IRanges::end(iBlocks)) %>%
-            paste(collapse = "") %>% Biostrings::DNAString()
-        if(iStr == "-"){
-            tmp <- Biostrings::reverseComplement(tmp)
+    iChr <- as.character(DT$chr[1])
+    iStr <- as.character(DT$strand[1])
+    iGA <- geneAnnot[geneAnnot$name == iGene]
+    iBlocks <- S4Vectors::mcols(iGA)$blocks %>% unlist %>%
+        IRanges::shift(IRanges::start(iGA) - 1)
+    tmp <- stringr::str_sub(fastaGenome[[iChr]], start = IRanges::start(iBlocks),
+                            end = IRanges::end(iBlocks)) %>% paste(collapse = "") %>%
+        Biostrings::DNAString()
+    if (iStr == "-") {
+        tmp <- Biostrings::reverseComplement(tmp)
+    }
+    tmp <- stringr::str_split(as.character(tmp), "") %>%
+        unlist
+    tibble::add_column(DT, refSeq = tmp, .after = "txcoor")
+}
+
+#' Merge lists of data.tables
+#'
+#' @param DTL1 data.table
+#' @param DTL2 data.table
+#' @param colsToAdd character. Numeric column(s) to be aggregated (added).
+#'
+#' @return
+#' @export
+#'
+#' @examples
+tx_aggregate_DTlist <- function(DTL1, DTL2, colsToAdd){
+    allNames <- union(names(DTL1), names(DTL2))
+    namesInBoth <- intersect(names(DTL1), names(DTL2))
+    namesOnly1 <- setdiff(names(DTL1), names(DTL2))
+    namesOnly2 <- setdiff(names(DTL2), names(DTL1))
+    tmpDTL <- lapply(namesInBoth, function(iGene){
+        if(!identical(DTL1[[iGene]][,-..colsToAdd], DTL2[[iGene]][,-..colsToAdd])){
+            stop(paste("Coordinate data in", iGene, " data.table is not compatible"))
         }
-        tmp <- stringr::str_split(as.character(tmp), "") %>% unlist
-        tibble::add_column(DT[[i]], refSeq = tmp, .after = "txcoor")
-    }) %>% magrittr::set_names(names(DT))
+        tmp <- DTL1[[iGene]][,..colsToAdd] + DTL2[[iGene]][,..colsToAdd]
+        cbind(DTL1[[iGene]][,-..colsToAdd], tmp)
+    }) %>% magrittr::set_names(namesInBoth)
+    c(tmpDTL, DTL1[namesOnly1], DTL2[namesOnly2])[allNames]
+}
+
+
+#' Merge data.tables in list to a single data.table
+#'
+#' @param x list. List of data.tables. A summarized data.table object.
+#' See tx_coverageDT(), tx_nucFreqDT() and tx_covNucFreqDT() functions.
+#'
+#' @return
+#' @export
+#'
+#' @examples
+tx_merge_DT <- function(x){
+    do.call(x, what = rbind)
+}
+
+
+#' Split data.table to list of data.tables
+#'
+#' Split data.table back to list with individual data.tables by 'gene' names
+#'
+#' @param x data.table. Merged data.table as output by tx_merge_DT()
+#'
+#' @return
+#' @export
+#'
+#' @examples
+tx_split_DT <- function(x){
+    tmp <- split(x, by = "gene")
+    lapply(tmp, function(y){
+        y[order(y$txcoor),]
+    })
 }

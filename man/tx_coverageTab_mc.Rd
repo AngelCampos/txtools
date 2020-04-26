@@ -2,18 +2,24 @@
 % Please edit documentation in R/tx_core.R
 \name{tx_coverageTab_mc}
 \alias{tx_coverageTab_mc}
-\title{Calculate coverage table (cov, ends, starts) for all gene models (Multicore)}
+\title{Calculate coverage table (coverage, ends, starts) for all gene models
+without gene coordinates (Multicore)}
 \usage{
 tx_coverageTab_mc(x, nCores)
 }
 \arguments{
-\item{nCores}{}
+\item{x}{CompressedGRangesList. Genomic Ranges list containing genomic
+alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
+functions.}
+
+\item{nCores}{integer. Number of cores to use.}
 }
 \value{
 
 }
 \description{
-Calculate coverage table (cov, ends, starts) for all gene models (Multicore)
+Calculate coverage table (coverage, ends, starts) for all gene models
+without gene coordinates (Multicore)
 }
 \author{
 M.A. Garcia-Campos

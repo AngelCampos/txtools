@@ -32,3 +32,6 @@ data.table
 \description{
 Summarized Coverage & Nucleotide Frequency data.table
 }
+\author{
+M.A. Garcia-Campos
+}

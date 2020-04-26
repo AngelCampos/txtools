@@ -6,7 +6,7 @@
 \usage{
 tx_reads(
   reads,
-  bedR,
+  geneAnnot,
   overlapType = "within",
   minReads = 50,
   withSeq = F,
@@ -14,6 +14,19 @@ tx_reads(
 )
 }
 \arguments{
+\item{reads}{GenomicRanges}
+
+\item{geneAnnot}{GenomicRanges. Gene annotation loaded via the tx_load_bed()}
+
+\item{overlapType}{character. Overlap type to filter reads by gene
+model.}
+
+\item{minReads}{integer. Minimum number of reads required to overlap a gene
+model to be part of the output object.}
+
+\item{withSeq}{logical. Set to TRUE if sequence should be preserved; 'reads'
+object should contain sequences.}
+
 \item{verbose}{logical. Set to FALSE to show less information}
 }
 \value{
