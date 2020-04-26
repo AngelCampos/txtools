@@ -1,25 +1,31 @@
+---
+output: github_document
+editor_options: 
+  chunk_output_type: console
+---
+
+
 
 # txtools
 
 <!-- badges: start -->
-
 <!-- badges: end -->
 
-**txtools** is a package that processes GenomicAlignments objects into
-their transcriptomic versions.
+**txtools** is a package that processes GenomicAlignments objects into their 
+transcriptomic versions.
 
-**txtools** is meant to expand the functionality of the
-[**GenomicAlignments**](https://bioconductor.org/packages/release/bioc/html/GenomicRanges.html)
-package, as currently it does not support transcriptomic convertion.
-This type of convertion is increasingly needed to process and analyze
-RNA-seq data in which transcript-structure awareness and close
+**txtools** is meant to expand the functionality of the [**GenomicAlignments**](https://bioconductor.org/packages/release/bioc/html/GenomicRanges.html)
+package, as currently it does not support transcriptomic-wise features. 
+Transcriptomic-wise or gene-models-aware featuresare increasingly needed to
+process and analyze RNA-seq data in which transcript-structure and close 
 nucleotide-level inspection is required.
 
 ## Installation
 
-Install the development version from [GitHub](https://github.com/) with:
+You can install the development version from [GitHub](https://github.com/) with:
 
-``` r
+
+```r
 if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 
@@ -28,17 +34,19 @@ BiocManager::install("AngelCampos/txtools")
 
 ## Demo
 
-### Starting point `tx_reads()`
+### From genomic to transcriptomic
 
-The main input that we want to process are Genomic Alignments from **BAM
-files**, into their transcriptomic homologues. To do this we require
-gene models provided in the form of **BED-12 files**.
+The main input that we want to process are Genomic Alignments from **BAM files**, 
+into their transcriptomic homologues. To do this we require gene models
+provided in the form of **BED-12 or BED-6 files**.
 
 In this basic example we use data provided within **txtools**.
 
-We first load the BAM file and the BED file’s gene models.
+We first load the BAM file we want to process and the BED file's gene models, 
+using the `tx_load_bam()` and `tx_load_bed()` functions.
 
-``` r
+
+```r
 # Load packages
 library(txtools)
 
@@ -51,69 +59,69 @@ reads <- tx_load_bam(bamFile, loadSeq = T, verbose = T, yieldSize = 10000)
 #> Reading number of records in file 
 #> 5061 number of BAM records 
 #> Loading BAM file 
-#>   |                                                                              |                                                                      |   0%  |                                                                              |======================================================================| 100%
+#>   |                                                                                                                                       |                                                                                                                               |   0%  |                                                                                                                                       |===============================================================================================================================| 100%
 #>  
 #> 2530 reads succesfully loaded 
 #> Dumped reads due to ambiguous pairs: 0
 geneAnnot <- tx_load_bed(bedFile) # plyranges read_bed function
 ```
 
-Then we use the `tx_reads()` function to process the genomic alignments
-into transcriptomic versions. txtools uses will assign mappings to their
-corresponding genes only if they are overlapping their genomic regions
-AND if they are consistent with the exon structure of the gene model,
-perfectly distinguishing isoforms.
+The object `reads` now contains the aligned **genomic** reads, previously 
+aligned with commonly used genomic aligners. Sorted BAM files make processing 
+faster, see [samtools sort](https://www.htslib.org/doc/samtools-sort.html) for
+more info on this.
 
-Currently that means that txtools is designed for and requires RNA-seq
-libraries that are **strand-specific**.
+For converting our loaded genomic reads to **transcriptomic** reads we use the
+`tx_reads()`. Importantly, the function will assign mappings to their 
+corresponding genes ONLY if they are consistent with the exon structure of the 
+gene model. This allows to distinguish reads between different gene isoforms.
 
-**To accelerate processing the multi-core function** `tx_reads_mc()`
-**is available for UNIX systems**
 
-To control for spurious mappings we can filter for too long mappings
-with the `tx_filter_max_width()` function. In this example we set the
-threshold to 500, removing mappings longer than 500 nucleotides at the
-transcript level.
-
-``` r
+```r
 txReads <- tx_reads(reads, geneAnnot, withSeq = T, verbose = T)
 #> Processing 2530 reads, using 2 gene models 
 #> 2509 paired-end reads overlap 2 gene models 
 #> Filtering reads by gene model... 
 #> Processing sequences. This may take several minutes... 
 #> Output contains: 1676 unique reads in 2 gene models
-
-# Filter out transcripts longer than 500 bases
-txReads <- tx_filter_max_width(txReads, 500) 
+# txReads <- tx_reads_mc(reads, geneAnnot, nCores = 2,
+                       # withSeq = T, verbose = T) # Multicore option
 ```
 
-Now `txReads` contains a list with all paired-end RNA-seq mappings
-divided by their corresponding gene models, along their sequences as
-specified in the call to `tx_reads()`.
+Currently, txtools is designed for and requires RNA-seq libraries that are 
+**strand-specific**.
 
-The resulting object is a GenomicRangesList (*GRangesList*) a list that
-contains *GenomicRanges* the core object of their homonymous package,
-but their coordinates belong now to the transcriptomic references used.
+**To accelerate processing the multi-core function** `tx_reads_mc()` 
+**is available for UNIX systems**
 
-In this way we can take advantage of **GenomicRanges** functions and
-operators to retrieve information from the mappings.
+### Compatibility with GenomicRanges
+
+Now `txReads` contains a list with all paired-end RNA-seq mappings divided by 
+their corresponding gene models, along with their sequences as specified in the 
+call to `tx_reads()`.
+
+The resulting object is a GenomicRangesList (*GRangesList*) a list that contains 
+*GenomicRanges* the core object of their homonymous package, but their 
+coordinates belong now to the transcriptomic references used. In this way we can
+take advantage of **GenomicRanges** functions and accesors to retrieve
+information from the mappings, and manipulate them.
 
 For example:
 
-  - The names of the gene models in the list
+* The start of reads
 
-<!-- end list -->
 
-``` r
-names(txReads)
-#> [1] "uc003lam.1" "uc010nap.1"
+```r
+GenomicRanges::start(txReads)
+#> IntegerList of length 2
+#> [["uc003lam.1"]] 1813 1784 1784 1781 1781 1781 1781 1781 1781 1781 1781 1781 1781 1781 1781 1781 ... 8 8 9 8 8 7 7 7 8 8 7 8 8 4 3 1
+#> [["uc010nap.1"]] 70 70 70 70 70 39 39 39 43 39 39 39 27 5 4 7 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
 ```
 
-  - The ranges of the mappings for an specific gene
+* Extracting the ranges of the mappings for an specific gene using the `@ranges`
+operator
 
-<!-- end list -->
-
-``` r
+```r
 txReads$uc003lam.1@ranges # Ranges of reads in transcriptomic space
 #> IRanges object with 1622 ranges and 0 metadata columns:
 #>                              start       end     width
@@ -131,45 +139,74 @@ txReads$uc003lam.1@ranges # Ranges of reads in transcriptomic space
 #>   ID34387939_TTA_CCTATAT         1       139       139
 ```
 
-  - Sequences from an individual mapping in the gene
+* Extracting meta columns, with additional data, using the mcols() function. 
+In this case, we extract the values for the 6th mapping of the 'uc010nap.1'
+gene.
 
-<!-- end list -->
-
-``` r
-txReads$uc010nap.1$seq[6] 
+```r
+GenomicRanges::mcols(txReads$uc010nap.1)[6,]
 #> [1] "ACAAGGATGGAAGAGGCCCTCGGGCCTGACAACACGC.............ATTGCCACCTACTTCGTGGCATCTAACCATCGTTTTT"
 ```
 
+Although using GenomicRanges functions may be useful in some cases for user 
+specific tasks, txtools contains several functions that allow further 
+processing and manipulation of the resulting transcriptomic mappings, and
+are shown in the next sections.
+
 ### Raw Gene Counts
 
-A common task in RNA-seq analysis workflows is simply counting the reads
-(or mappings) that fall into a gene model. This can be done using the
-`tx_counts()` function.
+A common task in RNA-seq analysis workflows is simply counting the reads (or
+mappings) that fall into a gene model to calculate gene expression levels. We 
+can easily calculate that for all the genes using the `tx_counts()` function.
 
-``` r
+
+```r
 tx_counts(txReads)
 #> .
 #> uc003lam.1 uc010nap.1 
 #>       1622         54
 ```
 
-### RNA-seq reads summary tables
+### Filtering
 
-Another useful representation of RNA-seq information is to summarise
-reads metrics into tables spanning the whole transcript with information
-per nucleotide. The `tx_covNucFreqDT()` function creates such tables
-adding both the genomic and transcriptomic coordinates system and the
-following metrics:
+To control for spurious mappings we can filter for too long mappings, now in the
+transcriptomic space, with the `tx_filter_max_width()` function. In this example
+we set the threshold to 500, removing mappings longer than 500 nucleotides at 
+the transcript level.
 
-  - Coverage
-  - Starts or 5’-ends counts
-  - Ends or 3’-ends counts
-  - Nucleotide frequencies
-  - Deletion frequencies
 
-<!-- end list -->
+```r
+txReads <- tx_filter_max_width(txReads, 300) # Filter out transcripts longer than 500 bases
+tx_counts(txReads)
+#> .
+#> uc003lam.1 uc010nap.1 
+#>       1602         54
+```
 
-``` r
+### Summarizing reads into data.tables (DT)
+
+A useful representation of RNA-seq information we came up with is to summarise 
+read metrics into tables spanning the whole transcript with information per 
+nucleotide. Currently the metrics that we extract  are the following:
+
+* Coverage
+* Starts or 5'-ends counts
+* Ends or 3'-ends counts
+* Nucleotide frequencies
+* Deletion frequencies
+
+txtools provides three main functions to calculate all or parts of this 
+information:
+
+* `tx_coverageDT()`: Calculates only coverage, read-starts counts, and read-ends
+counts.
+* `tx_nucFreqDT()`: Calculates nucleotide frequency pileup.
+* `tx_coverageDT()`: Calculates all (coverage, read-starts counts, and read-ends
+counts, and nucleotide frequency).
+
+
+
+```r
 resTab1 <- tx_coverageDT(txReads, geneAnnot)
 resTab1[[1]]
 #>        chr   gencoor strand       gene txcoor cov start_5p end_3p
@@ -214,106 +251,124 @@ resTab3[[1]]
 #> 1922: chr5 134670073      - uc003lam.1   1922   7        0      0 0 0 7 0 0 0 0
 #> 1923: chr5 134670072      - uc003lam.1   1923   7        0      1 0 0 0 7 0 0 0
 #> 1924: chr5 134670071      - uc003lam.1   1924   6        0      6 0 0 0 6 0 0 0
-
-# This will show the summarized data table for the "uc010nap.1" gene
 ```
 
-The resulting object is of class `data.table`, as one can perform many
-tasks using this data structure, as well as writing them to disk in a
-faster way than using the base R functions.
+The resulting object is of class `data.table`. A fast and memory efficient 
+relative to the data.frame.
 
-The resulting data.table enables easy and fast access to data, ready for
-manipulation and analysis, for example, creating a barplot with the
-coverage column:
+The resulting data.table enables easy and fast access to data, ready for 
+manipulation and analysis, for example, creating a barplot with the coverage 
+column:
 
-  - Coverage barplot
+* Coverage barplot
 
-<!-- end list -->
 
-``` r
+```r
 iGene <- "uc003lam.1"
 barplot(resTab3[[iGene]]$cov, main = paste(iGene, "Coverage"),
         ylab = "Counts", xlab = iGene)
 ```
 
-<img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-8-1.png" title="plot of chunk unnamed-chunk-8" alt="plot of chunk unnamed-chunk-8" width="100%" />
 
-  - Nucleotide frequency barplot
+* Nucleotide frequency barplot
 
-<!-- end list -->
 
-``` r
+```r
 iGene <- "uc010nap.1"
 barplot(t(data.frame(resTab3[[iGene]][,c("A", "T", "G", "C", "N")])),
         col = c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "black"), border = "gray",
         main = paste("Nucleotide Frequency"), ylab = "Counts", xlab = iGene)
 ```
 
-<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-9-1.png" title="plot of chunk unnamed-chunk-9" alt="plot of chunk unnamed-chunk-9" width="100%" />
 
-### Adding the reference sequence
+### Aggregating and splitting data.tables
 
-When working with transcriptomic data one would like to easily extract
-the relevant sequence to work with. To do this while working with a
-summarized data.table, as the ones created above, we can use the
-`tx_addRefSeq()` function.
+Some features of data.tables can be only taken advantage when merging all the
+data of the genes into one single data.table, we can do this with the 
+`tx_merge_DT()` function. Similarly going back to gene independent data tables
+is done with the `tx_split_DT()` function.
 
-To use the `tx_addRefSeq()` function we need a reference genome. The
-BSgenome project has prepackaged several genomes for easy installation.
-In this case we will use the packaged reference genome for human
-“BSgenome.Hsapiens.UCSC.hg19”.
 
-``` r
+```r
+# Merge
+mergedDT <- tx_merge_DT(resTab1)
+class(mergedDT)
+#> [1] "data.table" "data.frame"
+# Split
+split_DT <- tx_split_DT(mergedDT)
+class(split_DT)
+#> [1] "list"
+summary(split_DT)
+#>            Length Class      Mode
+#> uc003lam.1 8      data.table list
+#> uc010nap.1 8      data.table list
+```
+
+A nice example of using data.tables is the x[i, j, by] syntax, which can be
+used to apply functions to groups of values in the data.table. For example,
+using the **merged data.table** we can calculate the median coverage per gene.
+
+
+```r
+mergedDT[,median(cov), by = gene]
+#>          gene V1
+#> 1: uc003lam.1 61
+#> 2: uc010nap.1 10
+```
+
+We can see that the median coverage of "uc003lam.1" is 61 and for "uc010nap.1" 
+is 10.
+
+### Adding the reference sequence to the DT
+
+When working with transcriptomic data one would like to easily get the 
+relevant sequence. To add this info to a DT simply use the `tx_add_refSeqDT()` 
+function.
+
+Preparation: To use the `tx_add_refSeqDT()` function we need a reference genome.
+In this case we use a BSgenome, a collection of pre-packaged genomes for 
+easy installation. In this case we will use the BSgenome for human 
+"BSgenome.Hsapiens.UCSC.hg19".
+
+
+```r
 # BiocManager::install("BSgenome.Hsapiens.UCSC.hg19") # Uncomment if you need to install
 # Loading reference genome
 genome <- BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19
-
 # Adding the reference sequence to the summarized DT object
-newDT <- tx_addRefSeqDT(resTab3, genome, geneAnnot)
-
-# We can check how our nucleotide frequency information coincides with the
-# reference sequence
-newDT[[2]]
-#>       chr   gencoor strand       gene txcoor refSeq cov start_5p end_3p A C  G
-#>   1: chr9 137029686      - uc010nap.1      1      G  38       38      0 0 0 38
-#>   2: chr9 137029685      - uc010nap.1      2      T  38        0      0 0 0  0
-#>   3: chr9 137029684      - uc010nap.1      3      G  38        0      0 0 0 38
-#>   4: chr9 137029683      - uc010nap.1      4      T  39        1      0 0 0  0
-#>   5: chr9 137029682      - uc010nap.1      5      T  40        1      0 0 0  0
-#>  ---                                                                          
-#> 121: chr9 137029566      - uc010nap.1    121      T   5        0      0 0 0  0
-#> 122: chr9 137029565      - uc010nap.1    122      T   5        0      0 0 0  0
-#> 123: chr9 137029564      - uc010nap.1    123      T   5        0      1 0 0  0
-#> 124: chr9 137029563      - uc010nap.1    124      T   4        0      0 0 0  0
-#> 125: chr9 137029562      - uc010nap.1    125      T   4        0      4 0 0  0
-#>       T N - .
-#>   1:  0 0 0 0
-#>   2: 38 0 0 0
-#>   3:  0 0 0 0
-#>   4: 39 0 0 0
-#>   5: 40 0 0 0
-#>  ---         
-#> 121:  5 0 0 0
-#> 122:  5 0 0 0
-#> 123:  5 0 0 0
-#> 124:  4 0 0 0
-#> 125:  4 0 0 0
+newDT <- tx_add_refSeqDT(resTab1$uc003lam.1, genome, geneAnnot)
+newDT
+#>        chr   gencoor strand       gene txcoor refSeq cov start_5p end_3p
+#>    1: chr5 134734928      - uc003lam.1      1      A   1        1      0
+#>    2: chr5 134734927      - uc003lam.1      2      C   1        0      0
+#>    3: chr5 134734926      - uc003lam.1      3      T   2        1      0
+#>    4: chr5 134734925      - uc003lam.1      4      G   3        1      0
+#>    5: chr5 134734924      - uc003lam.1      5      G   3        0      0
+#>   ---                                                                   
+#> 1920: chr5 134670075      - uc003lam.1   1920      C   7        0      0
+#> 1921: chr5 134670074      - uc003lam.1   1921      C   7        0      0
+#> 1922: chr5 134670073      - uc003lam.1   1922      G   7        0      0
+#> 1923: chr5 134670072      - uc003lam.1   1923      T   7        0      1
+#> 1924: chr5 134670071      - uc003lam.1   1924      T   6        0      6
 ```
 
 ### Writing individual DTs to files
 
-Additionally, storing the tables in a file for later use can be done
-using the **data.table** package, which allows for fast writing of data
-tables using the function `fwrite()`
+Additionally, storing the tables in a file for later use can be done using the
+**data.table** package, which allows for fast writing of data tables using the
+function `fwrite()`
 
-``` r
+
+```r
 # Writes datatable to file
-mergedTable <- do.call(resTab3, what = rbind)
-data.table::fwrite(mergedTable, "tableName.txt", sep = "\t")
+data.table::fwrite(mergedDT, "tableName.txt", sep = "\t")
 ```
 
-<!-- Looking for the gene in the UCSC genome browser we can check that indeed our  -->
 
+
+<!-- Looking for the gene in the UCSC genome browser we can check that indeed our  -->
 <!-- reconstructed sequence is that of the genome. -->
 
 <!-- ![](https://user-images.githubusercontent.com/9357097/74606095-3c1d5480-50d6-11ea-8d01-d43e1c4ac997.png) -->
@@ -321,40 +376,38 @@ data.table::fwrite(mergedTable, "tableName.txt", sep = "\t")
 <!-- ## Graphical representations  -->
 
 <!-- A simple graphical representation can be done to represent coverage using the nucleotide  -->
-
 <!-- frequency tables -->
 
+
+
 ## Soon to come features:
+- **Complete function documentation & manual**
+- **How to use guide and practical cases**
+- **Graphical representations functions**
+    + Coverage 
+    + Nucleotide frequency 
+    + Gene model ideogram
+- **Whole Transcript reconstruction**
+- **Meta-gene analysis tools**
+    + Meta-gene plots
 
-  - **Complete function documentation & manual**
-  - **How to use guide and practical cases**
-  - **Graphical representations functions**
-      - Coverage
-      - Nucleotide frequency
-      - Gene model ideogram
-  - **Whole Transcript reconstruction**
-  - **Meta-gene analysis tools**
-      - Meta-gene plots
-
------
+---
 
 ## Current limitations:
 
-  - Strand specific RNA-seq library preparation: State of the art
-    RNA-seq protocols provide strand awareness from the original RNA.
-    Currently txtools is designed for such libraries in mind, but future
-    improvements will also enable processing of RNA-seq libraries which
-    are not strad-aware.
+* Strand specific RNA-seq library preparation: State of the art RNA-seq protocols
+provide strand awareness from the original RNA. Currently txtools is designed
+for such libraries in mind, but future improvements will also enable processing
+of RNA-seq libraries which are not strad-aware.
 
-  - Insertions: txtools is not able to deal with insertions. This is
-    mainly because insertions are not part of the original
-    trasncriptomic reference space as they would alter the length of the
-    gene model. This could be fixed in future versions but is not a
-    priority.
+* Insertions: txtools is not able to deal with insertions. This is mainly
+because insertions are not part of the original trasncriptomic reference space
+as they would alter the length of the gene model. This could be fixed in
+future versions but is not a priority. 
 
 ## Session Info
 
-``` r
+```r
 utils::sessionInfo()
 #> R version 3.6.3 (2020-02-29)
 #> Platform: x86_64-w64-mingw32/x64 (64-bit)
@@ -363,46 +416,38 @@ utils::sessionInfo()
 #> Matrix products: default
 #> 
 #> locale:
-#> [1] LC_COLLATE=English_United States.1252 
-#> [2] LC_CTYPE=English_United States.1252   
-#> [3] LC_MONETARY=English_United States.1252
-#> [4] LC_NUMERIC=C                          
-#> [5] LC_TIME=English_United States.1252    
+#> [1] LC_COLLATE=English_United States.1252  LC_CTYPE=English_United States.1252    LC_MONETARY=English_United States.1252
+#> [4] LC_NUMERIC=C                           LC_TIME=English_United States.1252    
 #> 
 #> attached base packages:
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] txtools_0.0.0.1
+#> [1] txtools_0.0.0.9000 devtools_2.2.2     usethis_1.5.1     
 #> 
 #> loaded via a namespace (and not attached):
-#>  [1] Rcpp_1.0.4                        pillar_1.4.3                     
-#>  [3] compiler_3.6.3                    GenomeInfoDb_1.22.1              
-#>  [5] XVector_0.26.0                    bitops_1.0-6                     
-#>  [7] tools_3.6.3                       zlibbioc_1.32.0                  
-#>  [9] digest_0.6.25                     BSgenome_1.54.0                  
-#> [11] lifecycle_0.2.0                   tibble_3.0.0                     
-#> [13] evaluate_0.14                     lattice_0.20-38                  
-#> [15] pkgconfig_2.0.3                   rlang_0.4.5                      
-#> [17] Matrix_1.2-18                     cli_2.0.2                        
-#> [19] DelayedArray_0.12.2               yaml_2.2.1                       
-#> [21] parallel_3.6.3                    xfun_0.12                        
-#> [23] GenomeInfoDbData_1.2.2            rtracklayer_1.46.0               
-#> [25] stringr_1.4.0                     dplyr_0.8.5                      
-#> [27] knitr_1.28                        vctrs_0.2.4                      
-#> [29] Biostrings_2.54.0                 plyranges_1.6.10                 
-#> [31] S4Vectors_0.24.3                  IRanges_2.20.2                   
-#> [33] tidyselect_1.0.0                  stats4_3.6.3                     
-#> [35] grid_3.6.3                        data.table_1.12.8                
-#> [37] glue_1.3.2                        Biobase_2.46.0                   
-#> [39] R6_2.4.1                          BSgenome.Hsapiens.UCSC.hg19_1.4.0
-#> [41] fansi_0.4.1                       XML_3.99-0.3                     
-#> [43] BiocParallel_1.20.1               rmarkdown_2.1                    
-#> [45] purrr_0.3.3                       magrittr_1.5                     
-#> [47] ellipsis_0.3.0                    Rsamtools_2.2.3                  
-#> [49] htmltools_0.4.0                   matrixStats_0.56.0               
-#> [51] BiocGenerics_0.32.0               GenomicRanges_1.38.0             
-#> [53] GenomicAlignments_1.22.1          assertthat_0.2.1                 
-#> [55] SummarizedExperiment_1.16.1       stringi_1.4.6                    
-#> [57] RCurl_1.98-1.1                    crayon_1.3.4
+#>  [1] Rcpp_1.0.4                        lattice_0.20-38                   prettyunits_1.1.1                
+#>  [4] Rsamtools_2.2.3                   ps_1.3.2                          Biostrings_2.54.0                
+#>  [7] assertthat_0.2.1                  rprojroot_1.3-2                   digest_0.6.25                    
+#> [10] R6_2.4.1                          GenomeInfoDb_1.22.1               backports_1.1.5                  
+#> [13] stats4_3.6.3                      evaluate_0.14                     highr_0.8                        
+#> [16] pillar_1.4.3                      zlibbioc_1.32.0                   rlang_0.4.5                      
+#> [19] data.table_1.12.8                 callr_3.4.3                       S4Vectors_0.24.3                 
+#> [22] Matrix_1.2-18                     desc_1.2.0                        plyranges_1.6.10                 
+#> [25] BiocParallel_1.20.1               stringr_1.4.0                     RCurl_1.98-1.1                   
+#> [28] DelayedArray_0.12.2               rtracklayer_1.46.0                compiler_3.6.3                   
+#> [31] xfun_0.13                         pkgconfig_2.0.3                   BiocGenerics_0.32.0              
+#> [34] pkgbuild_1.0.6                    tidyselect_1.0.0                  SummarizedExperiment_1.16.1      
+#> [37] tibble_3.0.1                      GenomeInfoDbData_1.2.2            IRanges_2.20.2                   
+#> [40] matrixStats_0.56.0                XML_3.99-0.3                      BSgenome.Hsapiens.UCSC.hg19_1.4.0
+#> [43] fansi_0.4.1                       crayon_1.3.4                      dplyr_0.8.5                      
+#> [46] withr_2.1.2                       GenomicAlignments_1.22.1          bitops_1.0-6                     
+#> [49] grid_3.6.3                        lifecycle_0.2.0                   magrittr_1.5                     
+#> [52] cli_2.0.2                         stringi_1.4.6                     XVector_0.26.0                   
+#> [55] fs_1.3.2                          remotes_2.1.1                     testthat_2.3.2                   
+#> [58] ellipsis_0.3.0                    vctrs_0.2.4                       tools_3.6.3                      
+#> [61] BSgenome_1.54.0                   Biobase_2.46.0                    glue_1.3.2                       
+#> [64] purrr_0.3.3                       processx_3.4.2                    pkgload_1.0.2                    
+#> [67] parallel_3.6.3                    GenomicRanges_1.38.0              sessioninfo_1.1.1                
+#> [70] memoise_1.1.0                     knitr_1.28
 ```
