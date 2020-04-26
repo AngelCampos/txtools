@@ -127,9 +127,11 @@ tx_load_bed <- function(bedfile){
     return(tmp)
 }
 
-#' Loading genome as DNAStrinSet
+#' Load genome
 #'
-#' @param fastaFile path to FASTA format genome sequences
+#' Load genome as DNAStrinSet from FASTA file
+#'
+#' @param fastaFile path to FASTA format file with all genome sequences
 #'
 #' @return
 #' @export

@@ -2,16 +2,16 @@
 % Please edit documentation in R/tx_core.R
 \name{tx_load_genome}
 \alias{tx_load_genome}
-\title{Loading genome as DNAStrinSet}
+\title{Load genome}
 \usage{
 tx_load_genome(fastaFile)
 }
 \arguments{
-\item{fastaFile}{path to FASTA format genome sequences}
+\item{fastaFile}{path to FASTA format file with all genome sequences}
 }
 \value{
 
 }
 \description{
-Loading genome as DNAStrinSet
+Load genome as DNAStrinSet from FASTA file
 }
