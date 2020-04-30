@@ -17,7 +17,7 @@ by BSgenome. See ?BSgenome::available.genomes()}
 see tx_load_bed().}
 }
 \value{
-
+data.table
 }
 \description{
 Add reference sequence to data.table

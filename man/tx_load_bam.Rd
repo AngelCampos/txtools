@@ -30,7 +30,7 @@ will be retrieved and output along correctly paired reads. More info:
 \item{verbose}{logical. Set to FALSE to show less information}
 }
 \value{
-
+GRanges
 }
 \description{
 Reads a file in BAM format by blocks of lines equal to a yield size, either

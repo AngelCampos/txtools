@@ -10,7 +10,7 @@ tx_split_DT(x)
 \item{x}{data.table. Merged data.table as output by tx_merge_DT()}
 }
 \value{
-
+list
 }
 \description{
 Split data.table back to list with individual data.tables by 'gene' names

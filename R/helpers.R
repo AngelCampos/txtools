@@ -15,10 +15,11 @@ exonGRanges <- function(geneAnnot_GR){
         magrittr::set_colnames(c("seqnames", "start", "end", "strand")) %>%
         plyranges::as_granges() %>%
         split(group) %>%
-        GenomicRanges::GRangesList() %>% magrittr::set_names(geneAnnot_GR$name)
+        GenomicRanges::GRangesList(compress = TRUE) %>% magrittr::set_names(geneAnnot_GR$name)
 }
 
 # Generate exon coordinates block
+# Note: It actually takes a bit less time than exonGRanges
 exonBlockGen <- function(iGene, geneAnnot_GR){
     iStart <- GenomicRanges::start(geneAnnot_GR[geneAnnot_GR$name == iGene])
     iEnd <- GenomicRanges::end(geneAnnot_GR[geneAnnot_GR$name == iGene])

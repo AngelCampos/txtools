@@ -36,7 +36,7 @@ NULL
 #' ?GenomicAlignments::readGAlignments
 #' @param verbose logical. Set to FALSE to show less information
 #'
-#' @return
+#' @return GRanges
 #' @export
 #'
 #' @author M.A. Garcia-Campos
@@ -112,7 +112,7 @@ tx_load_bam <- function(file,
 #' @return
 #' @export
 #'
-#' @author M.A. Garcia-Campos
+#' @author M.A. Garcia-Campos <https://angelcampos.github.io/>
 #'
 #' @examples
 tx_load_bed <- function(bedfile){
@@ -195,7 +195,7 @@ tx_reads <- function(reads, geneAnnot, overlapType = "within", minReads = 50,
     names(OUT) <- geneAnnot$name
     OUT <- OUT[lapply(OUT, length) %>% unlist %>%
                    magrittr::is_greater_than(minReads)] %>%
-        GenomicRanges::GRangesList()
+        GenomicRanges::GRangesList(compress = TRUE)
     if(verbose){
         cat("Output contains:", lapply(OUT, names) %>% unlist %>% unique %>% length,
             "unique reads in", length(OUT), "gene models \n")
@@ -261,7 +261,7 @@ tx_reads_mc <- function(reads, geneAnnot, nCores, overlapType = "within",
     })
     names(OUT) <- geneAnnot$name
     OUT <- OUT[lapply(OUT, length) %>% unlist %>% magrittr::is_greater_than(minReads)] %>%
-        GenomicRanges::GRangesList()
+        GenomicRanges::GRangesList(compress = TRUE)
     if(verbose){
         cat("Output contains:", lapply(OUT, names) %>% unlist %>% unique %>% length,
             "unique reads in", length(OUT), "gene models \n")
@@ -290,7 +290,7 @@ tx_filter_max_width <- function(x, thr){
         }else{
             x[[i]][tmp[[i]]]
         }
-    }) %>% GenomicRanges::GRangesList() %>% magrittr::set_names(names(x))
+    }) %>% GenomicRanges::GRangesList(compress = TRUE) %>% magrittr::set_names(names(x))
 }
 
 #' Calculate coverage table: coverage, 5prime-starts, and 3prime-ends
@@ -315,13 +315,13 @@ tx_coverageTab <- function(x){
     end <- GenomicRanges::end(x) %>% lapply(table) %>% magrittr::set_names(names(x))
     len <- GenomeInfoDb::seqlengths(x)
     OUT <- lapply(1:length(x), function(i){
-        tmpMat <- matrix(0, nrow = len[i], ncol = 3) %>% data.frame() %>%
+        tmpMat <- matrix(0, nrow = len[i], ncol = 3) %>% data.frame() %>% 
+            data.table::data.table() %>%
             magrittr::set_rownames(1:len[i]) %>%
             magrittr::set_colnames(c("cov", "start_5p", "end_3p"))
         tmpMat[names(sta[[i]]), "start_5p"] <- sta[[i]]
         tmpMat[names(end[[i]]), "end_3p"] <- end[[i]]
         tmpMat[, "cov"] <- cov[[i]] %>% as.numeric()
-        tmpMat <- tmpMat %>% data.table::data.table()
         tmpMat$cov <- as.integer(tmpMat$cov)
         tmpMat$start_5p <- as.integer(tmpMat$start_5p)
         tmpMat$end_3p <- as.integer(tmpMat$end_3p)
@@ -527,7 +527,7 @@ tx_covNucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt"){
 #' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
 #' functions.
 #'
-#' @return
+#' @return table
 #' @export
 #'
 #' @author M.A. Garcia-Campos
@@ -544,7 +544,7 @@ tx_counts <- function(x){
 #' @param x data.table. Output of txtools data.tables with coverage information
 #' as output of tx_coverageDT() and tx_covNucFreqDT()
 #'
-#' @return
+#' @return data.table
 #' @export
 #'
 #' @examples
@@ -559,7 +559,7 @@ tx_add_startRatio <- function(x){
 #' @param x data.table. Output of txtools data.tables with coverage information
 #' as output of tx_coverageDT() and tx_covNucFreqDT()
 #'
-#' @return
+#' @return data.table
 #' @export
 #'
 #' @examples
@@ -583,25 +583,31 @@ tx_add_endRatio <- function(x){
 #' left as FALSE.
 #' @param colName character. Name of the new column to be added.
 #'
-#' @return
+#' @return data.table
 #' @export
 #'
 #' @examples
 tx_add_siteAnnotation <- function(x, GR, type = "logical", colName){
     if(class(GR) != "GRanges"){stop("GR must be of class GRanges")}
     if(class(x)[1] != "data.table"){stop("x must be of class data.table")}
+    if(!all(GenomicRanges::start(subGR) == GenomicRanges::end(subGR))){
+        stop("start and ends are not the same in GR, only 1-nuc-long sites allowed")
+    }
     subGR <- GR[as.character(x$chr[1]) == GenomicRanges::seqnames(GR)]
-    if(length(subGR) == 0){stop("No coinciding chromosomes, stopped searching")}
-    if(!all(GenomicRanges::start(subGR) == GenomicRanges::end(subGR))){stop("start and ends are not the same in GR, only 1-nuc-long sites allowed")}
     oNames <- names(x)
-    foundGenLoc <- GenomicRanges::start(subGR)[which(GenomicRanges::start(subGR) %in% x$gencoor)]
-    if(length(foundGenLoc) == 0){stop("No coinciding location in chromosome, stopped searching")}
-
+    # Logical variable case
     if(type == "logical"){
         addAnnot <- rep(FALSE, nrow(x))
+        if(length(subGR) == 0){
+            tibble::add_column(x, addAnnot) %>% magrittr::set_names(c(oNames, colName))
+        }
+        foundGenLoc <- GenomicRanges::start(subGR)[which(GenomicRanges::start(subGR) %in% x$gencoor)]
+        if(length(foundGenLoc) == 0){
+            tibble::add_column(x, addAnnot) %>% magrittr::set_names(c(oNames, colName))
+        }
+        addAnnot[match(foundGenLoc, x$gencoor)] <- TRUE
+        tibble::add_column(x, addAnnot) %>% magrittr::set_names(c(oNames, colName))
     }
-    addAnnot[match(foundGenLoc, x$gencoor)] <- TRUE
-    tibble::add_column(x, addAnnot) %>% magrittr::set_names(c(oNames, colName))
 }
 
 #' Add reference sequence to data.table
@@ -613,7 +619,7 @@ tx_add_siteAnnotation <- function(x, GR, type = "logical", colName){
 #' @param geneAnnot GRanges. Gene annotation loaded as a GenomicRanges object,
 #'  see tx_load_bed().
 #'
-#' @return
+#' @return data.table
 #' @export
 #'
 #' @author M.A. Garcia-Campos
@@ -649,7 +655,7 @@ tx_add_refSeqDT <- function (DT, fastaGenome, geneAnnot){
 #' @param DTL2 data.table
 #' @param colsToAdd character. Numeric column(s) to be aggregated (added).
 #'
-#' @return
+#' @return list
 #' @export
 #'
 #' @examples
@@ -674,7 +680,7 @@ tx_aggregate_DTlist <- function(DTL1, DTL2, colsToAdd){
 #' @param x list. List of data.tables. A summarized data.table object.
 #' See tx_coverageDT(), tx_nucFreqDT() and tx_covNucFreqDT() functions.
 #'
-#' @return
+#' @return data.table
 #' @export
 #'
 #' @examples
@@ -689,7 +695,7 @@ tx_merge_DT <- function(x){
 #'
 #' @param x data.table. Merged data.table as output by tx_merge_DT()
 #'
-#' @return
+#' @return list
 #' @export
 #'
 #' @examples

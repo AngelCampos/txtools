@@ -11,7 +11,7 @@ tx_merge_DT(x)
 See tx_coverageDT(), tx_nucFreqDT() and tx_covNucFreqDT() functions.}
 }
 \value{
-
+data.table
 }
 \description{
 Merge data.tables in list to a single data.table

@@ -11,7 +11,7 @@ tx_add_startRatio(x)
 as output of tx_coverageDT() and tx_covNucFreqDT()}
 }
 \value{
-
+data.table
 }
 \description{
 Add read-starts ratio over coverage.

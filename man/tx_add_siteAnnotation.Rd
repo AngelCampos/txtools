@@ -20,7 +20,7 @@ left as FALSE.}
 \item{colName}{character. Name of the new column to be added.}
 }
 \value{
-
+data.table
 }
 \description{
 Add a logical variable column in which desired genomic coordinates are

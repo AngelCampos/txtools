@@ -14,7 +14,7 @@ tx_aggregate_DTlist(DTL1, DTL2, colsToAdd)
 \item{colsToAdd}{character. Numeric column(s) to be aggregated (added).}
 }
 \value{
-
+list
 }
 \description{
 Merge lists of data.tables

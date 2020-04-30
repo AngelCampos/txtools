@@ -12,7 +12,7 @@ alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
 functions.}
 }
 \value{
-
+table
 }
 \description{
 Quantifies reads by gene model from a tx_reads list
