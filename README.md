@@ -198,11 +198,8 @@ the following:
 txtools provides three main functions to calculate all or parts of this
 information:
 
-  - `tx_coverageDT()`: Calculates only coverage, read-starts counts, and
-    read-ends counts.
-  - `tx_nucFreqDT()`: Calculates nucleotide frequency pileup.
-  - `tx_coverageDT()`: Calculates all (coverage, read-starts counts, and
-    read-ends counts, and nucleotide frequency).
+  - `tx_coverageDT()`: Calculates coverage, read-starts, and read-ends
+    counts.
 
 <!-- end list -->
 
@@ -221,7 +218,13 @@ resTab1[[1]]
 #> 1922: chr5 134670073      - uc003lam.1   1922   7        0      0
 #> 1923: chr5 134670072      - uc003lam.1   1923   7        0      1
 #> 1924: chr5 134670071      - uc003lam.1   1924   6        0      6
+```
 
+  - `tx_nucFreqDT()`: Calculates the nucleotide frequency pileup.
+
+<!-- end list -->
+
+``` r
 resTab2 <- tx_nucFreqDT(txReads, geneAnnot)
 resTab2[[1]]
 #>        chr   gencoor strand       gene txcoor A C G T N - .
@@ -236,7 +239,14 @@ resTab2[[1]]
 #> 1922: chr5 134670073      - uc003lam.1   1922 0 0 7 0 0 0 0
 #> 1923: chr5 134670072      - uc003lam.1   1923 0 0 0 7 0 0 0
 #> 1924: chr5 134670071      - uc003lam.1   1924 0 0 0 6 0 0 0
+```
 
+  - `tx_coverageDT()`: Calculates all previous (coverage, read-starts
+    counts, and read-ends counts, and nucleotide frequency).
+
+<!-- end list -->
+
+``` r
 resTab3 <- tx_covNucFreqDT(txReads, geneAnnot)
 resTab3[[1]]
 #>        chr   gencoor strand       gene txcoor cov start_5p end_3p A C G T N - .
@@ -270,7 +280,7 @@ barplot(resTab3[[iGene]]$cov, main = paste(iGene, "Coverage"),
         ylab = "Counts", xlab = iGene)
 ```
 
-<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-11-1.png" width="100%" />
 
   - Nucleotide frequency barplot
 
@@ -283,7 +293,7 @@ barplot(t(data.frame(resTab3[[iGene]][,c("A", "T", "G", "C", "N")])),
         main = paste("Nucleotide Frequency"), ylab = "Counts", xlab = iGene)
 ```
 
-<img src="man/figures/README-unnamed-chunk-9-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-12-1.png" width="100%" />
 
 ### Aggregating and splitting data.tables
 
@@ -365,18 +375,6 @@ tables using the function `fwrite()`
 data.table::fwrite(mergedDT, "tableName.txt", sep = "\t")
 ```
 
-<!-- Looking for the gene in the UCSC genome browser we can check that indeed our  -->
-
-<!-- reconstructed sequence is that of the genome. -->
-
-<!-- ![](https://user-images.githubusercontent.com/9357097/74606095-3c1d5480-50d6-11ea-8d01-d43e1c4ac997.png) -->
-
-<!-- ## Graphical representations  -->
-
-<!-- A simple graphical representation can be done to represent coverage using the nucleotide  -->
-
-<!-- frequency tables -->
-
 ## Soon to come features:
 
   - **Complete function documentation & manual**
@@ -393,17 +391,31 @@ data.table::fwrite(mergedDT, "tableName.txt", sep = "\t")
 
 ## Current limitations:
 
-  - Strand specific RNA-seq library preparation: State of the art
-    RNA-seq protocols provide strand awareness from the original RNA.
-    Currently txtools is designed for such libraries in mind, but future
-    improvements will also enable processing of RNA-seq libraries which
-    are not strad-aware.
+  - Paired-end strand specific RNA-seq libraries: State of the art
+    paired-end RNA-seq protocols provide strand awareness from the
+    original RNA. Currently txtools is designed for such libraries,
+    future improvements will enable processing of RNA-seq libraries
+    which are not strand-aware nor paired-end.
 
   - Insertions: txtools is not able to deal with insertions. This is
     mainly because insertions are not part of the original
     trasncriptomic reference space as they would alter the length of the
     gene model. This could be fixed in future versions but is not a
     priority.
+
+  - High processing time: Loading BAM files into R commonly requires a
+    lot of time, having this in mind txtools provides a progress bar to
+    keep users informed about the loading status. Also, depending on the
+    ammount of both loaded reads and the size of the *Gene Annotation*
+    tx\_reads() processing time can take several minutes. We will work
+    hard to take this processing time as low as possible in future
+    versions.
+
+## Additional notes:
+
+  - As many R packages meant for high-throughput data manipulation and
+    analysis, using ***txtools*** may require high ammounts of RAM
+    memory, mainly depending on the size of BAM files loaded.
 
 ## Session Info
 
