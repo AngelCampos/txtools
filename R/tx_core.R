@@ -233,11 +233,10 @@ tx_reads_mc <- function(reads, geneAnnot, nCores, overlapType = "within",
         stop("This functions is only available for UNIX operative systems \n")
     }
     if(verbose){
-        cat("Processing", length(reads), "paired-end reads, using", length(geneAnnot),
-            "gene models \n")
+        cat("Processing", length(reads), "paired-end reads, using",
+            length(geneAnnot), "gene models \n")
     }
-    split_i <- hlpr_splitReadsByGenes(reads, geneAnnot, overlapType,
-                                      minReads)
+    split_i <- hlpr_splitReadsByGenes(reads, geneAnnot, overlapType, minReads)
     geneAnnot <- geneAnnot[which(geneAnnot$name %in% names(split_i))]
     if(length(geneAnnot) > 0){
         if(verbose){
@@ -248,16 +247,18 @@ tx_reads_mc <- function(reads, geneAnnot, nCores, overlapType = "within",
                 cat("Processing sequences. This may take several minutes... \n")
             }
         }
-    }else{stop("No genes with overlapped paired-end reads \n")}
-    allExons <- exonGRanges(geneAnnot) # All exons in gene models
+    }else{
+        stop("No genes with overlapped paired-end reads \n")
+    }
+    allExons <- exonGRanges(geneAnnot)
     OUT <- parallel::mclapply(mc.cores = nCores, geneAnnot$name, function(iGene){
-        hlpr_ReadsInGene(reads = reads,
-                         iGene = iGene,
-                         geneAnnot = geneAnnot,
-                         split_i = split_i,
-                         allExons = allExons,
-                         withSeq = withSeq,
-                         minReads = minReads)
+        txtools:::hlpr_ReadsInGene(reads = reads,
+                                   iGene = iGene,
+                                   geneAnnot = geneAnnot,
+                                   split_i = split_i,
+                                   allExons = allExons,
+                                   withSeq = withSeq,
+                                   minReads = minReads)
     })
     names(OUT) <- geneAnnot$name
     OUT <- OUT[lapply(OUT, length) %>% unlist %>% magrittr::is_greater_than(minReads)] %>%
@@ -315,7 +316,7 @@ tx_coverageTab <- function(x){
     end <- GenomicRanges::end(x) %>% lapply(table) %>% magrittr::set_names(names(x))
     len <- GenomeInfoDb::seqlengths(x)
     OUT <- lapply(1:length(x), function(i){
-        tmpMat <- matrix(0, nrow = len[i], ncol = 3) %>% data.frame() %>% 
+        tmpMat <- matrix(0, nrow = len[i], ncol = 3) %>% data.frame() %>%
             data.table::data.table() %>%
             magrittr::set_rownames(1:len[i]) %>%
             magrittr::set_colnames(c("cov", "start_5p", "end_3p"))
