@@ -14,7 +14,7 @@ functions.}
 \item{thr}{numeric. Threshold for maximum width size allowed on output.}
 }
 \value{
-
+CompressedGRangesList
 }
 \description{
 Filter ranges by a maximum width

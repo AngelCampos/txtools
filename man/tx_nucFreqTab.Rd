@@ -20,7 +20,7 @@ fractions of reads assigned.
 integers, unassigned fraction of reads will be summed and assigned as 'N'.}
 }
 \value{
-
+data.table
 }
 \description{
 Calculate nucleotide frequency pileup for all gene models

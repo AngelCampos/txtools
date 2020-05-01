@@ -32,7 +32,7 @@ object should contain sequences.}
 \item{verbose}{logical. Set to FALSE to show less information.}
 }
 \value{
-
+list
 }
 \description{
 Merge paired-end reads and assign them to gene models (Multicore)

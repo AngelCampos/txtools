@@ -10,7 +10,7 @@ tx_load_genome(fastaFile)
 \item{fastaFile}{path to FASTA format file with all genome sequences}
 }
 \value{
-
+DNAStringSet
 }
 \description{
 Load genome as DNAStrinSet from FASTA file

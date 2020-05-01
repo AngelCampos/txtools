@@ -109,7 +109,7 @@ tx_load_bam <- function(file,
 #'
 #' @param bedfile character. Gene annotation file in bed-6 or bed-12 format
 #'
-#' @return
+#' @return GRanges
 #' @export
 #'
 #' @author M.A. Garcia-Campos <https://angelcampos.github.io/>
@@ -133,7 +133,7 @@ tx_load_bed <- function(bedfile){
 #'
 #' @param fastaFile path to FASTA format file with all genome sequences
 #'
-#' @return
+#' @return DNAStringSet
 #' @export
 #'
 #' @examples
@@ -154,7 +154,7 @@ tx_load_genome <- function(fastaFile){
 #' object should contain sequences.
 #' @param verbose logical. Set to FALSE to show less information
 #'
-#' @return
+#' @return list
 #' @export
 #'
 #' @author M.A. Garcia-Campos
@@ -215,7 +215,7 @@ tx_reads <- function(reads, geneAnnot, overlapType = "within", minReads = 50,
 #' object should contain sequences.
 #' @param verbose logical. Set to FALSE to show less information.
 #'
-#' @return
+#' @return list
 #' @export
 #'
 #' @author M.A. Garcia-Campos
@@ -252,13 +252,13 @@ tx_reads_mc <- function(reads, geneAnnot, nCores, overlapType = "within",
     }
     allExons <- exonGRanges(geneAnnot)
     OUT <- parallel::mclapply(mc.cores = nCores, geneAnnot$name, function(iGene){
-        txtools:::hlpr_ReadsInGene(reads = reads,
-                                   iGene = iGene,
-                                   geneAnnot = geneAnnot,
-                                   split_i = split_i,
-                                   allExons = allExons,
-                                   withSeq = withSeq,
-                                   minReads = minReads)
+        hlpr_ReadsInGene(reads = reads,
+                         iGene = iGene,
+                         geneAnnot = geneAnnot,
+                         split_i = split_i,
+                         allExons = allExons,
+                         withSeq = withSeq,
+                         minReads = minReads)
     })
     names(OUT) <- geneAnnot$name
     OUT <- OUT[lapply(OUT, length) %>% unlist %>% magrittr::is_greater_than(minReads)] %>%
@@ -277,7 +277,7 @@ tx_reads_mc <- function(reads, geneAnnot, nCores, overlapType = "within",
 #' functions.
 #' @param thr numeric. Threshold for maximum width size allowed on output.
 #'
-#' @return
+#' @return CompressedGRangesList
 #' @export
 #'
 #' @author M.A. Garcia-Campos
@@ -339,7 +339,7 @@ tx_coverageTab <- function(x){
 #' functions.
 #' @param nCores integer. Number of cores to use.
 #'
-#' @return
+#' @return data.table
 #' @export
 #'
 #' @author M.A. Garcia-Campos
@@ -385,7 +385,7 @@ tx_coverageTab_mc <- function(x, nCores){
 #' 3) "splitForceInt": Ambiguous reads will be divided in half, but forced to be
 #' integers, unassigned fraction of reads will be summed and assigned as 'N'.
 #'
-#' @return
+#' @return data.table
 #' @export
 #'
 #' @author M.A. Garcia-Campos
@@ -414,7 +414,7 @@ tx_nucFreqTab <- function(x, simplify_IUPAC = "not"){
 #' functions.
 #' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed()
 #'
-#' @return
+#' @return data.table
 #' @export
 #'
 #' @author M.A. Garcia-Campos

@@ -15,7 +15,7 @@ functions.}
 \item{nCores}{integer. Number of cores to use.}
 }
 \value{
-
+data.table
 }
 \description{
 Calculate coverage table (coverage, ends, starts) for all gene models

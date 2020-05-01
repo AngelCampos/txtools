@@ -10,7 +10,7 @@ tx_load_bed(bedfile)
 \item{bedfile}{character. Gene annotation file in bed-6 or bed-12 format}
 }
 \value{
-
+GRanges
 }
 \description{
 Reads and loads bed files checking for compliance with bed file structure

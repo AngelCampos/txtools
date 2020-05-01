@@ -14,7 +14,7 @@ functions.}
 \item{geneAnnot}{GenomicRanges. Gene annotation loaded via the tx_load_bed()}
 }
 \value{
-
+data.table
 }
 \description{
 Table with genomic and transcriptomic coordinates
