@@ -195,7 +195,7 @@ tx_reads <- function(reads, geneAnnot, overlapType = "within", minReads = 50,
     names(OUT) <- geneAnnot$name
     OUT <- OUT[lapply(OUT, length) %>% unlist %>%
                    magrittr::is_greater_than(minReads)] %>%
-        GenomicRanges::GRangesList(compress = TRUE)
+        GenomicRanges::GRangesList()
     if(verbose){
         cat("Output contains:", lapply(OUT, names) %>% unlist %>% unique %>% length,
             "unique reads in", length(OUT), "gene models \n")
@@ -262,7 +262,7 @@ tx_reads_mc <- function(reads, geneAnnot, nCores, overlapType = "within",
     })
     names(OUT) <- geneAnnot$name
     OUT <- OUT[lapply(OUT, length) %>% unlist %>% magrittr::is_greater_than(minReads)] %>%
-        GenomicRanges::GRangesList(compress = TRUE)
+        GenomicRanges::GRangesList()
     if(verbose){
         cat("Output contains:", lapply(OUT, names) %>% unlist %>% unique %>% length,
             "unique reads in", length(OUT), "gene models \n")
@@ -291,7 +291,7 @@ tx_filter_max_width <- function(x, thr){
         }else{
             x[[i]][tmp[[i]]]
         }
-    }) %>% GenomicRanges::GRangesList(compress = TRUE) %>% magrittr::set_names(names(x))
+    }) %>% GenomicRanges::GRangesList() %>% magrittr::set_names(names(x))
 }
 
 #' Calculate coverage table: coverage, 5prime-starts, and 3prime-ends
