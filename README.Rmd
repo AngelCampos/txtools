@@ -24,13 +24,13 @@ transcriptomic versions.
 **txtools** is meant to expand the functionality of the 
 [**GenomicAlignments**](https://bioconductor.org/packages/release/bioc/html/GenomicRanges.html)
 package, as currently it does not support transcriptomic-wise features. 
-Transcriptomic-wise or gene-models-aware featuresare increasingly needed to
+Transcriptomic-wise features are increasingly needed to
 process and analyze RNA-seq data in which transcript-structure and close 
 nucleotide-level inspection is required.
 
 ## Installation
 
-You can install the development version from [GitHub](https://github.com/) with:
+You can install the development version from [GitHub](https://github.com/AngelCampos/txtools) with:
 
 ```{r, installation, eval = F}
 if (!requireNamespace("BiocManager", quietly = TRUE))
@@ -285,10 +285,10 @@ data.table::fwrite(mergedDT, "tableName.txt", sep = "\t")
 
 ## Current limitations:
 
-* Paired-end strand specific RNA-seq libraries: State of the art 
-paired-end RNA-seq protocols provide strand awareness from the original RNA. 
-Currently txtools is designed for such libraries, future improvements will enable 
-processing of RNA-seq libraries which are not strand-aware nor paired-end.
+* Paired-end strand-specific RNA-seq libraries: State of the art 
+paired-end RNA-seq protocols provide strand awareness from the original RNA
+fragments. Currently, txtools is designed for such libraries, future improvements 
+will enable processing of RNA-seq libraries which are not strand-aware nor paired-end.
 
 * Insertions: txtools is not able to deal with insertions. This is mainly
 because insertions are not part of the original trasncriptomic reference space
