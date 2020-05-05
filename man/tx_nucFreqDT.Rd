@@ -4,7 +4,7 @@
 \alias{tx_nucFreqDT}
 \title{Summarized Nucleotide Frequency data.table}
 \usage{
-tx_nucFreqDT(x, geneAnnot, simplify_IUPAC = "splitForceInt")
+tx_nucFreqDT(x, geneAnnot, simplify_IUPAC = "splitForceInt", nCores)
 }
 \arguments{
 \item{x}{CompressedGRangesList. Genomic Ranges list containing genomic
@@ -25,6 +25,8 @@ if the frequency is an odd number the uneven count will be assigned as "N".
 their corresponding nucleotides, in cases where frequency is odd creating
 non-integer frequencies.
 }}
+
+\item{nCores}{integer. Number of cores to use to run function.}
 }
 \value{
 data.table

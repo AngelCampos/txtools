@@ -207,7 +207,7 @@ tx_reads <- function(reads, geneAnnot, overlapType = "within", minReads = 50,
 #'
 #' @param reads GAlignmentPairs. Paired end genomic alignments to be processed
 #' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed()
-#' @param nCores integer. Number of cores to be used.
+#' @param nCores integer. Number of cores to use to run function.
 #' @param overlapType character. Overlap type to filter reads by gene model.
 #' @param minReads integer. Minimum number of reads required to overlap a gene
 #' model to be part of the output object.
@@ -229,8 +229,8 @@ tx_reads_mc <- function(reads, geneAnnot, nCores, overlapType = "within",
     if(class(geneAnnot) != "GRanges"){
         stop("geneAnnot argument should be of class GRanges \n")
     }
-    if(.Platform$OS.type != "unix"){
-        stop("This functions is only available for UNIX operative systems \n")
+    if(.Platform$OS.type == "windows"){
+        stop("This functions is not available in Windows operative systems \n")
     }
     if(verbose){
         cat("Processing", length(reads), "paired-end reads, using",
@@ -337,7 +337,7 @@ tx_coverageTab <- function(x){
 #' @param x CompressedGRangesList. Genomic Ranges list containing genomic
 #' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
 #' functions.
-#' @param nCores integer. Number of cores to use.
+#' @param nCores integer. Number of cores to use to run function.
 #'
 #' @return data.table
 #' @export
@@ -407,6 +407,42 @@ tx_nucFreqTab <- function(x, simplify_IUPAC = "not"){
     }) %>% magrittr::set_names(names(x))
 }
 
+#' Calculate nucleotide frequency pileup for all gene models
+#'
+#' @param x CompressedGRangesList. Genomic Ranges list containing genomic
+#' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
+#' functions.
+#' @param simplify_IUPAC character. Method to simplify ambiguous reads:
+#' 1) 'not': Ambiguous reads will be left as their IUPAC_ambiguous code, e.g.
+#' for positions in which a 'G' and and 'A' where read an 'R' will note this.
+#' 2) "splitHalf': Ambiguous reads will be divided in half, in odd cases having
+#' fractions of reads assigned.
+#' 3) "splitForceInt": Ambiguous reads will be divided in half, but forced to be
+#' integers, unassigned fraction of reads will be summed and assigned as 'N'.
+#' @param nCores integer. Number of cores to use to run function.
+#'
+#' @return data.table
+#' @export
+#'
+#' @author M.A. Garcia-Campos
+#'
+#' @examples
+tx_nucFreqTab_mc <- function(x, simplify_IUPAC = "not", nCores){
+    iGenes <- names(x)
+    parallel::mclapply(mc.cores = nCores, X = iGenes, function(iGene){
+        y <- Biostrings::consensusMatrix(x = x[[iGene]]$seq,
+                                         shift = GenomicRanges::start(x[[iGene]]) -1,
+                                         width = GenomeInfoDb::seqlengths(x[[iGene]])[iGene])
+        if(simplify_IUPAC == "not"){
+            hlp_addMissingNucs(y) %>% t %>% data.table::data.table()
+        }else if(simplify_IUPAC == "splitHalf"){
+            hlp_splitNucsHalf(y) %>% t %>% data.table::data.table()
+        }else if(simplify_IUPAC == "splitForceInt"){
+            hlp_splitNucsForceInt(y) %>% t %>% data.table::data.table()
+        }
+    }) %>% magrittr::set_names(names(x))
+}
+
 #' Table with genomic and transcriptomic coordinates
 #'
 #' @param x CompressedGRangesList. Genomic Ranges list containing genomic
@@ -444,12 +480,16 @@ tx_genCoorTab <- function(x, geneAnnot){
     }
 }
 
-#' Summarized Coverage data.table
+#' Table with genomic and transcriptomic coordinates (Multi-core)
+#'
+#' This function is the multi-core version of tx_genCoorTab(), and is only
+#' available for use in UNIX-like operative systems.
 #'
 #' @param x CompressedGRangesList. Genomic Ranges list containing genomic
 #' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
 #' functions.
 #' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed()
+#' @param nCores integer. Number of cores to use to run function.
 #'
 #' @return data.table
 #' @export
@@ -457,9 +497,59 @@ tx_genCoorTab <- function(x, geneAnnot){
 #' @author M.A. Garcia-Campos
 #'
 #' @examples
-tx_coverageDT <- function(x, geneAnnot){
-    hlp_cbind2Tabs(tx_genCoorTab(x, geneAnnot),
-                   tx_coverageTab(x))
+tx_genCoorTab_mc <- function(x, geneAnnot, nCores){
+    if(.Platform$OS.type == "windows"){
+        stop("This functions is not available in Windows operative systems. \n")
+    }
+    if(all(names(x) %in% geneAnnot$name)){
+        parallel::mclapply(mc.cores = nCores, X = names(x), function(iGene){
+            tmp2 <- geneAnnot[which(geneAnnot$name == iGene)]
+            tmp3 <- c(GenomicAlignments::seqnames(tmp2),
+                      GenomicRanges::strand(tmp2)) %>% as.character() %>% c(iGene)
+            tmpDT <- rep(tmp3, GenomeInfoDb::seqlengths(x[[iGene]])[iGene]) %>%
+                matrix(ncol = 3, byrow = T) %>%
+                cbind(exonBlockGen(iGene, geneAnnot)) %>%
+                cbind(seq(1, GenomeInfoDb::seqlengths(x[[iGene]])[iGene])) %>%
+                .[,c(1,4,2,3,5)] %>% data.table::data.table() %>%
+                magrittr::set_colnames(c("chr", "gencoor", "strand", "gene", "txcoor"))
+            tmpDT$chr <- as.factor(tmpDT$chr)
+            tmpDT$gencoor <- as.integer(tmpDT$gencoor)
+            tmpDT$strand <- as.factor(tmpDT$strand)
+            tmpDT$gene <- as.factor(tmpDT$gene)
+            tmpDT$txcoor <- as.integer(tmpDT$txcoor)
+            return(tmpDT)
+        }) %>% magrittr::set_names(names(x))
+    }else{
+        stop("Names of x are not contained in geneAnnot$name .\n")
+    }
+}
+
+#' Summarized Coverage data.table
+#'
+#' @param x CompressedGRangesList. Genomic Ranges list containing genomic
+#' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
+#' functions.
+#' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed()
+#' @param nCores integer. Number of cores to use to run function.
+#'
+#' @return data.table
+#' @export
+#'
+#' @author M.A. Garcia-Campos
+#'
+#' @examples
+tx_coverageDT <- function(x, geneAnnot, nCores = 1){
+    if((nCores - floor(nCores)) > 0 | !is.numeric(nCores)){
+        stop("nCores argument must be an integer.\n")
+    }
+    if(nCores == 1){
+        hlp_cbind2Tabs(tx_genCoorTab(x, geneAnnot), tx_coverageTab(x))
+    }else{
+        if(.Platform$OS.type == "windows"){
+            stop("The multi-core capability of this function is not available in Windows operating systems.\n")
+        }
+        hlp_cbind2Tabs(tx_genCoorTab_mc(x, geneAnnot, nCores), tx_coverageTab_mc(x, nCores))
+    }
 }
 
 #' Summarized Nucleotide Frequency data.table
@@ -480,6 +570,7 @@ tx_coverageDT <- function(x, geneAnnot){
 #' their corresponding nucleotides, in cases where frequency is odd creating
 #' non-integer frequencies.
 #' }
+#' @param nCores integer. Number of cores to use to run function.
 #'
 #' @return data.table
 #' @export
@@ -487,10 +578,23 @@ tx_coverageDT <- function(x, geneAnnot){
 #' @author M.A. Garcia-Campos
 #'
 #' @examples
-tx_nucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt"){
-    hlp_cbind2Tabs(tx_genCoorTab(x, geneAnnot),
-                   tx_nucFreqTab(x, simplify_IUPAC))
+tx_nucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt", nCores = 1){
+    if((nCores - floor(nCores)) > 0 | !is.numeric(nCores)){
+        stop("nCores argument must be an integer.\n")
+    }
+    if(nCores == 1){
+        hlp_cbind2Tabs(tx_genCoorTab(x, geneAnnot),
+                       tx_nucFreqTab(x, simplify_IUPAC))
+    }else{
+        if(.Platform$OS.type == "windows"){
+            stop("The multi-core capability of this function is not available in Windows operating systems.\n")
+        }
+        hlp_cbind2Tabs(tx_genCoorTab_mc(x, geneAnnot, nCores),
+                       tx_nucFreqTab_mc(x, simplify_IUPAC, nCores))
+    }
 }
+
+
 
 #' Summarized Coverage & Nucleotide Frequency data.table
 #'
@@ -510,16 +614,29 @@ tx_nucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt"){
 #' their corresponding nucleotides, in cases where frequency is odd creating
 #' non-integer frequencies.
 #' }
+#' @param nCores integer. Number of cores to use to run function.
 #'
 #' @return data.table
 #' @export
 #' @author M.A. Garcia-Campos
 #'
 #' @examples
-tx_covNucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt"){
-    hlp_cbind3Tabs(tx_genCoorTab(x, geneAnnot),
-                   tx_coverageTab(x),
-                   tx_nucFreqTab(x, simplify_IUPAC))
+tx_covNucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt", nCores = 1){
+    if((nCores - floor(nCores)) > 0 | !is.numeric(nCores)){
+        stop("nCores argument must be an integer.\n")
+    }
+    if(nCores == 1){
+        hlp_cbind3Tabs(tx_genCoorTab(x, geneAnnot),
+                       tx_coverageTab(x),
+                       tx_nucFreqTab(x, simplify_IUPAC))
+    }else{
+        if(.Platform$OS.type == "windows"){
+            stop("The multi-core capability of this function is not available in Windows operating systems.\n")
+        }
+        hlp_cbind3Tabs(tx_genCoorTab_mc(x, geneAnnot, nCores),
+                       tx_coverageTab_mc(x, nCores),
+                       tx_nucFreqTab_mc(x, simplify_IUPAC, nCores))
+    }
 }
 
 #' Quantifies reads by gene model from a tx_reads list

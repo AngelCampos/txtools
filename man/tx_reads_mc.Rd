@@ -19,7 +19,7 @@ tx_reads_mc(
 
 \item{geneAnnot}{GenomicRanges. Gene annotation loaded via the tx_load_bed()}
 
-\item{nCores}{integer. Number of cores to be used.}
+\item{nCores}{integer. Number of cores to use to run function.}
 
 \item{overlapType}{character. Overlap type to filter reads by gene model.}
 

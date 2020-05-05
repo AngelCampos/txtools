@@ -23,13 +23,13 @@ to process and analyze RNA-seq data in which transcript-structure and
 close nucleotide-level inspection is required, e.g. analyzing
 RNA-seq data derived from RNA-modifications detection protocols.
 
-**txtools** is a package that processes GenomicAlignment objects into their 
-transcriptomic counterparts, and facillitate their analysis through different
+**txtools** is a package that processes `GenomicAlignment` objects into their 
+transcriptomic counterparts, and facilitate their analysis through different
 transcript-wise functions.
 
 **txtools** is meant to expand the functionality of the 
 [**GenomicAlignments**](https://bioconductor.org/packages/release/bioc/html/GenomicRanges.html)
-package, as currently it does not support transcript-wise features. 
+package, as currently it does not support transcript-wise conversion or features. 
 
 
 ## Installation
@@ -119,7 +119,9 @@ txReads$uc003lam.1@ranges # Ranges of reads in transcriptomic space
 
 * Extracting meta columns, with additional data, using the mcols() function. 
 In this case, we extract the values for the 6th mapping of the 'uc010nap.1'
-gene.
+gene, which is one of the paired-end sequence, as we loaded this information 
+setting tx_reads() argument `withSeq` to TRUE.
+
 ```{r}
 GenomicRanges::mcols(txReads$uc010nap.1)[6,]
 ```
@@ -171,6 +173,7 @@ counts.
 
 ```{r, }
 resTab1 <- tx_coverageDT(txReads, geneAnnot)
+# resTab1 <- tx_coverageDT(txReads, geneAnnot, nCores = 2) # Using multi-cores
 resTab1[[1]]
 ```
 
@@ -178,6 +181,7 @@ resTab1[[1]]
 
 ```{r, }
 resTab2 <- tx_nucFreqDT(txReads, geneAnnot)
+# resTab2 <- tx_nucFreqDT(txReads, geneAnnot, nCores = 2) # Using multi-cores
 resTab2[[1]]
 ```
 
@@ -186,6 +190,7 @@ read-ends counts, and nucleotide frequency).
 
 ```{r, }
 resTab3 <- tx_covNucFreqDT(txReads, geneAnnot)
+# resTab3 <- tx_covNucFreqDT(txReads, geneAnnot, nCores = 2) # Using multi-cores
 resTab3[[1]]
 
 ```
