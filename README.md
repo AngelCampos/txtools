@@ -143,7 +143,9 @@ txReads$uc003lam.1@ranges # Ranges of reads in transcriptomic space
 
   - Extracting meta columns, with additional data, using the mcols()
     function. In this case, we extract the values for the 6th mapping of
-    the ‘uc010nap.1’ gene.
+    the ‘uc010nap.1’ gene, which is one of the paired-end sequence, as
+    we loaded this information setting tx\_reads() argument `withSeq` to
+    TRUE.
 
 <!-- end list -->
 
@@ -210,6 +212,7 @@ information:
 
 ``` r
 resTab1 <- tx_coverageDT(txReads, geneAnnot)
+# resTab1 <- tx_coverageDT(txReads, geneAnnot, nCores = 2) # Using multi-cores
 resTab1[[1]]
 #>        chr   gencoor strand       gene txcoor cov start_5p end_3p
 #>    1: chr5 134734928      - uc003lam.1      1   1        1      0
@@ -231,6 +234,7 @@ resTab1[[1]]
 
 ``` r
 resTab2 <- tx_nucFreqDT(txReads, geneAnnot)
+# resTab2 <- tx_nucFreqDT(txReads, geneAnnot, nCores = 2) # Using multi-cores
 resTab2[[1]]
 #>        chr   gencoor strand       gene txcoor A C G T N - .
 #>    1: chr5 134734928      - uc003lam.1      1 1 0 0 0 0 0 0
@@ -253,6 +257,7 @@ resTab2[[1]]
 
 ``` r
 resTab3 <- tx_covNucFreqDT(txReads, geneAnnot)
+# resTab3 <- tx_covNucFreqDT(txReads, geneAnnot, nCores = 2) # Using multi-cores
 resTab3[[1]]
 #>        chr   gencoor strand       gene txcoor cov start_5p end_3p A C G T N - .
 #>    1: chr5 134734928      - uc003lam.1      1   1        1      0 1 0 0 0 0 0 0
@@ -447,7 +452,7 @@ utils::sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] txtools_0.0.0.9003
+#> [1] txtools_0.0.0.9004
 #> 
 #> loaded via a namespace (and not attached):
 #>  [1] Rcpp_1.0.4.6                      pillar_1.4.4                     

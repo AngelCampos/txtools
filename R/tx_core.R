@@ -276,6 +276,7 @@ tx_reads_mc <- function(reads, geneAnnot, nCores, overlapType = "within",
 #' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
 #' functions.
 #' @param thr numeric. Threshold for maximum width size allowed on output.
+#' @param nCores integer. Number of cores to be used to run function.
 #'
 #' @return CompressedGRangesList
 #' @export
@@ -283,16 +284,35 @@ tx_reads_mc <- function(reads, geneAnnot, nCores, overlapType = "within",
 #' @author M.A. Garcia-Campos
 #'
 #' @examples
-tx_filter_max_width <- function(x, thr){
-    tmp <- GenomicAlignments::width(x) %>% magrittr::is_weakly_less_than(thr)
-    lapply(seq(1, length(x)), function(i){
-        if(all(tmp[[i]])){
-            x[[i]]
+tx_filter_max_width <- function(x, thr, nCores){
+    if((nCores - floor(nCores)) > 0 | !is.numeric(nCores)){
+        stop("nCores argument must be an integer.\n")
+    }
+    if(nCores == 1){
+        tmp <- GenomicAlignments::width(x) %>% magrittr::is_weakly_less_than(thr)
+        lapply(seq(1, length(x)), function(i){
+            if(all(tmp[[i]])){
+                x[[i]]
+            }else{
+                x[[i]][tmp[[i]]]
+            }
+        }) %>% GenomicRanges::GRangesList() %>% magrittr::set_names(names(x))
+    }else{
+        if(.Platform$OS.type == "windows"){
+            stop("The multi-core capability of this function is not available in Windows operating systems.\n")
         }else{
-            x[[i]][tmp[[i]]]
+            tmp <- GenomicAlignments::width(x) %>% magrittr::is_weakly_less_than(thr)
+            parallel::mclapply(mc.cores = nCores, seq(1, length(x)), function(i){
+                if(all(tmp[[i]])){
+                    x[[i]]
+                }else{
+                    x[[i]][tmp[[i]]]
+                }
+            }) %>% GenomicRanges::GRangesList() %>% magrittr::set_names(names(x))
         }
-    }) %>% GenomicRanges::GRangesList() %>% magrittr::set_names(names(x))
+    }
 }
+
 
 #' Calculate coverage table: coverage, 5prime-starts, and 3prime-ends
 #'
@@ -526,13 +546,24 @@ tx_genCoorTab_mc <- function(x, geneAnnot, nCores){
 
 #' Summarized Coverage data.table
 #'
+#' This function constructs a list of data.tables that contains coverage metrics
+#' per nucleotide in transcript: cov = Insert coverage, start_5p = read-start
+#' counts, and end_3p = read-end counts. The function requires the input of a
+#' GRangesList object output by the \code{\link{tx_reads}} funtion, which contains sequence
+#' alignments in the transcriptomic space, and a gene annotation in GRanges
+#' format, as loaded by the \code{\link{tx_load_bed}} function.
+#'
+#' This function allows for usage of multiple
+#' cores to reduce processing times in UNIX-like OS.
+#'
+#'
 #' @param x CompressedGRangesList. Genomic Ranges list containing genomic
 #' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
 #' functions.
 #' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed()
 #' @param nCores integer. Number of cores to use to run function.
 #'
-#' @return data.table
+#' @return list
 #' @export
 #'
 #' @author M.A. Garcia-Campos

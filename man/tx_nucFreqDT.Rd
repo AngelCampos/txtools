@@ -4,7 +4,7 @@
 \alias{tx_nucFreqDT}
 \title{Summarized Nucleotide Frequency data.table}
 \usage{
-tx_nucFreqDT(x, geneAnnot, simplify_IUPAC = "splitForceInt", nCores)
+tx_nucFreqDT(x, geneAnnot, simplify_IUPAC = "splitForceInt", nCores = 1)
 }
 \arguments{
 \item{x}{CompressedGRangesList. Genomic Ranges list containing genomic

@@ -4,7 +4,7 @@
 \alias{tx_filter_max_width}
 \title{Filter ranges by a maximum width}
 \usage{
-tx_filter_max_width(x, thr)
+tx_filter_max_width(x, thr, nCores)
 }
 \arguments{
 \item{x}{CompressedGRangesList. Genomic Ranges list containing genomic
@@ -12,6 +12,8 @@ alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
 functions.}
 
 \item{thr}{numeric. Threshold for maximum width size allowed on output.}
+
+\item{nCores}{integer. Number of cores to be used to run function.}
 }
 \value{
 CompressedGRangesList
