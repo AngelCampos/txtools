@@ -284,7 +284,7 @@ tx_reads_mc <- function(reads, geneAnnot, nCores, overlapType = "within",
 #' @author M.A. Garcia-Campos
 #'
 #' @examples
-tx_filter_max_width <- function(x, thr, nCores){
+tx_filter_max_width <- function(x, thr, nCores = 1){
     if((nCores - floor(nCores)) > 0 | !is.numeric(nCores)){
         stop("nCores argument must be an integer.\n")
     }

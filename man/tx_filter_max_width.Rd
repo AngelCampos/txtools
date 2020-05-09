@@ -4,7 +4,7 @@
 \alias{tx_filter_max_width}
 \title{Filter ranges by a maximum width}
 \usage{
-tx_filter_max_width(x, thr, nCores)
+tx_filter_max_width(x, thr, nCores = 1)
 }
 \arguments{
 \item{x}{CompressedGRangesList. Genomic Ranges list containing genomic

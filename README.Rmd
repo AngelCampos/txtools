@@ -145,7 +145,7 @@ tx_counts(txReads)
 
 To control for spurious mappings we can filter for too long mappings, now in the
 transcriptomic space, with the `tx_filter_max_width()` function. In this example
-we set the threshold to 500, removing mappings longer than 500 nucleotides at 
+we set the threshold to 300, removing mappings longer than 300 nucleotides at 
 the transcript level.
 
 ```{r}
