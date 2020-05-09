@@ -1,6 +1,7 @@
 Package: txtools
 Title: An interface betwen GenomicAlignments and transcriptomic representations
-Version: 0.0.0.9005
+Version: 0.0.0.9006
+Date: 2020-08-05
 Authors@R: 
     person(given = "Miguel Angel",
            family = "Garcia-Campos",
@@ -27,8 +28,9 @@ Imports:
     GenomeInfoDb,
     data.table,
     plyranges,
-    S4Vectors,
+    S4Vectors (>= 0.23.20),
     Biostrings,
     IRanges,
     tibble,
-    utils
+    utils,
+    rlang (>= 0.4.3)
