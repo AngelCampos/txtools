@@ -335,10 +335,10 @@ tx_coverageTab <- function(x){
     sta <- GenomicRanges::start(x) %>% lapply(table) %>% magrittr::set_names(names(x))
     end <- GenomicRanges::end(x) %>% lapply(table) %>% magrittr::set_names(names(x))
     len <- GenomeInfoDb::seqlengths(x)
-    OUT <- lapply(1:length(x), function(i){
-        tmpMat <- matrix(0, nrow = len[i], ncol = 3) %>% data.frame() %>%
+    OUT <- lapply(names(x), function(i){
+        tmpMat <- matrix(0, nrow = len[[i]], ncol = 3) %>% data.frame() %>%
             data.table::data.table() %>%
-            magrittr::set_rownames(1:len[i]) %>%
+            magrittr::set_rownames(1:len[[i]]) %>%
             magrittr::set_colnames(c("cov", "start_5p", "end_3p"))
         tmpMat[names(sta[[i]]), "start_5p"] <- sta[[i]]
         tmpMat[names(end[[i]]), "end_3p"] <- end[[i]]
@@ -736,10 +736,14 @@ tx_add_endRatio <- function(x){
 #' @export
 #'
 #' @examples
-tx_add_siteAnnotation <- function(x, GR, type = "logical", colName){
-    if(class(GR) != "GRanges"){stop("GR must be of class GRanges")}
-    if(class(x)[1] != "data.table"){stop("x must be of class data.table")}
-    if(!all(GenomicRanges::start(subGR) == GenomicRanges::end(subGR))){
+tx_add_siteAnnotation <- function (x, GR, type = "logical", colName) {
+    if(class(GR) != "GRanges"){
+        stop("GR must be of class GRanges")
+    }
+    if(class(x)[1] != "data.table"){
+        stop("x must be of class data.table")
+    }
+    if(!all(GenomicRanges::start(GR) == GenomicRanges::end(GR))) {
         stop("start and ends are not the same in GR, only 1-nuc-long sites allowed")
     }
     subGR <- GR[as.character(x$chr[1]) == GenomicRanges::seqnames(GR)]
@@ -747,12 +751,15 @@ tx_add_siteAnnotation <- function(x, GR, type = "logical", colName){
     # Logical variable case
     if(type == "logical"){
         addAnnot <- rep(FALSE, nrow(x))
-        if(length(subGR) == 0){
-            tibble::add_column(x, addAnnot) %>% magrittr::set_names(c(oNames, colName))
+        if (length(subGR) == 0){
+            tibble::add_column(x, addAnnot) %>%
+                magrittr::set_names(c(oNames, colName)) # adding new col name
         }
-        foundGenLoc <- GenomicRanges::start(subGR)[which(GenomicRanges::start(subGR) %in% x$gencoor)]
+        foundGenLoc <- GenomicRanges::start(subGR)[which(GenomicRanges::start(subGR) %in%
+                                                             x$gencoor)]
         if(length(foundGenLoc) == 0){
-            tibble::add_column(x, addAnnot) %>% magrittr::set_names(c(oNames, colName))
+            tibble::add_column(x, addAnnot) %>%
+                magrittr::set_names(c(oNames, colName)) # adding new col name
         }
         addAnnot[match(foundGenLoc, x$gencoor)] <- TRUE
         tibble::add_column(x, addAnnot) %>% magrittr::set_names(c(oNames, colName))
@@ -808,17 +815,19 @@ tx_add_refSeqDT <- function (DT, fastaGenome, geneAnnot){
 #' @export
 #'
 #' @examples
-tx_aggregate_DTlist <- function(DTL1, DTL2, colsToAdd){
+tx_aggregate_DTlist <- function (DTL1, DTL2, colsToAdd){
     allNames <- union(names(DTL1), names(DTL2))
     namesInBoth <- intersect(names(DTL1), names(DTL2))
     namesOnly1 <- setdiff(names(DTL1), names(DTL2))
     namesOnly2 <- setdiff(names(DTL2), names(DTL1))
     tmpDTL <- lapply(namesInBoth, function(iGene){
-        if(!identical(DTL1[[iGene]][,-..colsToAdd], DTL2[[iGene]][,-..colsToAdd])){
+        if(!identical(DTL1[[iGene]][, -colsToAdd, with = FALSE],
+                      DTL2[[iGene]][,-colsToAdd, with = FALSE])){
             stop(paste("Coordinate data in", iGene, " data.table is not compatible"))
         }
-        tmp <- DTL1[[iGene]][,..colsToAdd] + DTL2[[iGene]][,..colsToAdd]
-        cbind(DTL1[[iGene]][,-..colsToAdd], tmp)
+        tmp <- DTL1[[iGene]][, colsToAdd, with = FALSE] +
+            DTL2[[iGene]][, colsToAdd, with = FALSE]
+        cbind(DTL1[[iGene]][, -colsToAdd, with = FALSE], tmp)
     }) %>% magrittr::set_names(namesInBoth)
     c(tmpDTL, DTL1[namesOnly1], DTL2[namesOnly2])[allNames]
 }
