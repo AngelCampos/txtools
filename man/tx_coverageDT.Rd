@@ -20,15 +20,20 @@ list
 }
 \description{
 This function constructs a list of data.tables that contains coverage metrics
-per nucleotide in transcript: cov = Insert coverage, start_5p = read-start
-counts, and end_3p = read-end counts. The function requires the input of a
-GRangesList object output by the \code{\link{tx_reads}} funtion, which contains sequence
-alignments in the transcriptomic space, and a gene annotation in GRanges
-format, as loaded by the \code{\link{tx_load_bed}} function.
+per nucleotide in transcript:
+\itemize{
+\item cov = Insert coverage
+\item start_5p = read-start counts
+\item end_3p = read-end counts
+}
+The function requires the input of a GRangesList object output by the
+\code{\link{tx_reads}} function, which should contain sequence alignments in the
+transcriptomic space, and a gene annotation in GRanges format, as loaded by
+the \code{\link{tx_load_bed}} function.
 }
 \details{
-This function allows for usage of multiple
-cores to reduce processing times in UNIX-like OS.
+This function allows for usage of multiple cores to reduce processing times
+in UNIX-like OS.
 }
 \author{
 M.A. Garcia-Campos

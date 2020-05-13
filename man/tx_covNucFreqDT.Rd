@@ -32,7 +32,25 @@ non-integer frequencies.
 data.table
 }
 \description{
-Summarized Coverage & Nucleotide Frequency data.table
+#' This function constructs a list of data.tables that contains nucleotide frequency
+metrics per nucleotide by transcript:
+\itemize{
+\item A = Adenine
+\item C = Citocine
+\item G = Guanine
+\item T = Timine
+\item N = Read but undetermined
+\item - = Deletion
+\item . = Gap between read1 and read2
+}
+The function requires the input of a GRangesList object output by the
+\code{\link{tx_reads}} function, which should contain sequence alignments in the
+transcriptomic space, and a gene annotation in GRanges format, as loaded by
+the \code{\link{tx_load_bed}} function.
+}
+\details{
+This function allows for usage of multiple cores to reduce processing times
+in UNIX-like OS.
 }
 \author{
 M.A. Garcia-Campos

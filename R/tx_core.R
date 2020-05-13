@@ -547,15 +547,19 @@ tx_genCoorTab_mc <- function(x, geneAnnot, nCores){
 #' Summarized Coverage data.table
 #'
 #' This function constructs a list of data.tables that contains coverage metrics
-#' per nucleotide in transcript: cov = Insert coverage, start_5p = read-start
-#' counts, and end_3p = read-end counts. The function requires the input of a
-#' GRangesList object output by the \code{\link{tx_reads}} funtion, which contains sequence
-#' alignments in the transcriptomic space, and a gene annotation in GRanges
-#' format, as loaded by the \code{\link{tx_load_bed}} function.
+#' per nucleotide in transcript:
+#'\itemize{
+#'\item cov = Insert coverage
+#'\item start_5p = read-start counts
+#'\item end_3p = read-end counts
+#'}
+#' The function requires the input of a GRangesList object output by the
+#' \code{\link{tx_reads}} function, which should contain sequence alignments in the
+#' transcriptomic space, and a gene annotation in GRanges format, as loaded by
+#' the \code{\link{tx_load_bed}} function.
 #'
-#' This function allows for usage of multiple
-#' cores to reduce processing times in UNIX-like OS.
-#'
+#' This function allows for usage of multiple cores to reduce processing times
+#' in UNIX-like OS.
 #'
 #' @param x CompressedGRangesList. Genomic Ranges list containing genomic
 #' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
@@ -584,6 +588,28 @@ tx_coverageDT <- function(x, geneAnnot, nCores = 1){
 }
 
 #' Summarized Nucleotide Frequency data.table
+#'
+#' This function constructs a list of data.tables that contains nucleotide frequency
+#' metrics per nucleotide by transcript:
+#'\itemize{
+#'\item cov = Insert coverage
+#'\item start_5p = read-start counts
+#'\item end_3p = read-end counts
+#'\item A = Adenine
+#'\item C = Citocine
+#'\item G = Guanine
+#'\item T = Timine
+#'\item N = Read but undetermined
+#'\item - = Deletion
+#'\item . = Gap between read1 and read2
+#'}
+#' The function requires the input of a GRangesList object output by the
+#' \code{\link{tx_reads}} function, which should contain sequence alignments in the
+#' transcriptomic space, and a gene annotation in GRanges format, as loaded by
+#' the \code{\link{tx_load_bed}} function.
+#'
+#' This function allows for usage of multiple cores to reduce processing times
+#' in UNIX-like OS.
 #'
 #' @param x CompressedGRangesList. Genomic Ranges list containing genomic
 #' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
@@ -628,6 +654,25 @@ tx_nucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt", nCores 
 
 
 #' Summarized Coverage & Nucleotide Frequency data.table
+#'
+#' #' This function constructs a list of data.tables that contains nucleotide frequency
+#' metrics per nucleotide by transcript:
+#'\itemize{
+#'\item A = Adenine
+#'\item C = Citocine
+#'\item G = Guanine
+#'\item T = Timine
+#'\item N = Read but undetermined
+#'\item - = Deletion
+#'\item . = Gap between read1 and read2
+#'}
+#' The function requires the input of a GRangesList object output by the
+#' \code{\link{tx_reads}} function, which should contain sequence alignments in the
+#' transcriptomic space, and a gene annotation in GRanges format, as loaded by
+#' the \code{\link{tx_load_bed}} function.
+#'
+#' This function allows for usage of multiple cores to reduce processing times
+#' in UNIX-like OS.
 #'
 #' @param x CompressedGRangesList. Genomic Ranges list containing genomic
 #' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
