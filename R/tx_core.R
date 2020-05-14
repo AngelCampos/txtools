@@ -854,7 +854,7 @@ tx_add_refSeqDT <- function (DT, fastaGenome, geneAnnot){
 #'
 #' @param DTL1 list List of data.table with gene names. As output of the
 #' \code{\link{tx_coverageDT}}, \code{\link{tx_nucFreqDT}}, and
-#' \code{\link{tx_covNucFreq}} functions.
+#' \code{\link{tx_covNucFreqDT}} functions.
 #' @param DTL2 list List of data.table with gene names.
 #' @param colsToAdd character. Numeric column(s) to be aggregated (added).
 #' @param keepAll logical. Set to FALSE for just keeping data.tables which

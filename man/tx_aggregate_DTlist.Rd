@@ -9,7 +9,7 @@ tx_aggregate_DTlist(DTL1, DTL2, colsToAdd, keepAll = TRUE)
 \arguments{
 \item{DTL1}{list List of data.table with gene names. As output of the
 \code{\link{tx_coverageDT}}, \code{\link{tx_nucFreqDT}}, and
-\code{\link{tx_covNucFreq}} functions.}
+\code{\link{tx_covNucFreqDT}} functions.}
 
 \item{DTL2}{list List of data.table with gene names.}
 
