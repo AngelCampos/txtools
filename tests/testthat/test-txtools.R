@@ -17,3 +17,8 @@ testthat::expect_identical(length(txReads), 2L)
 testthat::expect_identical(as.character(class(txReads[[1]])), "GRanges")
 # Class data.table
 testthat::expect_identical(class(DTL[[1]]), c("data.table", "data.frame"))
+#Check for txcoor integer continuity
+testthat::expect_equivalent(DTL$uc003lam.1$txcoor, 1:1924)
+# Test for strand of gene
+testthat::expect_identical(unique(DTL$uc003lam.1$strand), as.factor("-"))
+testthat::expect_identical(unique(DTL$uc010nap.1$strand), as.factor("-"))
