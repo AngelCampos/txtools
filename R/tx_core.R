@@ -852,29 +852,38 @@ tx_add_refSeqDT <- function (DT, fastaGenome, geneAnnot){
 
 #' Merge lists of data.tables
 #'
-#' @param DTL1 data.table
-#' @param DTL2 data.table
+#' @param DTL1 list List of data.table with gene names. As output of the
+#' \code{\link{tx_coverageDT}}, \code{\link{tx_nucFreqDT}}, and
+#' \code{\link{tx_covNucFreq}} functions.
+#' @param DTL2 list List of data.table with gene names.
 #' @param colsToAdd character. Numeric column(s) to be aggregated (added).
+#' @param keepAll logical. Set to FALSE for just keeping data.tables which
+#' name's are in both DTL.
 #'
 #' @return list
 #' @export
 #'
 #' @examples
-tx_aggregate_DTlist <- function (DTL1, DTL2, colsToAdd){
+tx_aggregate_DTlist <- function (DTL1, DTL2, colsToAdd, keepAll = TRUE){
     allNames <- union(names(DTL1), names(DTL2))
     namesInBoth <- intersect(names(DTL1), names(DTL2))
     namesOnly1 <- setdiff(names(DTL1), names(DTL2))
     namesOnly2 <- setdiff(names(DTL2), names(DTL1))
     tmpDTL <- lapply(namesInBoth, function(iGene){
-        if(!identical(DTL1[[iGene]][, -colsToAdd, with = FALSE],
-                      DTL2[[iGene]][,-colsToAdd, with = FALSE])){
-            stop(paste("Coordinate data in", iGene, " data.table is not compatible"))
+        if(!identical(DTL1[[iGene]][, c("chr", "gencoor", "strand", "gene", "txcoor")],
+                      DTL2[[iGene]][, c("chr", "gencoor", "strand", "gene", "txcoor")])){
+            stop(paste("Coordinate data in", iGene, " data.tables are not compatible"))
+        }else{
+            tmp <- DTL1[[iGene]][, colsToAdd, with = FALSE] +
+                DTL2[[iGene]][, colsToAdd, with = FALSE]
+            cbind(DTL1[[iGene]][, c("chr", "gencoor", "strand", "gene", "txcoor"), with = FALSE], tmp)
         }
-        tmp <- DTL1[[iGene]][, colsToAdd, with = FALSE] +
-            DTL2[[iGene]][, colsToAdd, with = FALSE]
-        cbind(DTL1[[iGene]][, -colsToAdd, with = FALSE], tmp)
     }) %>% magrittr::set_names(namesInBoth)
-    c(tmpDTL, DTL1[namesOnly1], DTL2[namesOnly2])[allNames]
+    if(keepAll){
+        c(tmpDTL, DTL1[namesOnly1], DTL2[namesOnly2])[allNames]
+    }else{
+        tmpDTL
+    }
 }
 
 

@@ -290,7 +290,7 @@ barplot(resTab3[[iGene]]$cov, main = paste(iGene, "Coverage"),
         ylab = "Counts", xlab = iGene)
 ```
 
-<img src="man/figures/README-barplot coverage-1.png" width="100%" />
+<img src="man/figures/README-barplot_coverage-1.png" width="100%" />
 
   - Nucleotide frequency barplot
 
@@ -303,7 +303,7 @@ barplot(t(data.frame(resTab3[[iGene]][,c("A", "T", "G", "C", "N")])),
         main = paste("Nucleotide Frequency"), ylab = "Counts", xlab = iGene)
 ```
 
-<img src="man/figures/README-barplot nucfreq-1.png" width="100%" />
+<img src="man/figures/README-barplot_nucfreq-1.png" width="100%" />
 
 ### Aggregating and splitting data.tables
 

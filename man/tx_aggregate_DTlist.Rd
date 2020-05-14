@@ -4,14 +4,19 @@
 \alias{tx_aggregate_DTlist}
 \title{Merge lists of data.tables}
 \usage{
-tx_aggregate_DTlist(DTL1, DTL2, colsToAdd)
+tx_aggregate_DTlist(DTL1, DTL2, colsToAdd, keepAll = TRUE)
 }
 \arguments{
-\item{DTL1}{data.table}
+\item{DTL1}{list List of data.table with gene names. As output of the
+\code{\link{tx_coverageDT}}, \code{\link{tx_nucFreqDT}}, and
+\code{\link{tx_covNucFreq}} functions.}
 
-\item{DTL2}{data.table}
+\item{DTL2}{list List of data.table with gene names.}
 
 \item{colsToAdd}{character. Numeric column(s) to be aggregated (added).}
+
+\item{keepAll}{logical. Set to FALSE for just keeping data.tables which
+name's are in both DTL.}
 }
 \value{
 list

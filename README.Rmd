@@ -205,7 +205,7 @@ column:
 
 * Coverage barplot
 
-```{r, barplot coverage}
+```{r, barplot_coverage}
 iGene <- "uc003lam.1"
 barplot(resTab3[[iGene]]$cov, main = paste(iGene, "Coverage"),
         ylab = "Counts", xlab = iGene)
@@ -213,7 +213,7 @@ barplot(resTab3[[iGene]]$cov, main = paste(iGene, "Coverage"),
 
 * Nucleotide frequency barplot
 
-```{r, barplot nucfreq}
+```{r, barplot_nucfreq}
 iGene <- "uc010nap.1"
 barplot(t(data.frame(resTab3[[iGene]][,c("A", "T", "G", "C", "N")])),
         col = c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "black"), border = "gray",
