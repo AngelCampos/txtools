@@ -3,6 +3,7 @@
 
 <!-- badges: start -->
 
+[![](https://img.shields.io/badge/devel%20version-0.0.0.9007-blue.svg)](https://github.com/AngelCampos/txtools)
 <!-- badges: end -->
 
 Transcript-wise data analysis is increasingly needed to process and
@@ -10,8 +11,8 @@ analyze RNA-seq data in which transcript-structure and close
 nucleotide-level inspection is required, e.g. analyzing RNA-seq data
 derived from RNA-modifications detection protocols.
 
-**txtools** is a package that processes `GenomicAlignment` objects into
-their transcriptomic counterparts, and facilitate their analysis through
+**txtools** is a package that processes `GenomicAlignments` into their
+transcriptomic counterparts, and facilitate their analysis through
 different transcript-wise functions.
 
 **txtools** is meant to expand the functionality of the
@@ -289,7 +290,7 @@ barplot(resTab3[[iGene]]$cov, main = paste(iGene, "Coverage"),
         ylab = "Counts", xlab = iGene)
 ```
 
-<img src="man/figures/README-unnamed-chunk-11-1.png" width="100%" />
+<img src="man/figures/README-barplot coverage-1.png" width="100%" />
 
   - Nucleotide frequency barplot
 
@@ -302,7 +303,7 @@ barplot(t(data.frame(resTab3[[iGene]][,c("A", "T", "G", "C", "N")])),
         main = paste("Nucleotide Frequency"), ylab = "Counts", xlab = iGene)
 ```
 
-<img src="man/figures/README-unnamed-chunk-12-1.png" width="100%" />
+<img src="man/figures/README-barplot nucfreq-1.png" width="100%" />
 
 ### Aggregating and splitting data.tables
 
@@ -450,32 +451,38 @@ utils::sessionInfo()
 #> [1] txtools_0.0.0.9006
 #> 
 #> loaded via a namespace (and not attached):
-#>  [1] Rcpp_1.0.4                        pillar_1.4.4                     
-#>  [3] compiler_3.6.3                    GenomeInfoDb_1.22.1              
-#>  [5] XVector_0.26.0                    bitops_1.0-6                     
-#>  [7] tools_3.6.3                       zlibbioc_1.32.0                  
-#>  [9] digest_0.6.25                     BSgenome_1.54.0                  
-#> [11] lifecycle_0.2.0                   tibble_3.0.1                     
-#> [13] evaluate_0.14                     lattice_0.20-38                  
-#> [15] pkgconfig_2.0.3                   rlang_0.4.6                      
-#> [17] Matrix_1.2-18                     DelayedArray_0.12.2              
-#> [19] yaml_2.2.1                        parallel_3.6.3                   
-#> [21] xfun_0.13                         GenomeInfoDbData_1.2.2           
-#> [23] rtracklayer_1.46.0                stringr_1.4.0                    
-#> [25] dplyr_0.8.5                       knitr_1.28                       
-#> [27] vctrs_0.2.4                       Biostrings_2.54.0                
-#> [29] plyranges_1.6.10                  S4Vectors_0.24.3                 
-#> [31] IRanges_2.20.2                    tidyselect_1.0.0                 
-#> [33] stats4_3.6.3                      grid_3.6.3                       
-#> [35] data.table_1.12.8                 glue_1.4.0                       
-#> [37] Biobase_2.46.0                    R6_2.4.1                         
-#> [39] BSgenome.Hsapiens.UCSC.hg19_1.4.0 XML_3.99-0.3                     
-#> [41] BiocParallel_1.20.1               rmarkdown_2.1                    
-#> [43] purrr_0.3.3                       magrittr_1.5                     
-#> [45] ellipsis_0.3.0                    Rsamtools_2.2.3                  
-#> [47] htmltools_0.4.0                   matrixStats_0.56.0               
-#> [49] BiocGenerics_0.32.0               GenomicRanges_1.38.0             
-#> [51] GenomicAlignments_1.22.1          assertthat_0.2.1                 
-#> [53] SummarizedExperiment_1.16.1       stringi_1.4.6                    
-#> [55] RCurl_1.98-1.1                    crayon_1.3.4
+#>  [1] Rcpp_1.0.4                        lattice_0.20-38                  
+#>  [3] Rsamtools_2.2.3                   Biostrings_2.54.0                
+#>  [5] assertthat_0.2.1                  digest_0.6.25                    
+#>  [7] R6_2.4.1                          GenomeInfoDb_1.22.1              
+#>  [9] stats4_3.6.3                      evaluate_0.14                    
+#> [11] ggplot2_3.3.0                     pillar_1.4.4                     
+#> [13] zlibbioc_1.32.0                   rlang_0.4.6                      
+#> [15] rstudioapi_0.11                   data.table_1.12.8                
+#> [17] S4Vectors_0.24.3                  Matrix_1.2-18                    
+#> [19] rmarkdown_2.1                     plyranges_1.6.10                 
+#> [21] BiocParallel_1.20.1               stringr_1.4.0                    
+#> [23] dlstats_0.1.3                     RCurl_1.98-1.1                   
+#> [25] munsell_0.5.0                     DelayedArray_0.12.2              
+#> [27] compiler_3.6.3                    rtracklayer_1.46.0               
+#> [29] xfun_0.13                         pkgconfig_2.0.3                  
+#> [31] BiocGenerics_0.32.0               htmltools_0.4.0                  
+#> [33] tidyselect_1.0.0                  SummarizedExperiment_1.16.1      
+#> [35] tibble_3.0.1                      GenomeInfoDbData_1.2.2           
+#> [37] IRanges_2.20.2                    matrixStats_0.56.0               
+#> [39] XML_3.99-0.3                      BSgenome.Hsapiens.UCSC.hg19_1.4.0
+#> [41] crayon_1.3.4                      dplyr_0.8.5                      
+#> [43] GenomicAlignments_1.22.1          bitops_1.0-6                     
+#> [45] grid_3.6.3                        jsonlite_1.6.1                   
+#> [47] gtable_0.3.0                      lifecycle_0.2.0                  
+#> [49] magrittr_1.5                      scales_1.1.0                     
+#> [51] stringi_1.4.6                     XVector_0.26.0                   
+#> [53] ellipsis_0.3.0                    rvcheck_0.1.8                    
+#> [55] vctrs_0.2.4                       RColorBrewer_1.1-2               
+#> [57] tools_3.6.3                       BSgenome_1.54.0                  
+#> [59] Biobase_2.46.0                    glue_1.4.0                       
+#> [61] purrr_0.3.3                       parallel_3.6.3                   
+#> [63] yaml_2.2.1                        colorspace_1.4-1                 
+#> [65] BiocManager_1.30.10               GenomicRanges_1.38.0             
+#> [67] badger_0.0.7                      knitr_1.28
 ```

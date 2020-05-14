@@ -16,6 +16,7 @@ knitr::opts_chunk$set(
 # txtools
 
 <!-- badges: start -->
+`r badger::badge_devel("AngelCampos/txtools", "blue")`
 <!-- badges: end -->
 
 Transcript-wise data analysis is increasingly needed
@@ -23,13 +24,13 @@ to process and analyze RNA-seq data in which transcript-structure and
 close nucleotide-level inspection is required, e.g. analyzing
 RNA-seq data derived from RNA-modifications detection protocols.
 
-**txtools** is a package that processes `GenomicAlignment` objects into their 
+**txtools** is a package that processes `GenomicAlignments` into their 
 transcriptomic counterparts, and facilitate their analysis through different
 transcript-wise functions.
 
 **txtools** is meant to expand the functionality of the 
 [**GenomicAlignments**](https://bioconductor.org/packages/release/bioc/html/GenomicRanges.html)
-package, as currently it does not support transcript-wise conversion or features. 
+package, as currently it does not support transcript-wise conversion or features.
 
 
 ## Installation
@@ -56,7 +57,7 @@ In this basic example we use data provided within **txtools**.
 We first load the BAM file we want to process and the BED file's gene models, 
 using the `tx_load_bam()` and `tx_load_bed()` functions.
 
-```{r, example, message = FALSE}
+```{r, demo, message = FALSE}
 # Load packages
 library(txtools)
 
@@ -204,7 +205,7 @@ column:
 
 * Coverage barplot
 
-```{r}
+```{r, barplot coverage}
 iGene <- "uc003lam.1"
 barplot(resTab3[[iGene]]$cov, main = paste(iGene, "Coverage"),
         ylab = "Counts", xlab = iGene)
@@ -212,7 +213,7 @@ barplot(resTab3[[iGene]]$cov, main = paste(iGene, "Coverage"),
 
 * Nucleotide frequency barplot
 
-```{r}
+```{r, barplot nucfreq}
 iGene <- "uc010nap.1"
 barplot(t(data.frame(resTab3[[iGene]][,c("A", "T", "G", "C", "N")])),
         col = c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "black"), border = "gray",
