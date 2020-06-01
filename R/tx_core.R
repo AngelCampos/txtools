@@ -781,30 +781,32 @@ tx_add_endRatio <- function(x){
 #' @export
 #'
 #' @examples
-tx_add_siteAnnotation <- function (x, GR, type = "logical", colName) {
+tx_add_siteAnnotation <- function (x, GR, type = "logical", colName){
     if(class(GR) != "GRanges"){
         stop("GR must be of class GRanges")
     }
     if(class(x)[1] != "data.table"){
         stop("x must be of class data.table")
     }
-    if(!all(GenomicRanges::start(GR) == GenomicRanges::end(GR))) {
+    if(!all(GenomicRanges::start(GR) == GenomicRanges::end(GR))){
         stop("start and ends are not the same in GR, only 1-nuc-long sites allowed")
+    }
+    if(length(unique(x$chr)) > 1){
+        stop("x should be contained in only one chromosome")
     }
     subGR <- GR[as.character(x$chr[1]) == GenomicRanges::seqnames(GR)]
     oNames <- names(x)
-    # Logical variable case
     if(type == "logical"){
         addAnnot <- rep(FALSE, nrow(x))
-        if (length(subGR) == 0){
-            tibble::add_column(x, addAnnot) %>%
-                magrittr::set_names(c(oNames, colName)) # adding new col name
+        if(length(subGR) == 0){
+            tibble::add_column(x, addAnnot) %>% magrittr::set_names(c(oNames, colName))
         }
-        foundGenLoc <- GenomicRanges::start(subGR)[which(GenomicRanges::start(subGR) %in%
-                                                             x$gencoor)]
+        foundGenLoc <- GenomicRanges::start(subGR)[
+            which(GenomicRanges::start(subGR) %in% x$gencoor & 
+                      GenomicRanges::strand(subGR) == as.character(unique(x$strand)))]
         if(length(foundGenLoc) == 0){
-            tibble::add_column(x, addAnnot) %>%
-                magrittr::set_names(c(oNames, colName)) # adding new col name
+            tibble::add_column(x, addAnnot) %>% magrittr::set_names(c(oNames, 
+                                                                      colName))
         }
         addAnnot[match(foundGenLoc, x$gencoor)] <- TRUE
         tibble::add_column(x, addAnnot) %>% magrittr::set_names(c(oNames, colName))
