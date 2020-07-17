@@ -3,7 +3,7 @@
 
 <!-- badges: start -->
 
-[![](https://img.shields.io/badge/devel%20version-0.0.0.9007-blue.svg)](https://github.com/AngelCampos/txtools)
+[![](https://img.shields.io/badge/devel%20version-0.0.0.9008-blue.svg)](https://github.com/AngelCampos/txtools)
 <!-- badges: end -->
 
 Transcript-wise data analysis is increasingly needed to process and
