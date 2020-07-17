@@ -190,8 +190,9 @@ tx_coverage <- function(x){
 hlp_addMissingNucs <- function(x){
     misNucs <- txtools::IUPAC_code_2nucs[which(!(txtools::IUPAC_code_2nucs %in% rownames(x)))]
     if(length(misNucs) > 0){
-        matrix(0, nrow = length(misNucs), ncol = ncol(x)) %>%
-            magrittr::set_rownames(misNucs) %>% rbind(x) %>% .[txtools::IUPAC_code_2nucs,]
+        tmp <- matrix(0, nrow = length(misNucs), ncol = ncol(x)) %>%
+            magrittr::set_rownames(misNucs) %>% rbind(x)
+        tmp[txtools::IUPAC_code_2nucs,]
     }else{
         x
     }

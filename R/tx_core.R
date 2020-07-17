@@ -485,8 +485,8 @@ tx_genCoorTab <- function(x, geneAnnot){
             tmpDT <- rep(tmp3, GenomeInfoDb::seqlengths(x[[iGene]])[iGene]) %>%
                 matrix(ncol = 3, byrow = T) %>%
                 cbind(exonBlockGen(iGene, geneAnnot)) %>%
-                cbind(seq(1, GenomeInfoDb::seqlengths(x[[iGene]])[iGene])) %>%
-                .[,c(1,4,2,3,5)] %>% data.table::data.table() %>%
+                cbind(seq(1, GenomeInfoDb::seqlengths(x[[iGene]])[iGene]))
+            tmpDT <- tmpDT[,c(1,4,2,3,5)] %>% data.table::data.table() %>%
                 magrittr::set_colnames(c("chr", "gencoor", "strand", "gene", "txcoor"))
             tmpDT$chr <- as.factor(tmpDT$chr)
             tmpDT$gencoor <- as.integer(tmpDT$gencoor)
@@ -529,8 +529,8 @@ tx_genCoorTab_mc <- function(x, geneAnnot, nCores){
             tmpDT <- rep(tmp3, GenomeInfoDb::seqlengths(x[[iGene]])[iGene]) %>%
                 matrix(ncol = 3, byrow = T) %>%
                 cbind(exonBlockGen(iGene, geneAnnot)) %>%
-                cbind(seq(1, GenomeInfoDb::seqlengths(x[[iGene]])[iGene])) %>%
-                .[,c(1,4,2,3,5)] %>% data.table::data.table() %>%
+                cbind(seq(1, GenomeInfoDb::seqlengths(x[[iGene]])[iGene]))
+            tmpDT <- tmpDT[,c(1,4,2,3,5)] %>% data.table::data.table() %>%
                 magrittr::set_colnames(c("chr", "gencoor", "strand", "gene", "txcoor"))
             tmpDT$chr <- as.factor(tmpDT$chr)
             tmpDT$gencoor <- as.integer(tmpDT$gencoor)
@@ -802,10 +802,9 @@ tx_add_siteAnnotation <- function (x, GR, type = "logical", colName){
             tibble::add_column(x, addAnnot) %>% magrittr::set_names(c(oNames, colName))
         }
         foundGenLoc <- GenomicRanges::start(subGR)[
-            which(GenomicRanges::start(subGR) %in% x$gencoor & 
-                      GenomicRanges::strand(subGR) == as.character(unique(x$strand)))]
+            which((GenomicRanges::start(subGR) %in% x$gencoor) & (GenomicRanges::strand(subGR) == as.character(unique(x$strand))))]
         if(length(foundGenLoc) == 0){
-            tibble::add_column(x, addAnnot) %>% magrittr::set_names(c(oNames, 
+            tibble::add_column(x, addAnnot) %>% magrittr::set_names(c(oNames,
                                                                       colName))
         }
         addAnnot[match(foundGenLoc, x$gencoor)] <- TRUE

@@ -1,7 +1,7 @@
 Package: txtools
 Title: An interface betwen GenomicAlignments and transcriptomic representations
-Version: 0.0.0.9007
-Date: 2020-08-05
+Version: 0.0.0.9008
+Date: 2020-17-07
 Authors@R: 
     person(given = "Miguel Angel",
            family = "Garcia-Campos",
@@ -16,7 +16,7 @@ Depends: R (>= 3.0.0)
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
 Suggests: 
     testthat (>= 2.1.0)
 Imports: 
