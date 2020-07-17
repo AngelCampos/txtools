@@ -907,14 +907,16 @@ tx_merge_DT <- function(x){
 #' Split data.table back to list with individual data.tables by 'gene' names
 #'
 #' @param x data.table. Merged data.table as output by tx_merge_DT()
+#' @param dropEmpty logical. Drops empty list elements, which occur when data
+#' of genes have been entirely removed, but kept listed in the x$gene factor levels
 #'
 #' @return list
 #' @export
 #'
 #' @examples
-tx_split_DT <- function(x){
-    tmp <- split(x, by = "gene")
-    lapply(tmp, function(y){
-        y[order(y$txcoor),]
+tx_split_DT <- function(x, dropEmpty = TRUE){
+    tmp <- split(x, by = "gene", drop = dropEmpty)
+    lapply(tmp, function(y) {
+        y[order(y$txcoor), ]
     })
 }
