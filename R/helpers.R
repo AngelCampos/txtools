@@ -261,3 +261,60 @@ vIntersect <- Vectorize(intersect, c("x", "y"), SIMPLIFY = F)
 oSize <- function(x){
     print(utils::object.size(x), units = "auto")
 }
+
+# Plotting helper funs #########################################################
+txBrowser_colors <- list(
+    "li_gray"   = "#d3d3da",
+    "l_gray"   = "#b1b1be",
+    "k_green" = "#00c201",
+    "d_blue"    = "#0098fd",
+    "h_yellow" = "#f3b018",
+    "scarlet"  = "#fc2b06",
+    "white" = "#ffffff",
+    "r_black" = "#0b090b")
+txBrowser2_colors <- list(
+    "l_gray"   = "#b1b1be",
+    "k_green" = "#00c201",
+    "d_blue"    = "#0098fd",
+    "h_yellow" = "#f3b018",
+    "scarlet"  = "#fc2b06",
+    "white" = "#ffffff",
+    "r_black" = "#0b090b")
+
+txBrowser_pal <- function(primary = "l_gray", other = "li_gray", direction = 1){
+    # stopifnot(primary %in% names(txBrowser_colors))
+    function(n) {
+        if (n > 8) warning("txBrowser Color Palette only has 8 colors.")
+
+        if (n == 2) {
+            other <- if (!other %in% names(txBrowser_colors)) {
+                other
+            } else {
+                txBrowser_colors[other]
+            }
+            color_list <- c(other, txBrowser_colors[primary])
+        } else {
+            color_list <- txBrowser_colors[1:n]
+        }
+        color_list <- unname(unlist(color_list))
+        if (direction >= 0) color_list else rev(color_list)
+    }
+}
+txBrowser_pal_2 <- function(direction = 1){
+    function(n) {
+        if (n > 7) warning("txBrowser Color Palette only has 8 colors.")
+        color_list <- txBrowser2_colors[1:n]
+        color_list <- unname(unlist(color_list))
+        if (direction >= 0){color_list}else{rev(color_list)}
+    }
+}
+
+# scale_fill with and without insert color
+scale_fill_txBrowser <- function(direction = 1, ...) {
+    ggplot2::discrete_scale("fill", "txBrowser",
+                            txBrowser_pal(primary, other, direction), ...)
+}
+scale_fill_txBrowser_2 <- function(direction = 1, ...) {
+    ggplot2::discrete_scale("fill", "txBrowser_2",
+                            palette = txBrowser_pal_2(direction), ...)
+}
