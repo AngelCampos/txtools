@@ -28,7 +28,8 @@ NULL
 #'
 #' @param file character. Path to the file to read
 #' @param yieldSize numeric. Number of reads to be processed at a time
-#' @param scanFlag integer. Flag used to filter reads. See \code{\link[Rsamtools]{ScanBamParam}}
+#' @param scanFlag integer. Flag used to filter reads.
+#' See \code{\link[Rsamtools]{ScanBamParam}}
 #' @param loadSeq logical. Set to TRUE for loading the sequences contained
 #' in the BAM file
 #' @param recoverDumpedAligns logical. If set to TRUE ambiguous alignments
@@ -802,7 +803,8 @@ tx_add_siteAnnotation <- function (x, GR, type = "logical", colName){
             tibble::add_column(x, addAnnot) %>% magrittr::set_names(c(oNames, colName))
         }
         foundGenLoc <- GenomicRanges::start(subGR)[
-            which((GenomicRanges::start(subGR) %in% x$gencoor) & (GenomicRanges::strand(subGR) == as.character(unique(x$strand))))]
+            which((GenomicRanges::start(subGR) %in% x$gencoor) &
+                      (GenomicRanges::strand(subGR) == as.character(unique(x$strand))))]
         if(length(foundGenLoc) == 0){
             tibble::add_column(x, addAnnot) %>% magrittr::set_names(c(oNames,
                                                                       colName))
@@ -850,6 +852,8 @@ tx_add_refSeqDT <- function (DT, fastaGenome, geneAnnot){
         unlist
     tibble::add_column(DT, refSeq = tmp, .after = "txcoor")
 }
+
+
 
 #' Merge lists of data.tables
 #'
