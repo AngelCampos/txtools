@@ -19,14 +19,14 @@ knitr::opts_chunk$set(
 `r badger::badge_devel("AngelCampos/txtools", "blue")`
 <!-- badges: end -->
 
-Transcript-wise data analysis is increasingly needed
-to process and analyze RNA-seq data in which transcript-structure and
-close nucleotide-level inspection is required, e.g. analyzing
-RNA-seq data derived from RNA-modifications detection protocols.
+Transcript-wise data analysis is increasingly needed to process and analyze 
+RNA-seq data in which transcript-structure and nucleotide-level inspection is 
+required, e.g. analyzing RNA-seq data derived from RNA-modifications detection
+protocols.
 
-**txtools** is a package that processes `GenomicAlignments` into their 
-transcriptomic counterparts, and facilitate their analysis through different
-transcript-wise functions.
+**txtools** is a package that facilitates the loading of read alignmnents, from
+BAM files, and processes their data into transcriptomic space, enabling their
+analysis through different transcript-wise functions.
 
 **txtools** is meant to expand the functionality of the 
 [**GenomicAlignments**](https://bioconductor.org/packages/release/bioc/html/GenomicRanges.html)
@@ -45,12 +45,14 @@ BiocManager::install("AngelCampos/txtools")
 ```
 
 ## Demo
-
+    
 ### From genomic to transcriptomic
 
-The main input that we want to process are Genomic Alignments from **BAM files**, 
-into their transcriptomic homologues. To do this we require gene models
-provided in the form of **BED-12 or BED-6 files**.
+The main input that we want to process are **BAM files**, to do this we first
+load them as Genomic Alignments, along gene models in the form of
+**BED-12 or BED-6 files**. Using these two elements we can then assign reads
+to their transcriptomes and process the reads when required to fit the
+transcriptomic space; for example, when reads traverse more than one exon.
 
 In this basic example we use data provided within **txtools**.
 
@@ -66,19 +68,21 @@ bamFile <- system.file("extdata", "example_hg19.bam", package = "txtools")
 bedFile <- system.file("extdata", "twoUCSCgenes_hg19.bed", package = "txtools")
 
 # Loading files and processing them using the gene models
-reads <- tx_load_bam(bamFile, loadSeq = T, verbose = T, yieldSize = 10000)
+reads <- tx_load_bam(bamFile, loadSeq = T, verbose = T, yieldSize = 100000)
 geneAnnot <- tx_load_bed(bedFile) # plyranges read_bed function
 ```
 
 The object `reads` now contains the aligned **genomic** reads, previously 
-aligned with commonly used genomic aligners. Sorted BAM files make processing 
-faster, see [samtools sort](https://www.htslib.org/doc/samtools-sort.html) for
+aligned with a genomic aligner (in this case STAR (Dobin et al., 2013)).
+Sorted BAM files enables faster loading, and is recommended that each read has 
+a different name. See [samtools sort](https://www.htslib.org/doc/samtools-sort.html) and
+[samtools view](https://www.htslib.org/doc/samtools-view.html) for
 more info on this.
 
-For converting our loaded genomic reads to **transcriptomic** reads we use the
-`tx_reads()`. Importantly, the function will assign mappings to their 
-corresponding genes ONLY if they are consistent with the exon structure of the 
-gene model. This allows to distinguish reads between different gene isoforms.
+For converting the loaded genomic reads to **transcriptomic** reads we use the
+`tx_reads()` function. Importantly, the function will assign mappings to their 
+corresponding genes ONLY if they are completely contained within the exonic 
+structure of the gene model. 
 
 ```{r}
 txReads <- tx_reads(reads, geneAnnot, withSeq = T, verbose = T)
@@ -87,7 +91,7 @@ txReads <- tx_reads(reads, geneAnnot, withSeq = T, verbose = T)
 ```
 
 Currently, txtools is designed for and requires RNA-seq libraries that are 
-**strand-specific**.
+**paired-end** and **strand-specific**.
 
 **To accelerate processing the multi-core function** `tx_reads_mc()` 
 **is available for UNIX systems**
@@ -214,6 +218,7 @@ barplot(resTab3[[iGene]]$cov, main = paste(iGene, "Coverage"),
 * Nucleotide frequency barplot
 
 ```{r, barplot_nucfreq}
+tx_plot_nucFreq(resTab3[["uc010nap.1"]])
 iGene <- "uc010nap.1"
 barplot(t(data.frame(resTab3[[iGene]][,c("A", "T", "G", "C", "N")])),
         col = c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "black"), border = "gray",
@@ -265,7 +270,7 @@ easy installation. In this case we will use the BSgenome for human
 # Loading reference genome
 genome <- BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19
 # Adding the reference sequence to the summarized DT object
-newDT <- tx_add_refSeqDT(resTab1$uc003lam.1, genome, geneAnnot)
+newDT <- tx_add_refSeqDT(resTab3$uc003lam.1, genome, geneAnnot)
 newDT
 ```
 
@@ -322,3 +327,28 @@ the size of BAM files loaded.
 ```{r}
 utils::sessionInfo()
 ```
+
+
+# New tutorial
+
+```{r}
+library(RNAseqData.HNRNPC.bam.chr14)
+bamfiles <- RNAseqData.HNRNPC.bam.chr14_BAMFILES
+bam <- tx_load_bam(bamfiles[1], loadSeq = T)
+hg19_genome <- BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19
+
+GAfile <- system.file("extdata", "hg19_UCSCgenes_chr14.bed", package = "txtools")
+chr14_GA <- tx_load_bed(GAfile)
+
+txReads <- tx_reads_mc(bam, chr14_GA, withSeq = T, nCores = 10)
+
+topGenes <- txReads %>% sapply(length) %>% sort %>% tail(10) %>% names()
+covNucFreq_DT <- tx_covNucFreqDT(txReads[topGenes], geneAnnot = chr14_GA) %>% 
+    lapply(function(DT) tx_add_refSeqDT(DT, fastaGenome = hg19_genome, geneAnnot = chr14_GA))
+DT <- covNucFreq_DT$uc010ttb.2
+tx_plot_nucFreq(covNucFreq_DT$uc010ttb.2, window_around(300, 10))
+tx_plot_nucFreq(covNucFreq_DT$uc010ttb.2)
+
+```
+
+
