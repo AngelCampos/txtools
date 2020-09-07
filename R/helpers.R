@@ -318,3 +318,10 @@ scale_fill_txBrowser_2 <- function(direction = 1, ...) {
     ggplot2::discrete_scale("fill", "txBrowser_2",
                             palette = txBrowser_pal_2(direction), ...)
 }
+
+# Other ####
+
+# Creates a window of specified length around a position
+window_around <- function(position, windowLength){
+    (position-windowLength):(position+windowLength)
+}
