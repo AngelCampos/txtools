@@ -47,7 +47,7 @@ NULL
 #' bamFile <- system.file("extdata", "example_hg19.bam", package = "txtools")
 #' tx_load_bam(bamFile, loadSeq = TRUE, verbose = TRUE)
 tx_load_bam <- function(file,
-                        yieldSize = "auto",
+                        yieldSize = 100000,
                         scanFlag = "default",
                         loadSeq = FALSE,
                         recoverDumpedAligns = F,
@@ -60,12 +60,9 @@ tx_load_bam <- function(file,
                                            isPaired = TRUE)
     }
     # CountBam records (each paired end alignments equals two records)
-    bC <- Rsamtools::countBam(file, )
+    bC <- Rsamtools::countBam(file)
     if(bC$records == 0){stop("BAM file is empty \n")}
     if(verbose){cat(bC$records, "number of BAM records \n")}
-    if(yieldSize == "auto"){
-        yieldSize <- ceiling(bC$records/25)
-    }
     if(verbose){
         cat("Loading BAM file \n")
         pb <- utils::txtProgressBar(style = 3)
@@ -93,7 +90,7 @@ tx_load_bam <- function(file,
                     dumpedAmbigPairs = GenomicAlignments::getDumpedAlignments())
     if(verbose){cat(" \n")}
     if(verbose){
-        cat(length(bamData$GAligns), "reads succesfully loaded \n")
+        cat(length(bamData$GAligns), "paired-end reads succesfully loaded \n")
         cat("Dumped reads due to ambiguous pairs:", length(bamData$dumpedAmbigPairs), "\n")
     }
 
