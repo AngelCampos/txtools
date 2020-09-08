@@ -6,10 +6,10 @@
 \usage{
 tx_load_bam(
   file,
-  yieldSize = "auto",
+  yieldSize = 1e+05,
   scanFlag = "default",
   loadSeq = FALSE,
-  recoverDumpedAligns = F,
+  recoverDumpedAligns = FALSE,
   verbose = TRUE
 )
 }

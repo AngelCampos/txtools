@@ -14,7 +14,7 @@ tx_reads(
 )
 }
 \arguments{
-\item{reads}{GenomicRanges}
+\item{reads}{GAlignmentPairs}
 
 \item{geneAnnot}{GenomicRanges. Gene annotation loaded via the tx_load_bed()}
 

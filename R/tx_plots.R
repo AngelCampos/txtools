@@ -25,9 +25,11 @@ tx_plot_nucFreq <- function(DT,
                             show_yLabels = T,
                             bar_border = T,
                             showLegend = T){
+    DT <- check_DT(DT)
     allCols <- all(c("refSeq", "A", "C", "G", "T", "-", "N") %in% names(DT))
     if(!allCols){
-        stop("DT must containg the reference sequence column 'refSeq' along nucleotide frequency columns 'A', 'C', 'G', 'T', '-', and 'N'")
+        stop("DT must containg the reference sequence column 'refSeq' along ",
+        "nucleotide frequency columns 'A', 'C', 'G', 'T', 'N', and '-'")
     }
     DT <- DT[DT$txcoor %in% txRange,]
     DT$REF <- 0

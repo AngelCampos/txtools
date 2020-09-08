@@ -20,6 +20,8 @@
 #' @name txtools
 NULL
 
+# Loading files into R #########################################################
+
 #' Read paired end bam file by yield size
 #'
 #' Reads a file in BAM format by blocks of lines equal to a yield size, either
@@ -50,7 +52,7 @@ tx_load_bam <- function(file,
                         yieldSize = 100000,
                         scanFlag = "default",
                         loadSeq = FALSE,
-                        recoverDumpedAligns = F,
+                        recoverDumpedAligns = FALSE,
                         verbose = TRUE){
     if(verbose){cat("Reading number of records in file \n")}
     #Remove optical duplicates, low quality reads, low quality reads, non-paired
@@ -76,12 +78,18 @@ tx_load_bam <- function(file,
     reads <- lapply(pbJumps, function(i){
         if(verbose){utils::setTxtProgressBar(pb, i)}
         if(loadSeq){
-            GenomicAlignments::readGAlignmentPairs(BAMFILE, use.names = TRUE,
-                                                   param = Rsamtools::ScanBamParam(flag = scanFlag,
-                                                                                   what = "seq"))
+            suppressWarnings(
+                GenomicAlignments::readGAlignmentPairs(BAMFILE,
+                                                       use.names = TRUE,
+                                                       param = Rsamtools::ScanBamParam(
+                                                           flag = scanFlag,
+                                                           what = "seq")))
         }else if(loadSeq == F){
-            GenomicAlignments::readGAlignmentPairs(BAMFILE, use.names = TRUE,
-                                                   param = Rsamtools::ScanBamParam(flag = scanFlag))
+            suppressWarnings(
+                GenomicAlignments::readGAlignmentPairs(BAMFILE,
+                                                       use.names = TRUE,
+                                                       param = Rsamtools::ScanBamParam(
+                                                           flag = scanFlag)))
         }else(stop("loadSeq parameter must be logical either FALSE or TRUE"))
     }) %>% do.call(what = c)
     close(BAMFILE)
@@ -93,8 +101,10 @@ tx_load_bam <- function(file,
         cat(length(bamData$GAligns), "paired-end reads succesfully loaded \n")
         cat("Dumped reads due to ambiguous pairs:", length(bamData$dumpedAmbigPairs), "\n")
     }
-
     if(recoverDumpedAligns == F){
+        warning(length(bamData$dumpedAmbigPairs), "dumped ambiguous reads. ",
+                "Use 'getDumpedAlignments()' to retrieve them from the dump ", "
+                environment, or set the 'recoverDumpedAligns' argument to TRUE")
         return(reads)
     }else{
         return(bamData)
@@ -139,10 +149,11 @@ tx_load_genome <- function(fastaFile){
     Biostrings::readDNAStringSet(fastaFile)
 }
 
+# Processing GAlignments #######################################################
 
 #' Merge paired-end reads and assign them to gene models
 #'
-#' @param reads GenomicRanges
+#' @param reads GAlignmentPairs
 #' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed()
 #' @param overlapType character. Overlap type to filter reads by gene
 #' model.
@@ -329,7 +340,8 @@ tx_filter_max_width <- function(x, thr, nCores = 1){
         }) %>% GenomicRanges::GRangesList() %>% magrittr::set_names(names(x))
     }else{
         if(.Platform$OS.type == "windows"){
-            stop("The multi-core capability of this function is not available in Windows operating systems.\n")
+            stop("The multi-core capability of this function is not available ",
+                 "in Windows operating systems.\n")
         }else{
             tmp <- GenomicAlignments::width(x) %>% magrittr::is_weakly_less_than(thr)
             parallel::mclapply(mc.cores = nCores, seq(1, length(x)), function(i){
@@ -442,6 +454,10 @@ tx_coverageTab_mc <- function(x, nCores){
 #'
 #' @examples
 tx_nucFreqTab <- function(x, simplify_IUPAC = "not"){
+    if(!all(simplify_IUPAC %in% c("not", "splitHalf", "splitForceInt"))){
+        stop("simplify_IUPAC argument must be either: 'not', 'splitHalf' or ",
+        "'splitForceInt'.")
+    }
     iGenes <- names(x)
     lapply(iGenes, function(iGene){
         y <- Biostrings::consensusMatrix(x = x[[iGene]]$seq,
@@ -761,6 +777,73 @@ tx_counts <- function(x){
     suppressWarnings(unlist(x)) %>% GenomeInfoDb::seqnames() %>% table()
 }
 
+#' Merge lists of data.tables
+#'
+#' @param DTL1 list List of data.table with gene names. As output of the
+#' \code{\link{tx_coverageDT}}, \code{\link{tx_nucFreqDT}}, and
+#' \code{\link{tx_covNucFreqDT}} functions.
+#' @param DTL2 list List of data.table with gene names.
+#' @param colsToAdd character. Numeric column(s) to be aggregated (added).
+#' @param keepAll logical. Set to FALSE for just keeping data.tables which
+#' name's are in both DTL.
+#'
+#' @return list
+#' @export
+#'
+#' @examples
+tx_aggregate_DTlist <- function (DTL1, DTL2, colsToAdd, keepAll = TRUE){
+    allNames <- union(names(DTL1), names(DTL2))
+    namesInBoth <- intersect(names(DTL1), names(DTL2))
+    namesOnly1 <- setdiff(names(DTL1), names(DTL2))
+    namesOnly2 <- setdiff(names(DTL2), names(DTL1))
+    tmpDTL <- lapply(namesInBoth, function(iGene){
+        if(!identical(DTL1[[iGene]][, c("chr", "gencoor", "strand", "gene", "txcoor")],
+                      DTL2[[iGene]][, c("chr", "gencoor", "strand", "gene", "txcoor")])){
+            stop(paste("Coordinate data in", iGene, " data.tables are not compatible"))
+        }else{
+            tmp <- DTL1[[iGene]][, colsToAdd, with = FALSE] +
+                DTL2[[iGene]][, colsToAdd, with = FALSE]
+            cbind(DTL1[[iGene]][, c("chr", "gencoor", "strand", "gene", "txcoor"), with = FALSE], tmp)
+        }
+    }) %>% magrittr::set_names(namesInBoth)
+    if(keepAll){
+        c(tmpDTL, DTL1[namesOnly1], DTL2[namesOnly2])[allNames]
+    }else{
+        tmpDTL
+    }
+}
+
+
+#' Merge data.tables in list to a single data.table
+#'
+#' @param x list. List of data.tables. A summarized data.table object.
+#' See tx_coverageDT(), tx_nucFreqDT() and tx_covNucFreqDT() functions.
+#'
+#' @return data.table
+#' @export
+#'
+tx_merge_DT <- function(x){
+    do.call(x, what = rbind)
+}
+
+
+#' Split data.table to list of data.tables
+#'
+#' Split data.table back to list with individual data.tables by 'gene' names
+#'
+#' @param x data.table. Merged data.table as output by tx_merge_DT()
+#' @param dropEmpty logical. Drops empty list elements, which occur when data
+#' of genes have been entirely removed, but kept listed in the x$gene factor levels
+#'
+#' @return list
+#' @export
+#'
+tx_split_DT <- function(x, dropEmpty = TRUE){
+    tmp <- split(x, by = "gene", drop = dropEmpty)
+    lapply(tmp, function(y) {
+        y[order(y$txcoor), ]
+    })
+}
 
 # data.table functions #########################################################
 
@@ -914,76 +997,4 @@ tx_add_refSeqDT <- function (DT, fastaGenome, geneAnnot){
     tmp <- stringr::str_split(as.character(tmp), "") %>%
         unlist
     tibble::add_column(DT, refSeq = tmp, .after = "txcoor")
-}
-
-
-
-#' Merge lists of data.tables
-#'
-#' @param DTL1 list List of data.table with gene names. As output of the
-#' \code{\link{tx_coverageDT}}, \code{\link{tx_nucFreqDT}}, and
-#' \code{\link{tx_covNucFreqDT}} functions.
-#' @param DTL2 list List of data.table with gene names.
-#' @param colsToAdd character. Numeric column(s) to be aggregated (added).
-#' @param keepAll logical. Set to FALSE for just keeping data.tables which
-#' name's are in both DTL.
-#'
-#' @return list
-#' @export
-#'
-#' @examples
-tx_aggregate_DTlist <- function (DTL1, DTL2, colsToAdd, keepAll = TRUE){
-    allNames <- union(names(DTL1), names(DTL2))
-    namesInBoth <- intersect(names(DTL1), names(DTL2))
-    namesOnly1 <- setdiff(names(DTL1), names(DTL2))
-    namesOnly2 <- setdiff(names(DTL2), names(DTL1))
-    tmpDTL <- lapply(namesInBoth, function(iGene){
-        if(!identical(DTL1[[iGene]][, c("chr", "gencoor", "strand", "gene", "txcoor")],
-                      DTL2[[iGene]][, c("chr", "gencoor", "strand", "gene", "txcoor")])){
-            stop(paste("Coordinate data in", iGene, " data.tables are not compatible"))
-        }else{
-            tmp <- DTL1[[iGene]][, colsToAdd, with = FALSE] +
-                DTL2[[iGene]][, colsToAdd, with = FALSE]
-            cbind(DTL1[[iGene]][, c("chr", "gencoor", "strand", "gene", "txcoor"), with = FALSE], tmp)
-        }
-    }) %>% magrittr::set_names(namesInBoth)
-    if(keepAll){
-        c(tmpDTL, DTL1[namesOnly1], DTL2[namesOnly2])[allNames]
-    }else{
-        tmpDTL
-    }
-}
-
-
-#' Merge data.tables in list to a single data.table
-#'
-#' @param x list. List of data.tables. A summarized data.table object.
-#' See tx_coverageDT(), tx_nucFreqDT() and tx_covNucFreqDT() functions.
-#'
-#' @return data.table
-#' @export
-#'
-#' @examples
-tx_merge_DT <- function(x){
-    do.call(x, what = rbind)
-}
-
-
-#' Split data.table to list of data.tables
-#'
-#' Split data.table back to list with individual data.tables by 'gene' names
-#'
-#' @param x data.table. Merged data.table as output by tx_merge_DT()
-#' @param dropEmpty logical. Drops empty list elements, which occur when data
-#' of genes have been entirely removed, but kept listed in the x$gene factor levels
-#'
-#' @return list
-#' @export
-#'
-#' @examples
-tx_split_DT <- function(x, dropEmpty = TRUE){
-    tmp <- split(x, by = "gene", drop = dropEmpty)
-    lapply(tmp, function(y) {
-        y[order(y$txcoor), ]
-    })
 }
