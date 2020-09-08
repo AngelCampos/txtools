@@ -86,3 +86,70 @@ tx_plot_nucFreq <- function(DT,
 
 
 
+#' Transcript coverage plot highlighting read-starts and read-ends counts
+#'
+#' @param DT data.table or data.frame. Input data from which to generate the plot
+#' @param txRange integer. Range in data to be used, 'txcoor' column is used to
+#' delimit this range in the data.table.
+#' @param makePlotly logical. Outputs an interactive plot by using the ggplotly()
+#' function.
+#' @param show_yLabels logical. If set to FALSE hides the y axis labels.
+#' @param bar_border logical. If set to FALSE removes the border of the bars.
+#' @param showLegend logical. If set to FALSE does not renger a legend.
+#'
+#' @return
+#' @export
+#'
+#' @examples
+tx_plot_staEndCov <- function(DT,
+                              txRange = 1:nrow(DT),
+                              makePlotly = F,
+                              show_yLabels = T,
+                              bar_border = T,
+                              showLegend = T){
+    DT <- check_DT(DT)
+    DT <- DT[DT$txcoor %in% txRange,]
+    DT$pos <- paste(DT$txcoor, DT$refSeq, sep = "-")
+    DT$pos <- factor(DT$pos, levels = DT$pos)
+    DT$cov <- DT$cov - DT$start_5p - DT$end_3p
+    tmpData <- tidyr::pivot_longer(DT, cols = c("start_5p", "end_3p", "cov"),
+                            values_to = "counts", names_to = "coverage") %>%
+        data.table::data.table()
+    tmpData$coverage <- factor(tmpData$coverage, levels = c("cov", "start_5p", "end_3p"))
+    tmpGG <- ggplot2::ggplot(tmpData, aes(x=pos, y = counts, fill = coverage)) +
+        ggplot2::theme_minimal() +
+        ggplot2::scale_fill_manual(values = c("#c2c2c2", "#5b54a0", "#f1876d")) +
+        ggplot2::ylab("Frequency") + ggplot2::xlab("Transcriptome coordinate") +
+        ggplot2::theme(legend.position="bottom") +
+        ggplot2::guides(fill=guide_legend(nrow=1, byrow=TRUE, title = ""))
+
+    if(bar_border){
+        tmpGG <- tmpGG + ggplot2::geom_bar(stat = "identity", colour = "black", size = 0.3)
+    }else{
+        tmpGG <- tmpGG + ggplot2::geom_bar(stat = "identity")
+    }
+    if(show_yLabels){
+        nucCols <- txBrowser_pal()(6)[-1:-2][as.numeric(factor(DT$refSeq))]
+        tmpGG <- suppressWarnings(tmpGG + ggplot2::theme(axis.text.x =
+                                                             element_text(angle = 90,
+                                                                          hjust = 1,
+                                                                          vjust = 0.5,
+                                                                          colour = nucCols,
+                                                                          face = "bold")))
+    }else{
+        tmpGG <- tmpGG + ggplot2::theme(axis.text.x = element_blank())
+    }
+    if(!showLegend){
+        tmpGG <- tmpGG + ggplot2::theme(legend.position="none")
+    }
+    if(makePlotly){
+        plotly::ggplotly(tmpGG)
+    }else{
+        tmpGG
+    }
+}
+
+
+
+
+
