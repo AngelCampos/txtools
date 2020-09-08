@@ -761,17 +761,52 @@ tx_counts <- function(x){
     suppressWarnings(unlist(x)) %>% GenomeInfoDb::seqnames() %>% table()
 }
 
+
+# data.table functions #########################################################
+
+# Add column of sum of nucleotide frequency different to the reference sequence
+# Counting deletions, not counting 'N's and inserts into calculation.
+tx_add_diffNucToRef <- function(DT){
+    DT <- check_DT(DT)
+    selNucs <- setdiff(intersect(txtools::IUPAC_code_2nucs, names(DT)), c(".", "N"))
+    tmp <- DT[, selNucs, with = FALSE]
+    OUT <- rep(NA, nrow(DT))
+    nucsInRef <- unique(DT$refSeq)
+    for(i in nucsInRef){
+        selNucs <- setdiff(c("A", "C", "G", "T", "-"), i)
+        OUT[which(DT$refSeq == i)] <- rowSums(tmp[which(DT$refSeq == i), selNucs, with = F])
+    }
+    tibble::add_column(DT, diffToRef = OUT)
+}
+
+
+# Add sum of nucleotide frequencies for meaningful nucleotides (i.e. not counting Ns and inserts)
+tx_add_nucTotal <- function(DT){
+    DT <- check_DT(DT)
+    selNucs <- setdiff(intersect(txtools::IUPAC_code_2nucs, names(DT)), c(".", "N"))
+    out <- rowSums(DT[, selNucs, with = FALSE])
+    tibble::add_column(DT, nucTotal = out)
+}
+
+# Add column of Different Nucleotide to reference ratio, diffToRef and nucTotal columns are required
+tx_add_diffNucToRefRatio <- function(DT, addDiffandTotalCols = FALSE){
+    tmpDT <- tx_add_diffNucToRef(DT) %>% tx_add_nucTotal()
+    tmp <- round(tmpDT$diffToRef / tmpDT$nucTotal, 6)
+    if(addDiffandTotalCols){DT <- tmpDT}
+    tibble::add_column(DT, diffToRefRatio = tmp)
+}
+
 #' Add startRatio to data.table
 #'
 #' Add read-starts ratio over coverage.
 #'
 #' @param x data.table. Output of txtools data.tables with coverage information
-#' as output of tx_coverageDT() and tx_covNucFreqDT()
+#' as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT()}}
+#' functions
 #'
 #' @return data.table
 #' @export
 #'
-#' @examples
 tx_add_startRatio <- function(x){
     tibble::add_column(x, startRatio = x$start_5p / x$cov, .after = "start_5p")
 }
@@ -781,16 +816,15 @@ tx_add_startRatio <- function(x){
 #' Add read-ends ratio over coverage.
 #'
 #' @param x data.table. Output of txtools data.tables with coverage information
-#' as output of tx_coverageDT() and tx_covNucFreqDT()
+#' as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT()}}
+#' functions
 #'
 #' @return data.table
 #' @export
 #'
-#' @examples
 tx_add_endRatio <- function(x){
     tibble::add_column(x, endRatio = x$end_3p / x$cov, .after = "end_3p")
 }
-
 
 #' Add site annotation
 #'

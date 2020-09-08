@@ -8,7 +8,8 @@ tx_add_endRatio(x)
 }
 \arguments{
 \item{x}{data.table. Output of txtools data.tables with coverage information
-as output of tx_coverageDT() and tx_covNucFreqDT()}
+as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT()}}
+functions}
 }
 \value{
 data.table
