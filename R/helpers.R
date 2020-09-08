@@ -194,7 +194,7 @@ hlp_addMissingNucs <- function(x){
             magrittr::set_rownames(misNucs) %>% rbind(x)
         tmp[txtools::IUPAC_code_2nucs,]
     }else{
-        x
+        x[txtools::IUPAC_code_2nucs,]
     }
 }
 
@@ -262,6 +262,38 @@ oSize <- function(x){
     print(utils::object.size(x), units = "auto")
 }
 
+# Generating DTs ###############################################################
+# Generates trasncriptomic coordinates table from a list of genes
+hlpr_genCoorTabGenes <- function(genes, geneAnnot, fastaGenome = NULL, nCores = 1){
+    if(all(genes %in% geneAnnot$name)){
+        mclapply(mc.cores = nCores, genes, function(iGene){
+            tmp2 <- geneAnnot[which(geneAnnot$name == iGene)]
+            tmp3 <- c(GenomicAlignments::seqnames(tmp2), GenomicRanges::strand(tmp2)) %>%
+                as.character() %>% c(iGene)
+            exonBlock <- txtools:::exonBlockGen(iGene, geneAnnot)
+            tmpDT <- rep(tmp3, length(exonBlock)) %>%
+                matrix(ncol = 3, byrow = T) %>% cbind(exonBlock) %>%
+                cbind(seq(1, length(exonBlock)))
+            tmpDT <- tmpDT[, c(1, 4, 2, 3, 5)] %>% data.table::data.table() %>%
+                magrittr::set_colnames(c("chr", "gencoor", "strand",
+                                         "gene", "txcoor"))
+            tmpDT$chr <- as.factor(tmpDT$chr)
+            tmpDT$gencoor <- as.integer(tmpDT$gencoor)
+            tmpDT$strand <- as.factor(tmpDT$strand)
+            tmpDT$gene <- as.factor(tmpDT$gene)
+            tmpDT$txcoor <- as.integer(tmpDT$txcoor)
+            if(!is.null(fastaGenome)){
+                tmpDT <- tx_add_refSeqDT(tmpDT, fastaGenome, geneAnnot)
+            }
+            return(tmpDT)
+        }) %>% magrittr::set_names(genes)
+    }else{
+        stop("Not all gene names are in geneAnnot")
+    }
+}
+
+
+
 # Plotting helper funs #########################################################
 txBrowser_colors <- list(
     "li_gray"   = "#d3d3da",
@@ -325,3 +357,28 @@ scale_fill_txBrowser_2 <- function(direction = 1, ...) {
 window_around <- function(position, windowLength){
     (position-windowLength):(position+windowLength)
 }
+
+# Check for data.table class, if DT is dataframe, convert to data.table
+check_DT <- function(DT){
+    if(!data.table::is.data.table(DT)){
+        if(!is.data.frame(DT)){
+            stop("DT must be either a data.table or a data.frame")
+        }else{
+            if(is.data.frame(DT)){
+                DT <- data.table::data.table(DT)
+            }
+        }
+    }
+    return(DT)
+}
+
+# Check if OS is unix-like to allow multi-core operations
+check_windows <- function(){Sys.info()[['sysname']] == "Windows"}
+
+# Stop if nCores is greater than 1 and OS is windows
+stop_mc_windows <- function(nCores){
+    if(nCores > 1 & check_windows()){
+        stop("The multi-core capability of this function is not available in Windows operating systems.\n")
+    }
+}
+

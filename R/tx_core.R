@@ -268,6 +268,38 @@ tx_reads_mc <- function(reads, geneAnnot, nCores, overlapType = "within",
     return(OUT)
 }
 
+#' Complete and sort a DT according to a gene annotation in GRanges format
+#'
+#' @param DT data.table .
+#' @param geneAnnot GRanges
+#' @param fastaGenome character
+#' @param nCores numeric
+#'
+#' @return
+#' @export
+#'
+#' @examples
+tx_complete_DT <- function(DT, geneAnnot, fastaGenome = NULL, nCores = 1){
+    stop_mc_windows(nCores)
+    DT <- check_DT(DT)
+    if(!all(unique(DT$gene) %in% geneAnnot$name)){
+        stop("All genes in DT must be in geneAnnot, missing genes from ",
+             "geneAnnot will be added")
+    }
+    missGenes <- setdiff(geneAnnot$name, unique(DT$gene))
+    tmpCoorTabs <- hlpr_genCoorTabGenes(missGenes, geneAnnot, fastaGenome, nCores)
+    missCols <- setdiff(names(DT), names(tmpCoorTabs[[1]]))
+    tmpCoorTabs <- tmpCoorTabs %>% tx_merge_DT()
+    tmpCoorTabs <- data.table(matrix(0, nrow = nrow(tmpCoorTabs), ncol = length(missCols))) %>%
+        set_names(missCols) %>% cbind(tmpCoorTabs, .) %>% tx_split_DT()
+    DT <- tx_split_DT(DT)
+    completeDTL <- c(DT, tmpCoorTabs)
+    completeDTL <- completeDTL[geneAnnot$name]
+    tx_merge_DT(completeDTL)
+}
+
+# Manipulating GenomicRanges ###################################################
+
 #' Filter ranges by a maximum width
 #'
 #' @param x CompressedGRangesList. Genomic Ranges list containing genomic
