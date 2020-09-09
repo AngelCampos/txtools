@@ -374,7 +374,15 @@ check_windows <- function(){Sys.info()[['sysname']] == "Windows"}
 # Stop if nCores is greater than 1 and OS is windows
 stop_mc_windows <- function(nCores){
     if(nCores > 1 & check_windows()){
-        stop("The multi-core capability of this function is not available in Windows operating systems.\n")
+        stop("The multi-core capability of this function is ", "
+             not available in Windows operating systems.\n")
     }
 }
 
+# Check that DT object has $refSeq column
+check_refSeq <- function(DT){
+    if(!("refSeq" %in% names(DT))){
+        stop("DT must contain the column 'refSeq' with the transcript ",
+             "reference sequence")
+    }
+}

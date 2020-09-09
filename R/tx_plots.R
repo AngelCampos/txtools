@@ -25,6 +25,7 @@ tx_plot_nucFreq <- function(DT,
                             show_yLabels = T,
                             bar_border = T,
                             showLegend = T){
+    check_refSeq(DT)
     DT <- check_DT(DT)
     allCols <- all(c("refSeq", "A", "C", "G", "T", "-", "N") %in% names(DT))
     if(!allCols){
@@ -113,6 +114,7 @@ tx_plot_staEndCov <- function(DT,
                               show_yLabels = T,
                               bar_border = T,
                               showLegend = T){
+    check_refSeq(DT)
     DT <- check_DT(DT)
     DT <- DT[DT$txcoor %in% txRange,]
     DT$pos <- paste(DT$txcoor, DT$refSeq, sep = "-")
