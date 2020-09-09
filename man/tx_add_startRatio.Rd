@@ -8,7 +8,7 @@ tx_add_startRatio(x)
 }
 \arguments{
 \item{x}{data.table. Output of txtools data.tables with coverage information
-as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT()}}
+as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT}}
 functions}
 }
 \value{

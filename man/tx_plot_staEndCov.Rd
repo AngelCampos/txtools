@@ -29,7 +29,7 @@ function.}
 \item{showLegend}{logical. If set to FALSE does not renger a legend.}
 }
 \value{
-
+ggplot
 }
 \description{
 Transcript coverage plot highlighting read-starts and read-ends counts

@@ -7,7 +7,7 @@
 tx_complete_DT(DT, geneAnnot, fastaGenome = NULL, nCores = 1)
 }
 \arguments{
-\item{DT}{data.table .}
+\item{DT}{data.table}
 
 \item{geneAnnot}{GRanges}
 
@@ -16,7 +16,7 @@ tx_complete_DT(DT, geneAnnot, fastaGenome = NULL, nCores = 1)
 \item{nCores}{numeric}
 }
 \value{
-
+data.table
 }
 \description{
 Complete and sort a DT according to a gene annotation in GRanges format

@@ -33,7 +33,7 @@ function.}
 \item{showLegend}{logical. If set to FALSE does not renger a legend.}
 }
 \value{
-
+ggplot
 }
 \description{
 Generates a ggplot barplot using the nucleotide frequency counts in

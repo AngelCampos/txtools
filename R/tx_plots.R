@@ -15,7 +15,7 @@
 #' @param bar_border logical. If set to FALSE removes the border of the bars.
 #' @param showLegend logical. If set to FALSE does not renger a legend.
 #'
-#' @return
+#' @return ggplot
 #' @export
 #'
 tx_plot_nucFreq <- function(DT,
@@ -45,18 +45,22 @@ tx_plot_nucFreq <- function(DT,
     if(removeInsert){
         tmpData <- tmpData[tmpData$nuc != ".",]
         tmpData$nuc <- factor(tmpData$nuc, levels = c("REF", "A", "C", "G", "T", "-", "N"))
-        tmpGG <- ggplot2::ggplot(tmpData, ggplot2::aes(x=pos, y = counts, fill = nuc)) +
+        tmpGG <- ggplot2::ggplot(tmpData, ggplot2::aes(x = tmpData$pos,
+                                                       y = tmpData$counts,
+                                                       fill = tmpData$nuc)) +
             ggplot2::theme_minimal() + scale_fill_txBrowser_2() +
             ggplot2::ylab("Frequency") + ggplot2::xlab("Transcriptome coordinate") +
             ggplot2::theme(legend.position="bottom") +
             ggplot2::guides(fill= ggplot2::guide_legend(nrow=1, byrow=TRUE, title = ""))
     }else{
         tmpData$nuc <- factor(tmpData$nuc, levels = c(".", "REF", "A", "C", "G", "T", "-", "N"))
-        tmpGG <- ggplot2::ggplot(tmpData, ggplot2::aes(x=pos, y = counts, fill = nuc)) +
+        tmpGG <- ggplot2::ggplot(tmpData, ggplot2::aes(x = tmpData$pos,
+                                                       y = tmpData$counts,
+                                                       fill = tmpData$nuc)) +
             ggplot2::theme_minimal() + scale_fill_txBrowser() +
             ggplot2::ylab("Frequency") + ggplot2::xlab("Transcriptome coordinate") +
             ggplot2::theme(legend.position="bottom") +
-            ggplot2::guides(fill= ggplot2::guide_legend(nrow=1, byrow=TRUE, title = ""))
+            ggplot2::guides(fill= ggplot2::guide_legend(nrow = 1, byrow = TRUE, title = ""))
     }
     if(bar_border){
         tmpGG <- tmpGG + ggplot2::geom_bar(stat = "identity", colour = "black", size = 0.3)
@@ -99,7 +103,7 @@ tx_plot_nucFreq <- function(DT,
 #' @param bar_border logical. If set to FALSE removes the border of the bars.
 #' @param showLegend logical. If set to FALSE does not renger a legend.
 #'
-#' @return
+#' @return ggplot
 #' @export
 #'
 #' @examples
@@ -117,29 +121,38 @@ tx_plot_staEndCov <- function(DT,
     tmpData <- tidyr::pivot_longer(DT, cols = c("start_5p", "end_3p", "cov"),
                             values_to = "counts", names_to = "coverage") %>%
         data.table::data.table()
-    tmpData$coverage <- factor(tmpData$coverage, levels = c("cov", "start_5p", "end_3p"))
-    tmpGG <- ggplot2::ggplot(tmpData, aes(x=pos, y = counts, fill = coverage)) +
+    tmpData$coverage <- factor(tmpData$coverage, levels = c("cov",
+                                                            "start_5p",
+                                                            "end_3p"))
+    tmpGG <- ggplot2::ggplot(tmpData,
+                             ggplot2::aes(x = tmpData$pos,
+                                          y = tmpData$counts,
+                                          fill = tmpData$coverage)) +
         ggplot2::theme_minimal() +
         ggplot2::scale_fill_manual(values = c("#c2c2c2", "#5b54a0", "#f1876d")) +
         ggplot2::ylab("Frequency") + ggplot2::xlab("Transcriptome coordinate") +
         ggplot2::theme(legend.position="bottom") +
-        ggplot2::guides(fill=guide_legend(nrow=1, byrow=TRUE, title = ""))
+        ggplot2::guides(fill = ggplot2::guide_legend(nrow=1, byrow=TRUE, title = ""))
 
     if(bar_border){
-        tmpGG <- tmpGG + ggplot2::geom_bar(stat = "identity", colour = "black", size = 0.3)
+        tmpGG <- tmpGG + ggplot2::geom_bar(stat = "identity",
+                                           colour = "black",
+                                           size = 0.3)
     }else{
         tmpGG <- tmpGG + ggplot2::geom_bar(stat = "identity")
     }
     if(show_yLabels){
         nucCols <- txBrowser_pal()(6)[-1:-2][as.numeric(factor(DT$refSeq))]
-        tmpGG <- suppressWarnings(tmpGG + ggplot2::theme(axis.text.x =
-                                                             element_text(angle = 90,
-                                                                          hjust = 1,
-                                                                          vjust = 0.5,
-                                                                          colour = nucCols,
-                                                                          face = "bold")))
+        tmpGG <- suppressWarnings(
+            tmpGG +
+                ggplot2::theme(axis.text.x =
+                                   ggplot2::element_text(angle = 90,
+                                                         hjust = 1,
+                                                         vjust = 0.5,
+                                                         colour = nucCols,
+                                                         face = "bold")))
     }else{
-        tmpGG <- tmpGG + ggplot2::theme(axis.text.x = element_blank())
+        tmpGG <- tmpGG + ggplot2::theme(axis.text.x = ggplot2::element_blank())
     }
     if(!showLegend){
         tmpGG <- tmpGG + ggplot2::theme(legend.position="none")
@@ -150,8 +163,3 @@ tx_plot_staEndCov <- function(DT,
         tmpGG
     }
 }
-
-
-
-
-

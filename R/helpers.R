@@ -266,11 +266,11 @@ oSize <- function(x){
 # Generates trasncriptomic coordinates table from a list of genes
 hlpr_genCoorTabGenes <- function(genes, geneAnnot, fastaGenome = NULL, nCores = 1){
     if(all(genes %in% geneAnnot$name)){
-        mclapply(mc.cores = nCores, genes, function(iGene){
+        parallel::mclapply(mc.cores = nCores, genes, function(iGene){
             tmp2 <- geneAnnot[which(geneAnnot$name == iGene)]
             tmp3 <- c(GenomicAlignments::seqnames(tmp2), GenomicRanges::strand(tmp2)) %>%
                 as.character() %>% c(iGene)
-            exonBlock <- txtools:::exonBlockGen(iGene, geneAnnot)
+            exonBlock <- exonBlockGen(iGene, geneAnnot)
             tmpDT <- rep(tmp3, length(exonBlock)) %>%
                 matrix(ncol = 3, byrow = T) %>% cbind(exonBlock) %>%
                 cbind(seq(1, length(exonBlock)))
@@ -342,21 +342,17 @@ txBrowser_pal_2 <- function(direction = 1){
 }
 
 # scale_fill with and without insert color
-scale_fill_txBrowser <- function(direction = 1, ...) {
+scale_fill_txBrowser <- function(primary = "l_gray", other = "li_gray", direction = 1) {
     ggplot2::discrete_scale("fill", "txBrowser",
-                            txBrowser_pal(primary, other, direction), ...)
+                            txBrowser_pal(primary, other, direction))
 }
-scale_fill_txBrowser_2 <- function(direction = 1, ...) {
+
+scale_fill_txBrowser_2 <- function(direction = 1) {
     ggplot2::discrete_scale("fill", "txBrowser_2",
-                            palette = txBrowser_pal_2(direction), ...)
+                            palette = txBrowser_pal_2(direction))
 }
 
 # Other ####
-
-# Creates a window of specified length around a position
-window_around <- function(position, windowLength){
-    (position-windowLength):(position+windowLength)
-}
 
 # Check for data.table class, if DT is dataframe, convert to data.table
 check_DT <- function(DT){

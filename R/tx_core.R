@@ -281,12 +281,12 @@ tx_reads_mc <- function(reads, geneAnnot, nCores, overlapType = "within",
 
 #' Complete and sort a DT according to a gene annotation in GRanges format
 #'
-#' @param DT data.table .
+#' @param DT data.table
 #' @param geneAnnot GRanges
 #' @param fastaGenome character
 #' @param nCores numeric
 #'
-#' @return
+#' @return data.table
 #' @export
 #'
 #' @examples
@@ -301,8 +301,10 @@ tx_complete_DT <- function(DT, geneAnnot, fastaGenome = NULL, nCores = 1){
     tmpCoorTabs <- hlpr_genCoorTabGenes(missGenes, geneAnnot, fastaGenome, nCores)
     missCols <- setdiff(names(DT), names(tmpCoorTabs[[1]]))
     tmpCoorTabs <- tmpCoorTabs %>% tx_merge_DT()
-    tmpCoorTabs <- data.table(matrix(0, nrow = nrow(tmpCoorTabs), ncol = length(missCols))) %>%
-        set_names(missCols) %>% cbind(tmpCoorTabs, .) %>% tx_split_DT()
+    tmpCoorTabs <- cbind(tmpCoorTabs, data.table::data.table(matrix(0,
+                                                 nrow = nrow(tmpCoorTabs),
+                                                 ncol = length(missCols))) %>%
+        magrittr::set_names(missCols)) %>% tx_split_DT()
     DT <- tx_split_DT(DT)
     completeDTL <- c(DT, tmpCoorTabs)
     completeDTL <- completeDTL[geneAnnot$name]
@@ -884,7 +886,7 @@ tx_add_diffNucToRefRatio <- function(DT, addDiffandTotalCols = FALSE){
 #' Add read-starts ratio over coverage.
 #'
 #' @param x data.table. Output of txtools data.tables with coverage information
-#' as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT()}}
+#' as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT}}
 #' functions
 #'
 #' @return data.table
@@ -899,7 +901,7 @@ tx_add_startRatio <- function(x){
 #' Add read-ends ratio over coverage.
 #'
 #' @param x data.table. Output of txtools data.tables with coverage information
-#' as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT()}}
+#' as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT}}
 #' functions
 #'
 #' @return data.table
@@ -998,3 +1000,52 @@ tx_add_refSeqDT <- function (DT, fastaGenome, geneAnnot){
         unlist
     tibble::add_column(DT, refSeq = tmp, .after = "txcoor")
 }
+
+#' Add position names column to DT
+#'
+#' Adds a column which pastes the name of the gene with its transcript coordinate
+#' creating a unique position identifier, for use in downstream analysis which
+#' requires it. The column is added after the 'txcoor' column. Unique names are
+#' checked as well.
+#'
+#' @param DT data.table.
+#' @param sep character. Separator between gene and txcoor, by deafult colon sign.
+#' @param check_uniq logical. Set to false to override unique position names check.
+#'
+#' @return data.table
+#' @export
+#'
+#' @author M.A. Garcia-Campos
+#' @examples
+tx_add_pos <- function(DT, sep = ":", check_uniq = T){
+    DT <- check_DT(DT)
+    pos <- paste(DT$gene, DT$txcoor, sep = sep)
+    if(check_uniq){
+        if(!all(!duplicated(pos))){
+            stop("Combinations of gene and txcoor by row in DT are not unique.")
+        }
+    }
+    return(tibble::add_column(DT, pos = pos, .after = "txcoor"))
+}
+
+# Other accesory functions #####################################################
+
+#' Centered numeric sequence
+#'
+#' Creates a numerical sequence which is centered in the first argument and
+#' is of length twice the second argument plus one.
+#'
+#' @param position numeric
+#' @param windowLength numeric
+#'
+#' @return numeric
+#' @export
+#'
+#' @examples
+#' # Numeric interval centered in 10, with 5 closest negative
+#' # and positive integers
+#' window_around(10, 5)
+window_around <- function(position, windowLength){
+    (position-windowLength):(position+windowLength)
+}
+
