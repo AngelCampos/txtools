@@ -311,53 +311,6 @@ tx_complete_DT <- function(DT, geneAnnot, fastaGenome = NULL, nCores = 1){
     tx_merge_DT(completeDTL)
 }
 
-# Manipulating GenomicRanges ###################################################
-
-#' Filter ranges by a maximum width
-#'
-#' @param x CompressedGRangesList. Genomic Ranges list containing genomic
-#' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
-#' functions.
-#' @param thr numeric. Threshold for maximum width size allowed on output.
-#' @param nCores integer. Number of cores to be used to run function.
-#'
-#' @return CompressedGRangesList
-#' @export
-#'
-#' @author M.A. Garcia-Campos
-#'
-#' @examples
-tx_filter_max_width <- function(x, thr, nCores = 1){
-    if((nCores - floor(nCores)) > 0 | !is.numeric(nCores)){
-        stop("nCores argument must be an integer.\n")
-    }
-    if(nCores == 1){
-        tmp <- GenomicAlignments::width(x) %>% magrittr::is_weakly_less_than(thr)
-        lapply(seq(1, length(x)), function(i){
-            if(all(tmp[[i]])){
-                x[[i]]
-            }else{
-                x[[i]][tmp[[i]]]
-            }
-        }) %>% GenomicRanges::GRangesList() %>% magrittr::set_names(names(x))
-    }else{
-        if(.Platform$OS.type == "windows"){
-            stop("The multi-core capability of this function is not available ",
-                 "in Windows operating systems.\n")
-        }else{
-            tmp <- GenomicAlignments::width(x) %>% magrittr::is_weakly_less_than(thr)
-            parallel::mclapply(mc.cores = nCores, seq(1, length(x)), function(i){
-                if(all(tmp[[i]])){
-                    x[[i]]
-                }else{
-                    x[[i]][tmp[[i]]]
-                }
-            }) %>% GenomicRanges::GRangesList() %>% magrittr::set_names(names(x))
-        }
-    }
-}
-
-
 #' Calculate coverage table: coverage, 5prime-starts, and 3prime-ends
 #'
 #' @param x CompressedGRangesList
@@ -458,7 +411,7 @@ tx_coverageTab_mc <- function(x, nCores){
 tx_nucFreqTab <- function(x, simplify_IUPAC = "not"){
     if(!all(simplify_IUPAC %in% c("not", "splitHalf", "splitForceInt"))){
         stop("simplify_IUPAC argument must be either: 'not', 'splitHalf' or ",
-        "'splitForceInt'.")
+             "'splitForceInt'.")
     }
     iGenes <- names(x)
     lapply(iGenes, function(iGene){
@@ -699,8 +652,6 @@ tx_nucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt", nCores 
     }
 }
 
-
-
 #' Summarized Coverage & Nucleotide Frequency data.table
 #'
 #' #' This function constructs a list of data.tables that contains nucleotide frequency
@@ -763,6 +714,52 @@ tx_covNucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt", nCor
     }
 }
 
+# Manipulating GenomicRanges ###################################################
+
+#' Filter ranges by a maximum width
+#'
+#' @param x CompressedGRangesList. Genomic Ranges list containing genomic
+#' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
+#' functions.
+#' @param thr numeric. Threshold for maximum width size allowed on output.
+#' @param nCores integer. Number of cores to be used to run function.
+#'
+#' @return CompressedGRangesList
+#' @export
+#'
+#' @author M.A. Garcia-Campos
+#'
+#' @examples
+tx_filter_max_width <- function(x, thr, nCores = 1){
+    if((nCores - floor(nCores)) > 0 | !is.numeric(nCores)){
+        stop("nCores argument must be an integer.\n")
+    }
+    if(nCores == 1){
+        tmp <- GenomicAlignments::width(x) %>% magrittr::is_weakly_less_than(thr)
+        lapply(seq(1, length(x)), function(i){
+            if(all(tmp[[i]])){
+                x[[i]]
+            }else{
+                x[[i]][tmp[[i]]]
+            }
+        }) %>% GenomicRanges::GRangesList() %>% magrittr::set_names(names(x))
+    }else{
+        if(.Platform$OS.type == "windows"){
+            stop("The multi-core capability of this function is not available ",
+                 "in Windows operating systems.\n")
+        }else{
+            tmp <- GenomicAlignments::width(x) %>% magrittr::is_weakly_less_than(thr)
+            parallel::mclapply(mc.cores = nCores, seq(1, length(x)), function(i){
+                if(all(tmp[[i]])){
+                    x[[i]]
+                }else{
+                    x[[i]][tmp[[i]]]
+                }
+            }) %>% GenomicRanges::GRangesList() %>% magrittr::set_names(names(x))
+        }
+    }
+}
+
 #' Quantifies reads by gene model from a tx_reads list
 #'
 #' @param x CompressedGRangesList. Genomic Ranges list containing genomic
@@ -778,6 +775,8 @@ tx_covNucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt", nCor
 tx_counts <- function(x){
     suppressWarnings(unlist(x)) %>% GenomeInfoDb::seqnames() %>% table()
 }
+
+# Manipulating data.tables and DT lists ########################################
 
 #' Merge lists of data.tables
 #'
@@ -814,7 +813,6 @@ tx_aggregate_DTlist <- function (DTL1, DTL2, colsToAdd, keepAll = TRUE){
         tmpDTL
     }
 }
-
 
 #' Merge data.tables in list to a single data.table
 #'

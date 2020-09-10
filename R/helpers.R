@@ -136,7 +136,7 @@ hlpr_ReadsInGene <- function(reads, iGene, geneAnnot, split_i, allExons, minRead
     i <- which(nchar(tReads$seq1) > GenomicAlignments::width(tReads))
     tReads[i]$seq1 <- stringr::str_sub(tReads[i]$seq1, start = 1, GenomicAlignments::width(tReads[i]))
     i <- which(nchar(tReads$seq2) > GenomicAlignments::width(tReads))
-    tReads[i]$seq2 <- stringr::str_sub(tReads[i]$seq2, start = -GenomicAlignments::width(tReads[i]))
+    tReads[i]$seq2 <- stringr::str_sub(tReads[i]$seq2, start = - GenomicAlignments::width(tReads[i]))
     # Calculate overlap
     tReads$diffSeq <- nchar(tReads$seq1) + nchar(tReads$seq2) - GenomicAlignments::width(tReads)
     tReads$oL <- tReads$diffSeq %>% magrittr::is_greater_than(0)
