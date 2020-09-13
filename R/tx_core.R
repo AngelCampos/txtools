@@ -165,7 +165,8 @@ tx_load_bed <- function(bedfile){
 
 #' Load genome
 #'
-#' Load genome as DNAStrinSet from FASTA file
+#' Load genome as DNAStrinSet from FASTA file. Alias for
+#' \code{\link[Biostrings]{readDNAStringSet}}
 #'
 #' @param fastaFile path to FASTA format file with all genome sequences
 #'

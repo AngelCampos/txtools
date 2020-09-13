@@ -6,6 +6,7 @@
 \usage{
 tx_load_bam(
   file,
+  pairedEnd,
   yieldSize = 1e+05,
   scanFlag = "default",
   loadSeq = FALSE,
@@ -15,6 +16,9 @@ tx_load_bam(
 }
 \arguments{
 \item{file}{character. Path to the file to read}
+
+\item{pairedEnd}{logical. Set to FALSE if reads in BAM file are single-end,
+set to TRUE if reads are paired-end.}
 
 \item{yieldSize}{numeric. Number of reads to be processed at a time}
 

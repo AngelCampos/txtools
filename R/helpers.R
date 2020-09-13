@@ -4,8 +4,10 @@ exonGRanges <- function(geneAnnot_GR){
     iStart <- GenomicRanges::start(geneAnnot_GR)
     iEnd <- GenomicRanges::end(geneAnnot_GR)
     iStrand <- GenomicRanges::strand(geneAnnot_GR)
-    tmpA <- GenomicRanges::start(geneAnnot_GR$blocks) %>% magrittr::subtract(1) %>% magrittr::add(iStart)
-    tmpB <- GenomicAlignments::width(geneAnnot_GR$blocks) %>% magrittr::subtract(1) %>% magrittr::add(tmpA)
+    tmpA <- GenomicRanges::start(geneAnnot_GR$blocks) %>%
+        magrittr::subtract(1) %>% magrittr::add(iStart)
+    tmpB <- GenomicAlignments::width(geneAnnot_GR$blocks) %>%
+        magrittr::subtract(1) %>% magrittr::add(tmpA)
     listLen <- lapply(tmpA, length) %>% unlist
     group <- rep(1:length(geneAnnot_GR), times = listLen)
     data.frame(rep(iChr, times = listLen),
@@ -46,7 +48,8 @@ exonBlockGen <- function(iGene, geneAnnot_GR){
 hlpr_splitReadsByGenes <- function(reads, bedR, overlapType, minReads){
     #IgnoreStrand feature missing
     allOver_1 <- GenomicRanges::findOverlaps(reads@first, bedR, type = overlapType)
-    allOver_2 <- GenomicRanges::findOverlaps(GenomicAlignments::invertStrand(reads@last), bedR,type = overlapType)
+    allOver_2 <- GenomicRanges::findOverlaps(GenomicAlignments::invertStrand(reads@last),
+                                             bedR,type = overlapType)
     split_1 <- split(allOver_1@from, allOver_1@to)
     split_2 <- split(allOver_2@from, allOver_2@to)
     names(split_1) <- bedR[names(split_1) %>% as.numeric()]$name
@@ -59,6 +62,17 @@ hlpr_splitReadsByGenes <- function(reads, bedR, overlapType, minReads){
     split_i <- split_i[sapply(split_i, length) %>%
                            magrittr::is_weakly_greater_than(minReads) %>% which]
     return(split_i)
+}
+
+# For single-end reads
+hlpr_splitReadsByGenes_singleEnd <- function(reads, bedR, overlapType, minReads){
+    allOver_1 <- GenomicRanges::findOverlaps(reads, bedR, type = overlapType)
+    split_1 <- split(allOver_1@from, allOver_1@to)
+    names(split_1) <- bedR[as.numeric(names(split_1))]$name
+    split_1 <- split_1[sapply(split_1, length) %>%
+                           magrittr::is_weakly_greater_than(minReads) %>%
+                           which]
+    return(split_1)
 }
 
 # Process reads into transcripts
