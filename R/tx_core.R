@@ -29,6 +29,8 @@ NULL
 #' GenomicAlignments object.
 #'
 #' @param file character. Path to the file to read
+#' @param pairedEnd logical. Set to FALSE if reads in BAM file are single-end,
+#' set to TRUE if reads are paired-end.
 #' @param yieldSize numeric. Number of reads to be processed at a time
 #' @param scanFlag integer. Flag used to filter reads.
 #' See \code{\link[Rsamtools]{ScanBamParam}}
@@ -49,6 +51,7 @@ NULL
 #' bamFile <- system.file("extdata", "example_hg19.bam", package = "txtools")
 #' tx_load_bam(bamFile, loadSeq = TRUE, verbose = TRUE)
 tx_load_bam <- function(file,
+                        pairedEnd,
                         yieldSize = 100000,
                         scanFlag = "default",
                         loadSeq = FALSE,
@@ -56,10 +59,13 @@ tx_load_bam <- function(file,
                         verbose = TRUE){
     if(verbose){cat("Reading number of records in file \n")}
     #Remove optical duplicates, low quality reads, low quality reads, non-paired
-    if(scanFlag == "default"){
+    if(scanFlag == "default" & pairedEnd){
         scanFlag <- Rsamtools::scanBamFlag(isDuplicate = FALSE,
                                            isNotPassingQualityControls = FALSE,
                                            isPaired = TRUE)
+    }else if(scanFlag == "default" & !pairedEnd){
+        scanFlag <- Rsamtools::scanBamFlag(isDuplicate = FALSE,
+                                           isNotPassingQualityControls = FALSE)
     }
     # CountBam records (each paired end alignments equals two records)
     bC <- Rsamtools::countBam(file)
@@ -70,27 +76,46 @@ tx_load_bam <- function(file,
         pb <- utils::txtProgressBar(style = 3)
     }
     BAMFILE <- Rsamtools::BamFile(file, yieldSize = yieldSize)
-    readCycles <- 1:ceiling(bC$records/(yieldSize*2))
-    pbJumps <- seq(0,1, by = min(1/(length(readCycles)-1), 1))
-    if(length(readCycles) > 200){stop("Too low yieldSize")}
+    readCycles <- 1:ceiling(bC$records/(yieldSize * ifelse(pairedEnd, 2, 1)))
+    pbJumps <- seq(0, 1, by = min(1/(length(readCycles)-1), 1))
+    if(length(readCycles) > 200){
+        warning("If taking too much time try a bigger yieldSize.")
+        }
     #  Opens and reads BAM files in chunks of length = yieldSize
     open(BAMFILE)
     reads <- lapply(pbJumps, function(i){
         if(verbose){utils::setTxtProgressBar(pb, i)}
-        if(loadSeq){
-            suppressWarnings(
-                GenomicAlignments::readGAlignmentPairs(BAMFILE,
+        if(pairedEnd){
+            if(loadSeq){
+                suppressWarnings(
+                    GenomicAlignments::readGAlignmentPairs(BAMFILE,
+                                                           use.names = TRUE,
+                                                           param = Rsamtools::ScanBamParam(
+                                                               flag = scanFlag,
+                                                               what = "seq")))
+            }else if(loadSeq == F){
+                suppressWarnings(
+                    GenomicAlignments::readGAlignmentPairs(BAMFILE,
+                                                           use.names = TRUE,
+                                                           param = Rsamtools::ScanBamParam(
+                                                               flag = scanFlag)))
+            }else(stop("loadSeq parameter must be logical either FALSE or TRUE"))
+        }else if(pairedEnd == FALSE){
+            if(loadSeq){
+                suppressWarnings(
+                    GenomicAlignments::readGAlignments(BAMFILE,
                                                        use.names = TRUE,
                                                        param = Rsamtools::ScanBamParam(
                                                            flag = scanFlag,
                                                            what = "seq")))
-        }else if(loadSeq == F){
-            suppressWarnings(
-                GenomicAlignments::readGAlignmentPairs(BAMFILE,
+            }else if(loadSeq == F){
+                suppressWarnings(
+                    GenomicAlignments::readGAlignments(BAMFILE,
                                                        use.names = TRUE,
                                                        param = Rsamtools::ScanBamParam(
                                                            flag = scanFlag)))
-        }else(stop("loadSeq parameter must be logical either FALSE or TRUE"))
+            }else(stop("loadSeq parameter must be logical either FALSE or TRUE"))
+        }
     }) %>% do.call(what = c)
     close(BAMFILE)
     if(verbose){close(pb)}
@@ -98,13 +123,16 @@ tx_load_bam <- function(file,
                     dumpedAmbigPairs = GenomicAlignments::getDumpedAlignments())
     if(verbose){cat(" \n")}
     if(verbose){
-        cat(length(bamData$GAligns), "paired-end reads succesfully loaded \n")
-        cat("Dumped reads due to ambiguous pairs:", length(bamData$dumpedAmbigPairs), "\n")
+        cat(length(bamData$GAligns), "Reads succesfully loaded \n")
+        cat("Dumped ambioguous reads:", length(bamData$dumpedAmbigPairs), "\n")
     }
     if(recoverDumpedAligns == F){
-        warning(length(bamData$dumpedAmbigPairs), "dumped ambiguous reads. ",
-                "Use 'getDumpedAlignments()' to retrieve them from the dump ", "
-                environment, or set the 'recoverDumpedAligns' argument to TRUE")
+        if(length(bamData$dumpedAmbigPairs) > 0){
+            warning(length(bamData$dumpedAmbigPairs), " dumped ambiguous reads. ",
+                    "Use 'GenomicAlignments::getDumpedAlignments()' to retrieve ",
+                    "them from the dump environment, or set the ",
+                    "'recoverDumpedAligns' argument to TRUE")
+        }
         return(reads)
     }else{
         return(bamData)
@@ -185,7 +213,7 @@ tx_reads <- function(reads, geneAnnot, overlapType = "within", minReads = 50,
     geneAnnot <- geneAnnot[which(geneAnnot$name %in% names(split_i))]
     if(length(geneAnnot) > 0){
         if(verbose){
-            cat(length(unique(unlist(split_i))), "paired-end reads overlap",
+            cat(length(unique(unlist(split_i))), "reads overlap",
                 length(geneAnnot), "gene models \n")
             cat("Filtering reads by gene model... \n")
             if(withSeq){
