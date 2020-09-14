@@ -308,6 +308,69 @@ tx_reads_mc <- function(reads, geneAnnot, nCores, overlapType = "within",
     return(OUT)
 }
 
+# New tx_reads
+tx_reads_2 <- function(reads, geneAnnot, overlapType = "within", minReads = 50,
+                       withSeq = F, verbose = T, nCores = 1){
+    stop_mc_windows(nCores)
+    if(!class(reads) %in% c("GAlignmentPairs", "GAlignments")){
+        stop("reads argument should be of class GAlignmentPairs. \n")
+    }
+    pairedEnd <- switch(class(reads), GAlignmentPairs = TRUE, GAlignments = FALSE)
+    if(class(geneAnnot) != "GRanges"){
+        stop("geneAnnot argument should be of class GRanges. \n")
+    }
+    if(verbose){
+        cat("Processing", length(reads), "reads, using", length(geneAnnot),
+            "gene models. \n")
+    }
+    split_i <- switch(class(reads),
+                      GAlignmentPairs = hlpr_splitReadsByGenes(reads, geneAnnot,
+                                                               overlapType, minReads),
+                      GAlignments = hlpr_splitReadsByGenes_singleEnd(reads, geneAnnot,
+                                                                     overlapType, minReads))
+    geneAnnot <- geneAnnot[which(geneAnnot$name %in% names(split_i))]
+    if(length(geneAnnot) > 0){
+        if(verbose){
+            cat(length(unique(unlist(split_i))), "reads overlap",
+                length(geneAnnot), "gene models \n")
+            cat("Filtering reads by gene model... \n")
+            if(withSeq){
+                cat("Processing sequences. This may take several minutes... \n")
+            }
+        }
+    }else{stop("There where no reads, or not enough reads overlapping the gene models. \n")}
+    allExons <- exonGRanges(geneAnnot) # All exons in gene models
+    if(pairedEnd){
+        OUT <- parallel::mclapply(mc.cores = nCores, geneAnnot$name, function(iGene){
+            hlpr_ReadsInGene(reads = reads,
+                             iGene = iGene,
+                             geneAnnot = geneAnnot,
+                             split_i = split_i,
+                             allExons = allExons,
+                             withSeq = withSeq,
+                             minReads = minReads)
+        })
+    }else if(!pairedEnd){
+        OUT <- parallel::mclapply(mc.cores = nCores, geneAnnot$name, function(iGene){
+            hlpr_ReadsInGene_SingleEnd(reads = reads,
+                                       iGene = iGene,
+                                       geneAnnot = geneAnnot,
+                                       split_i = split_i,
+                                       allExons = allExons,
+                                       withSeq = withSeq,
+                                       minReads = minReads)
+        })
+    }
+    names(OUT) <- geneAnnot$name
+    OUT <- OUT[lapply(OUT, length) %>% unlist %>% magrittr::is_greater_than(minReads)] %>%
+        GenomicRanges::GRangesList()
+    if(verbose){
+        cat("Output contains:", lapply(OUT, names) %>% unlist %>% unique %>% length,
+            "unique reads in", length(OUT), "gene models \n")
+    }
+    return(OUT)
+}
+
 #' Calculate coverage table: coverage, 5prime-starts, and 3prime-ends
 #'
 #' @param x CompressedGRangesList
@@ -576,12 +639,14 @@ tx_coverageDT <- function(x, geneAnnot, nCores = 1){
         stop("nCores argument must be an integer.\n")
     }
     if(nCores == 1){
-        hlp_cbind2Tabs(tx_genCoorTab(x, geneAnnot), tx_coverageTab(x))
+        hlp_cbind2Tabs(tx_genCoorTab(x, geneAnnot),
+                       tx_coverageTab(x))
     }else{
         if(.Platform$OS.type == "windows"){
             stop("The multi-core capability of this function is not available in Windows operating systems.\n")
         }
-        hlp_cbind2Tabs(tx_genCoorTab_mc(x, geneAnnot, nCores), tx_coverageTab_mc(x, nCores))
+        hlp_cbind2Tabs(tx_genCoorTab_mc(x, geneAnnot, nCores),
+                       tx_coverageTab_mc(x, nCores))
     }
 }
 
@@ -702,7 +767,8 @@ tx_covNucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt", nCor
                        tx_nucFreqTab(x, simplify_IUPAC))
     }else{
         if(.Platform$OS.type == "windows"){
-            stop("The multi-core capability of this function is not available in Windows operating systems.\n")
+            stop("The multi-core capability of this function is not available ",
+                 "in Windows operating systems.\n")
         }
         hlp_cbind3Tabs(tx_genCoorTab_mc(x, geneAnnot, nCores),
                        tx_coverageTab_mc(x, nCores),
