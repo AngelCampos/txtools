@@ -8,8 +8,7 @@ tx_nucFreqDT(x, geneAnnot, simplify_IUPAC = "splitForceInt", nCores = 1)
 }
 \arguments{
 \item{x}{CompressedGRangesList. Genomic Ranges list containing genomic
-alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
-functions.}
+alignments data by gene. Constructed via the \code{\link{tx_reads}} function.}
 
 \item{geneAnnot}{GenomicRanges. Gene annotation loaded via the tx_load_bed()}
 
@@ -39,12 +38,12 @@ metrics per nucleotide by transcript:
 \item start_5p = read-start counts
 \item end_3p = read-end counts
 \item A = Adenine
-\item C = Citocine
+\item C = Cytosine
 \item G = Guanine
-\item T = Timine
-\item N = Read but undetermined
+\item T = Thymine
+\item N = Undetermined nucleotide
 \item - = Deletion
-\item . = Gap between read1 and read2
+\item . = Insert, not read gap between read1 and read2
 }
 The function requires the input of a GRangesList object output by the
 \code{\link{tx_reads}} function, which should contain sequence alignments in the

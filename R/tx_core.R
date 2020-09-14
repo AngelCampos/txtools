@@ -308,38 +308,6 @@ tx_reads_mc <- function(reads, geneAnnot, nCores, overlapType = "within",
     return(OUT)
 }
 
-#' Complete and sort a DT according to a gene annotation in GRanges format
-#'
-#' @param DT data.table
-#' @param geneAnnot GRanges
-#' @param fastaGenome character
-#' @param nCores numeric
-#'
-#' @return data.table
-#' @export
-#'
-#' @examples
-tx_complete_DT <- function(DT, geneAnnot, fastaGenome = NULL, nCores = 1){
-    stop_mc_windows(nCores)
-    DT <- check_DT(DT)
-    if(!all(unique(DT$gene) %in% geneAnnot$name)){
-        stop("All genes in DT must be in geneAnnot, missing genes from ",
-             "geneAnnot will be added")
-    }
-    missGenes <- setdiff(geneAnnot$name, unique(DT$gene))
-    tmpCoorTabs <- hlpr_genCoorTabGenes(missGenes, geneAnnot, fastaGenome, nCores)
-    missCols <- setdiff(names(DT), names(tmpCoorTabs[[1]]))
-    tmpCoorTabs <- tmpCoorTabs %>% tx_merge_DT()
-    tmpCoorTabs <- cbind(tmpCoorTabs, data.table::data.table(matrix(0,
-                                                 nrow = nrow(tmpCoorTabs),
-                                                 ncol = length(missCols))) %>%
-        magrittr::set_names(missCols)) %>% tx_split_DT()
-    DT <- tx_split_DT(DT)
-    completeDTL <- c(DT, tmpCoorTabs)
-    completeDTL <- completeDTL[geneAnnot$name]
-    tx_merge_DT(completeDTL)
-}
-
 #' Calculate coverage table: coverage, 5prime-starts, and 3prime-ends
 #'
 #' @param x CompressedGRangesList
@@ -626,12 +594,12 @@ tx_coverageDT <- function(x, geneAnnot, nCores = 1){
 #'\item start_5p = read-start counts
 #'\item end_3p = read-end counts
 #'\item A = Adenine
-#'\item C = Citocine
+#'\item C = Cytosine
 #'\item G = Guanine
-#'\item T = Timine
-#'\item N = Read but undetermined
+#'\item T = Thymine
+#'\item N = Undetermined nucleotide
 #'\item - = Deletion
-#'\item . = Gap between read1 and read2
+#'\item . = Insert, not read gap between read1 and read2
 #'}
 #' The function requires the input of a GRangesList object output by the
 #' \code{\link{tx_reads}} function, which should contain sequence alignments in the
@@ -642,8 +610,7 @@ tx_coverageDT <- function(x, geneAnnot, nCores = 1){
 #' in UNIX-like OS.
 #'
 #' @param x CompressedGRangesList. Genomic Ranges list containing genomic
-#' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
-#' functions.
+#' alignments data by gene. Constructed via the \code{\link{tx_reads}} function.
 #' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed()
 #' @param simplify_IUPAC string. Available options are :
 #' \itemize{
@@ -687,12 +654,12 @@ tx_nucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt", nCores 
 #' metrics per nucleotide by transcript:
 #'\itemize{
 #'\item A = Adenine
-#'\item C = Citocine
+#'\item C = Cytosine
 #'\item G = Guanine
-#'\item T = Timine
-#'\item N = Read but undetermined
+#'\item T = Thymine
+#'\item N = Undetermined nucleotide
 #'\item - = Deletion
-#'\item . = Gap between read1 and read2
+#'\item . = Insert, not read gap between read1 and read2
 #'}
 #' The function requires the input of a GRangesList object output by the
 #' \code{\link{tx_reads}} function, which should contain sequence alignments in the
@@ -741,6 +708,38 @@ tx_covNucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt", nCor
                        tx_coverageTab_mc(x, nCores),
                        tx_nucFreqTab_mc(x, simplify_IUPAC, nCores))
     }
+}
+
+#' Complete and sort a DT according to a gene annotation in GRanges format
+#'
+#' @param DT data.table
+#' @param geneAnnot GRanges
+#' @param fastaGenome character
+#' @param nCores numeric
+#'
+#' @return data.table
+#' @export
+#'
+#' @examples
+tx_complete_DT <- function(DT, geneAnnot, fastaGenome = NULL, nCores = 1){
+    stop_mc_windows(nCores)
+    DT <- check_DT(DT)
+    if(!all(unique(DT$gene) %in% geneAnnot$name)){
+        stop("All genes in DT must be in geneAnnot, missing genes from ",
+             "geneAnnot will be added")
+    }
+    missGenes <- setdiff(geneAnnot$name, unique(DT$gene))
+    tmpCoorTabs <- hlpr_genCoorTabGenes(missGenes, geneAnnot, fastaGenome, nCores)
+    missCols <- setdiff(names(DT), names(tmpCoorTabs[[1]]))
+    tmpCoorTabs <- tmpCoorTabs %>% tx_merge_DT()
+    tmpCoorTabs <- cbind(tmpCoorTabs, data.table::data.table(matrix(0,
+                                                                    nrow = nrow(tmpCoorTabs),
+                                                                    ncol = length(missCols))) %>%
+                             magrittr::set_names(missCols)) %>% tx_split_DT()
+    DT <- tx_split_DT(DT)
+    completeDTL <- c(DT, tmpCoorTabs)
+    completeDTL <- completeDTL[geneAnnot$name]
+    tx_merge_DT(completeDTL)
 }
 
 # Manipulating GenomicRanges ###################################################
@@ -1073,6 +1072,6 @@ tx_add_pos <- function(DT, sep = ":", check_uniq = T){
 #' # and positive integers
 #' window_around(10, 5)
 window_around <- function(position, windowLength){
-    (position-windowLength):(position+windowLength)
+    (position - windowLength):(position + windowLength)
 }
 

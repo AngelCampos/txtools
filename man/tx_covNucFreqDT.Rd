@@ -36,12 +36,12 @@ data.table
 metrics per nucleotide by transcript:
 \itemize{
 \item A = Adenine
-\item C = Citocine
+\item C = Cytosine
 \item G = Guanine
-\item T = Timine
-\item N = Read but undetermined
+\item T = Thymine
+\item N = Undetermined nucleotide
 \item - = Deletion
-\item . = Gap between read1 and read2
+\item . = Insert, not read gap between read1 and read2
 }
 The function requires the input of a GRangesList object output by the
 \code{\link{tx_reads}} function, which should contain sequence alignments in the
