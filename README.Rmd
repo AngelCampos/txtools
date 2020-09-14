@@ -68,7 +68,7 @@ bamFile <- system.file("extdata", "example_hg19.bam", package = "txtools")
 bedFile <- system.file("extdata", "twoUCSCgenes_hg19.bed", package = "txtools")
 
 # Loading files and processing them using the gene models
-reads <- tx_load_bam(bamFile, loadSeq = T, verbose = T, yieldSize = 100000)
+reads <- tx_load_bam(bamFile, pairedEnd = T, loadSeq = T, verbose = T, yieldSize = 100000)
 geneAnnot <- tx_load_bed(bedFile) # plyranges read_bed function
 ```
 
@@ -218,7 +218,6 @@ barplot(resTab3[[iGene]]$cov, main = paste(iGene, "Coverage"),
 * Nucleotide frequency barplot
 
 ```{r, barplot_nucfreq}
-tx_plot_nucFreq(resTab3[["uc010nap.1"]])
 iGene <- "uc010nap.1"
 barplot(t(data.frame(resTab3[[iGene]][,c("A", "T", "G", "C", "N")])),
         col = c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "black"), border = "gray",
@@ -240,7 +239,6 @@ class(mergedDT)
 split_DT <- tx_split_DT(mergedDT)
 class(split_DT)
 summary(split_DT)
-
 ```
 
 A nice example of using data.tables is the x[i, j, by] syntax, which can be
@@ -248,7 +246,7 @@ used to apply functions to groups of values in the data.table. For example,
 using the **merged data.table** we can calculate the median coverage per gene.
 
 ```{r}
-mergedDT[,median(cov), by = gene]
+mergedDT[, median(cov), by = gene]
 ```
 
 We can see that the median coverage of "uc003lam.1" is 61 and for "uc010nap.1" 

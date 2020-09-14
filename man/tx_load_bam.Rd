@@ -43,9 +43,10 @@ automatically calculated or specified by the user, and loads it as a
 GenomicAlignments object.
 }
 \examples{
-# Loading  in-package BAM file
+# Loading in-package BAM file
 bamFile <- system.file("extdata", "example_hg19.bam", package = "txtools")
-tx_load_bam(bamFile, loadSeq = TRUE, verbose = TRUE)
+hg19_bam <- tx_load_bam(bamFile, pairedEnd = TRUE, loadSeq = TRUE, verbose = TRUE)
+summary(hg19_bam)
 }
 \author{
 M.A. Garcia-Campos
