@@ -309,10 +309,27 @@ tx_reads_mc <- function(reads, geneAnnot, nCores, overlapType = "within",
     return(OUT)
 }
 
-# New tx_reads
-tx_reads_2 <- function(reads, geneAnnot, overlapType = "within", minReads = 50,
+
+#' Transcriptomic reads convertion
+#'
+#' Assign reads to gene models and convert them to transcriptomic coordinate
+#' system.
+#'
+#' @param reads GAlignments or GAlignmentPairs. Genomic alignments to be processed
+#' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed()
+#' @param minReads integer. Minimum number of reads required to overlap a gene
+#' @param withSeq logical. Set to TRUE if sequence should be preserved; 'reads'
+#' object should contain sequences.
+#' @param verbose logical. Set to FALSE to show less information.
+#' @param nCores integer. Number of cores to use to run function.
+#'
+#' @return A GRanges object which now
+#' @export
+#'
+tx_reads_2 <- function(reads, geneAnnot, minReads = 50,
                        withSeq = F, verbose = T, nCores = 1){
     stop_mc_windows(nCores)
+    overlapType <-  "within"
     if(!class(reads) %in% c("GAlignmentPairs", "GAlignments")){
         stop("reads argument should be of class GAlignmentPairs. \n")
     }
