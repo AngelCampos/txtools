@@ -8,7 +8,7 @@ exonGRanges <- function(geneAnnot_GR){
         magrittr::subtract(1) %>% magrittr::add(iStart)
     tmpB <- GenomicAlignments::width(geneAnnot_GR$blocks) %>%
         magrittr::subtract(1) %>% magrittr::add(tmpA)
-    listLen <- lapply(tmpA, length) %>% unlist
+    listLen <- unlist(lapply(tmpA, length))
     group <- rep(1:length(geneAnnot_GR), times = listLen)
     data.frame(rep(iChr, times = listLen),
                unlist(tmpA),
