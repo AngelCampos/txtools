@@ -28,7 +28,8 @@ object should contain sequences.}
 \item{nCores}{integer. Number of cores to use to run function.}
 }
 \value{
-
+A GRanges object which coordinate system is now in transcriptomic
+space. Alignments are located in genes, instead of chromosomes.
 }
 \description{
 Assign reads to gene models and convert them to transcriptomic coordinate

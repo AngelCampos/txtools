@@ -489,3 +489,13 @@ check_refSeq <- function(DT){
              "reference sequence")
     }
 }
+
+# Check that gene annotation and reads to be processed share chromosomes.
+check_GA_reads_compatibility <- function(reads, geneAnnot){
+    intChr <- intersect(as.character(unique(GenomeInfoDb::seqnames(geneAnnot))),
+                        as.character(unique(GenomeInfoDb::seqnames(reads))))
+    if(length(intChr) == 0){
+        stop("reads and geneAnnot objects do not have chromosome names in common.")
+    }
+}
+

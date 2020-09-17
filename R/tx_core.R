@@ -323,11 +323,13 @@ tx_reads_mc <- function(reads, geneAnnot, nCores, overlapType = "within",
 #' @param verbose logical. Set to FALSE to show less information.
 #' @param nCores integer. Number of cores to use to run function.
 #'
-#' @return A GRanges object which now
+#' @return A GRanges object which coordinate system is now in transcriptomic
+#' space. Alignments are located in genes, instead of chromosomes.
 #' @export
 #'
 tx_reads_2 <- function(reads, geneAnnot, minReads = 50,
                        withSeq = F, verbose = T, nCores = 1){
+    # Checks
     stop_mc_windows(nCores)
     overlapType <-  "within"
     if(!class(reads) %in% c("GAlignmentPairs", "GAlignments")){
@@ -341,6 +343,8 @@ tx_reads_2 <- function(reads, geneAnnot, minReads = 50,
         cat("Processing", length(reads), "reads, using", length(geneAnnot),
             "gene models. \n")
     }
+    check_GA_reads_compatibility(reads, geneAnnot)
+    # Main program
     split_i <- switch(class(reads),
                       GAlignmentPairs = hlpr_splitReadsByGenes(reads, geneAnnot,
                                                                overlapType, minReads),
