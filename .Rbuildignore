@@ -4,3 +4,4 @@
 ^README\.Rmd$
 ^data-raw$
 ^WIP\.R$
+^tx_tools\.Rprofile$
