@@ -892,6 +892,31 @@ tx_counts <- function(x){
     suppressWarnings(unlist(x)) %>% GenomeInfoDb::seqnames() %>% table()
 }
 
+#' Extending GRanges 5' and 3' UTR blocks
+#'
+#' A function that extends the 5' and/or 3' IRanges contained in the 'blocks'
+#' column of GRanges objects, which define the exon ranges of a transcript.
+#' As those loaded by ´tx_load_bed()´.
+#'
+#' @param GR GRanges GRanges containing a blocks
+#' @param ext_5p integer Number of bp for the 5' UTR blocks to be extended
+#' @param ext_3p integer Number of bp for the 3' UTR blocks to be extended
+#'
+#' @return GRanges
+#' @export
+#'
+#' @examples
+tx_extend_UTR <- function(GR, ext_5p = 0, ext_3p = 0){
+    if(is.null(GR$blocks)){
+        stop("GR does not containg 'blocks' meta column.")
+    }
+    GR_out <- plyranges::stretch(plyranges::anchor_5p(GR), ext_3p)
+    GR_out <- plyranges::stretch(plyranges::anchor_3p(GR_out), ext_5p)
+    GR_out$blocks <- stretchBlocks_3p(GR_out$blocks, ext_3p, GenomicRanges::strand(GR))
+    GR_out$blocks <- stretchBlocks_5p(GR_out$blocks, ext_5p, GenomicRanges::strand(GR))
+    return(GR_out)
+}
+
 # Manipulating data.tables and DT lists ########################################
 
 #' Merge lists of data.tables

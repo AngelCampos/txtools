@@ -365,6 +365,29 @@ oSize <- function(x){
     print(utils::object.size(x), units = "auto")
 }
 
+# Stretching 5p-most blocks
+stretchBlocks_5p <- function(blocks, extend, strand){
+    blocks <- GenomicRanges::shift(blocks, shift = ifelse(strand == "+", extend, 0))
+    part <- IRanges::PartitioningByEnd(blocks)
+    collapsed <- unlist(blocks)
+    ind_5p_pos <- IRanges::start(part)[as.logical(strand == "+")]
+    ind_5p_neg <- IRanges::end(part)[as.logical(strand == "-")]
+    IRanges::start(collapsed[ind_5p_pos]) <- IRanges::start(collapsed[ind_5p_pos]) - extend
+    IRanges::end(collapsed[ind_5p_neg]) <- IRanges::end(collapsed[ind_5p_neg]) + extend
+    return(IRanges::relist(collapsed, part))
+}
+
+# Stretching 3p-most blocks
+stretchBlocks_3p <- function(blocks, extend, strand){
+    blocks <- GenomicRanges::shift(blocks, shift = ifelse(strand == "-", extend, 0))
+    part <- IRanges::PartitioningByEnd(blocks)
+    collapsed <- unlist(blocks)
+    ind_3p_pos <- IRanges::start(part)[as.logical(strand == "-")]
+    ind_3p_neg <- IRanges::end(part)[as.logical(strand == "+")]
+    IRanges::start(collapsed[ind_3p_pos]) <- IRanges::start(collapsed[ind_3p_pos]) - extend
+    IRanges::end(collapsed[ind_3p_neg]) <- IRanges::end(collapsed[ind_3p_neg]) + extend
+    return(IRanges::relist(collapsed, part))
+}
 # Generating DTs ###############################################################
 # Generates trasncriptomic coordinates table from a list of genes
 hlpr_genCoorTabGenes <- function(genes, geneAnnot, fastaGenome = NULL, nCores = 1){
