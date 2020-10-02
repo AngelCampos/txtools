@@ -418,6 +418,18 @@ hlpr_genCoorTabGenes <- function(genes, geneAnnot, fastaGenome = NULL, nCores = 
     }
 }
 
+# Manipulating DTs #############################################################
+
+# Removing UTR portions of DT, assuming first bases are
+hlp_remove_UTR <- function(x, cut_5p, cut_3p){
+    if(!all(diff(x$txcoor) == 1)){
+        stop("Transcript coordinates 'txcoors' column is not continuous or has ",
+        "gaps for gene: ", unique(x$gene))
+    }
+    tmp <- x[x$txcoor %in% (tail(x$txcoor, -cut_5p) %>% head(-cut_3p)),]
+    tmp$txcoor <- tmp$txcoor - cut_5p
+    return(tmp)
+}
 
 
 # Plotting helper funs #########################################################

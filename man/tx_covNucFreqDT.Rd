@@ -32,7 +32,7 @@ non-integer frequencies.
 data.table
 }
 \description{
-#' This function constructs a list of data.tables that contains nucleotide frequency
+This function constructs a list of data.tables that contains nucleotide frequency
 metrics per nucleotide by transcript:
 \itemize{
 \item A = Adenine
