@@ -1000,8 +1000,8 @@ tx_split_DT <- function(x, dropEmpty = TRUE){
 #' @export
 #'
 #' @examples
-tx_cutTxEnds <- function(DT, cut_5p = 0, cut_3p = 0){
-    DT <- check_DT(DT) %>% tx_split_DT()
+tx_cutDTEnds <- function(DT, cut_5p = 0, cut_3p = 0){
+    DTL <- check_DT(DT) %>% tx_split_DT()
     OUT <- lapply(DTL, function(x){
         hlp_remove_UTR(x, cut_5p, cut_3p)
     }) %>% tx_merge_DT()
