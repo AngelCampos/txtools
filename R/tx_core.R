@@ -58,6 +58,8 @@ tx_load_bam <- function(file,
                         loadSeq = FALSE,
                         recoverDumpedAligns = FALSE,
                         verbose = TRUE){
+    if(!is.logical(pairedEnd)){stop("Argument 'pairedEnd' must be of class logical")}
+    if(!is.logical(loadSeq)){stop("Argument 'loadSeq' must be of class logical")}
     if(verbose){cat("Reading number of records in file \n")}
     #Remove optical duplicates, low quality reads, low quality reads, non-paired
     if(scanFlag == "default" & pairedEnd){
@@ -80,42 +82,30 @@ tx_load_bam <- function(file,
     readCycles <- 1:ceiling(bC$records/(yieldSize * ifelse(pairedEnd, 2, 1)))
     pbJumps <- seq(0, 1, by = min(1/(length(readCycles)-1), 1))
     if(length(readCycles) > 200){
-        warning("If taking too much time try a bigger yieldSize.")
-        }
+        warning("If taking too much time, try to subset your BAM file. \n")
+    }
     #  Opens and reads BAM files in chunks of length = yieldSize
     open(BAMFILE)
     reads <- lapply(pbJumps, function(i){
         if(verbose){utils::setTxtProgressBar(pb, i)}
         if(pairedEnd){
-            if(loadSeq){
-                suppressWarnings(
-                    GenomicAlignments::readGAlignmentPairs(BAMFILE,
-                                                           use.names = TRUE,
-                                                           param = Rsamtools::ScanBamParam(
-                                                               flag = scanFlag,
-                                                               what = "seq")))
-            }else if(loadSeq == F){
-                suppressWarnings(
-                    GenomicAlignments::readGAlignmentPairs(BAMFILE,
-                                                           use.names = TRUE,
-                                                           param = Rsamtools::ScanBamParam(
-                                                               flag = scanFlag)))
-            }else(stop("loadSeq parameter must be logical either FALSE or TRUE"))
-        }else if(pairedEnd == FALSE){
-            if(loadSeq){
-                suppressWarnings(
-                    GenomicAlignments::readGAlignments(BAMFILE,
+            suppressWarnings(
+                GenomicAlignments::readGAlignmentPairs(BAMFILE,
                                                        use.names = TRUE,
                                                        param = Rsamtools::ScanBamParam(
                                                            flag = scanFlag,
-                                                           what = "seq")))
-            }else if(loadSeq == F){
-                suppressWarnings(
-                    GenomicAlignments::readGAlignments(BAMFILE,
-                                                       use.names = TRUE,
-                                                       param = Rsamtools::ScanBamParam(
-                                                           flag = scanFlag)))
-            }else(stop("loadSeq parameter must be logical either FALSE or TRUE"))
+                                                           what = ifelse(loadSeq,
+                                                                         "seq",
+                                                                         character(0)))))
+        }else if(pairedEnd == FALSE){
+            suppressWarnings(
+                GenomicAlignments::readGAlignments(BAMFILE,
+                                                   use.names = TRUE,
+                                                   param = Rsamtools::ScanBamParam(
+                                                       flag = scanFlag,
+                                                       what = ifelse(loadSeq,
+                                                                     "seq",
+                                                                     character(0)))))
         }
     }) %>% do.call(what = c)
     close(BAMFILE)
@@ -181,135 +171,6 @@ tx_load_genome <- function(fastaFile){
 
 # Processing GAlignments #######################################################
 
-#' Merge paired-end reads and assign them to gene models
-#'
-#' @param reads GAlignmentPairs
-#' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed()
-#' @param overlapType character. Overlap type to filter reads by gene
-#' model.
-#' @param minReads integer. Minimum number of reads required to overlap a gene
-#' model to be part of the output object.
-#' @param withSeq logical. Set to TRUE if sequence should be preserved; 'reads'
-#' object should contain sequences.
-#' @param verbose logical. Set to FALSE to show less information
-#'
-#' @return list
-#' @export
-#'
-#' @author M.A. Garcia-Campos
-#'
-#' @examples
-tx_reads <- function(reads, geneAnnot, overlapType = "within", minReads = 50,
-                     withSeq = F, verbose = T){
-    if(class(reads) != "GAlignmentPairs"){
-        stop("reads argument should be of class GAlignmentPairs \n")
-    }
-    if(class(geneAnnot) != "GRanges"){
-        stop("geneAnnot argument should be of class GRanges \n")
-    }
-    if(verbose){
-        cat("Processing", length(reads), "reads, using", length(geneAnnot),
-            "gene models \n")
-    }
-    split_i <- hlpr_splitReadsByGenes(reads, geneAnnot, overlapType, minReads)
-    geneAnnot <- geneAnnot[which(geneAnnot$name %in% names(split_i))]
-    if(length(geneAnnot) > 0){
-        if(verbose){
-            cat(length(unique(unlist(split_i))), "reads overlap",
-                length(geneAnnot), "gene models \n")
-            cat("Filtering reads by gene model... \n")
-            if(withSeq){
-                cat("Processing sequences. This may take several minutes... \n")
-            }
-        }
-    }else{stop("No genes with overlapped paired-end reads \n")}
-    allExons <- exonGRanges(geneAnnot) # All exons in gene models
-    OUT <- v_hlpr_ReadsInGene(reads = reads,
-                              iGene = geneAnnot$name,
-                              geneAnnot = geneAnnot,
-                              split_i = split_i,
-                              allExons = allExons,
-                              withSeq = withSeq,
-                              minReads = minReads)
-    names(OUT) <- geneAnnot$name
-    OUT <- OUT[lapply(OUT, length) %>% unlist %>%
-                   magrittr::is_greater_than(minReads)] %>%
-        GenomicRanges::GRangesList()
-    if(verbose){
-        cat("Output contains:", lapply(OUT, names) %>% unlist %>% unique %>% length,
-            "unique reads in", length(OUT), "gene models \n")
-    }
-    return(OUT)
-}
-
-#' Merge paired-end reads and assign them to gene models (Multicore)
-#'
-#' @param reads GAlignmentPairs. Paired end genomic alignments to be processed
-#' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed()
-#' @param nCores integer. Number of cores to use to run function.
-#' @param overlapType character. Overlap type to filter reads by gene model.
-#' @param minReads integer. Minimum number of reads required to overlap a gene
-#' model to be part of the output object.
-#' @param withSeq logical. Set to TRUE if sequence should be preserved; 'reads'
-#' object should contain sequences.
-#' @param verbose logical. Set to FALSE to show less information.
-#'
-#' @return list
-#' @export
-#'
-#' @author M.A. Garcia-Campos
-#'
-#' @examples
-tx_reads_mc <- function(reads, geneAnnot, nCores, overlapType = "within",
-                        minReads = 50, withSeq = F, verbose = T){
-    if(class(reads) != "GAlignmentPairs"){
-        stop("reads argument should be of class GAlignmentPairs \n")
-    }
-    if(class(geneAnnot) != "GRanges"){
-        stop("geneAnnot argument should be of class GRanges \n")
-    }
-    if(.Platform$OS.type == "windows"){
-        stop("This functions is not available in Windows operative systems \n")
-    }
-    if(verbose){
-        cat("Processing", length(reads), "paired-end reads, using",
-            length(geneAnnot), "gene models \n")
-    }
-    split_i <- hlpr_splitReadsByGenes(reads, geneAnnot, overlapType, minReads)
-    geneAnnot <- geneAnnot[which(geneAnnot$name %in% names(split_i))]
-    if(length(geneAnnot) > 0){
-        if(verbose){
-            cat(length(unique(unlist(split_i))), "paired-end reads overlap",
-                length(geneAnnot), "gene models \n")
-            cat("Filtering reads by gene model... \n")
-            if(withSeq){
-                cat("Processing sequences. This may take several minutes... \n")
-            }
-        }
-    }else{
-        stop("No genes with overlapped paired-end reads \n")
-    }
-    allExons <- exonGRanges(geneAnnot)
-    OUT <- parallel::mclapply(mc.cores = nCores, geneAnnot$name, function(iGene){
-        hlpr_ReadsInGene(reads = reads,
-                         iGene = iGene,
-                         geneAnnot = geneAnnot,
-                         split_i = split_i,
-                         allExons = allExons,
-                         withSeq = withSeq,
-                         minReads = minReads)
-    })
-    names(OUT) <- geneAnnot$name
-    OUT <- OUT[lapply(OUT, length) %>% unlist %>% magrittr::is_greater_than(minReads)] %>%
-        GenomicRanges::GRangesList()
-    if(verbose){
-        cat("Output contains:", lapply(OUT, names) %>% unlist %>% unique %>% length,
-            "unique reads in", length(OUT), "gene models \n")
-    }
-    return(OUT)
-}
-
-
 #' Transcriptomic reads convertion
 #'
 #' Assign reads to gene models and convert them to transcriptomic coordinate
@@ -321,14 +182,15 @@ tx_reads_mc <- function(reads, geneAnnot, nCores, overlapType = "within",
 #' @param withSeq logical. Set to TRUE if sequence should be preserved; 'reads'
 #' object should contain sequences.
 #' @param verbose logical. Set to FALSE to show less information.
-#' @param nCores integer. Number of cores to use to run function.
+#' @param nCores integer. Number of cores to use to run function. Multicore
+#' capability not available in Windows OS.
 #'
 #' @return A GRanges object which coordinate system is now in transcriptomic
 #' space. Alignments are located in genes, instead of chromosomes.
 #' @export
 #'
-tx_reads_2 <- function(reads, geneAnnot, minReads = 50,
-                       withSeq = F, verbose = T, nCores = 1){
+tx_reads <- function(reads, geneAnnot, minReads = 50,
+                     withSeq = F, verbose = T, nCores = 1){
     # Checks
     stop_mc_windows(nCores)
     overlapType <-  "within"
@@ -345,6 +207,7 @@ tx_reads_2 <- function(reads, geneAnnot, minReads = 50,
     }
     check_GA_reads_compatibility(reads, geneAnnot)
     # Main program
+    # Spliting reads by gene
     split_i <- switch(class(reads),
                       GAlignmentPairs = hlpr_splitReadsByGenes(reads, geneAnnot,
                                                                overlapType, minReads),
@@ -362,6 +225,8 @@ tx_reads_2 <- function(reads, geneAnnot, minReads = 50,
         }
     }else{stop("There where no reads, or not enough reads overlapping the gene models. \n")}
     allExons <- exonGRanges(geneAnnot) # All exons in gene models
+    # Pass from genomic coordinates into transcriptomic coordinates and
+    # Stitch sequences for paired-end reads
     if(pairedEnd){
         OUT <- parallel::mclapply(mc.cores = nCores, geneAnnot$name, function(iGene){
             hlpr_ReadsInGene(reads = reads,

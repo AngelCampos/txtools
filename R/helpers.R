@@ -159,10 +159,12 @@ hlpr_ReadsInGene <- function(reads, iGene, geneAnnot, split_i, allExons, minRead
     # No overlap reads
     i <- which(!(tReads$oL))
     if(length(i) > 0){
-        gapLen <- GenomicAlignments::width(tReads[i]) - Biostrings::nchar(tReads[i]$seq1) - nchar(tReads[i]$seq2)
+        gapLen <- GenomicAlignments::width(tReads[i]) -
+            Biostrings::nchar(tReads[i]$seq1) - nchar(tReads[i]$seq2)
         insSeq <- stringr::str_dup(string = ".", gapLen)
         tReads[i]$mergedSeq <- paste(tReads[i]$seq1, insSeq,
-                                     tReads[i]$seq2, sep = "") %>% Biostrings::DNAStringSet()
+                                     tReads[i]$seq2, sep = "") %>%
+            Biostrings::DNAStringSet()
     }
     # Overlapped reads
     i <- which(tReads$oL)
@@ -176,12 +178,14 @@ hlpr_ReadsInGene <- function(reads, iGene, geneAnnot, split_i, allExons, minRead
             }else{
                 ovSeq[j] <- Biostrings::DNAStringSet(c(tmp1[j], tmp2[j])) %>%
                     Biostrings::consensusMatrix() %>%
-                    Biostrings::consensusString(ambiguityMap = txtools::IUPAC_CODE_MAP_extended, threshold = 0.2)
+                    Biostrings::consensusString(ambiguityMap = txtools::IUPAC_CODE_MAP_extended,
+                                                threshold = 0.2)
             }
         }
         tReads[i]$mergedSeq <- paste0(stringr::str_sub(tReads[i]$seq1,
                                                        start = 1,
-                                                       end = Biostrings::nchar(tReads[i]$seq1) - tReads[i]$diffSeq),
+                                                       end = Biostrings::nchar(tReads[i]$seq1) -
+                                                           tReads[i]$diffSeq),
                                       ovSeq, stringr::str_sub(tReads[i]$seq2,
                                                               start = tReads[i]$diffSeq + 1,
                                                               end = nchar(tReads[i]$seq2)))
@@ -206,29 +210,25 @@ hlpr_ReadsInGene_SingleEnd <- function(reads, iGene, geneAnnot, split_i,
     # Selecting paired reads to merge
     iReads_r1 <- reads[selReadsbyPair]
     # Filtering reads extrictly inside exons
-    # Both ends of both reads fall into the gene model
+    # Both ends must fall into the gene model
     stEndTable <- as.matrix(data.frame(r1_S = GenomicRanges::start(iReads_r1),
                                        r1_E = GenomicRanges::end(iReads_r1)))
     pass <- (stEndTable %in% iExon) %>% matrix(ncol = 2, byrow = F) %>%
         rowSums %>% magrittr::equals(2) %>% which()
     if(length(pass) < minReads){return(GenomicRanges::GRanges())} # No reads Return empty GA
-    # # Reads cover consecutive exons
-    # tmp <- GenomicRanges::findOverlaps(iReads_r1[pass], allExons[[iGene]])
-    # passPos <- split(tmp@to, tmp@from) %>% lapply(diff) %>%
-    #     lapply(function(x) all(x == 1)) %>% unlist %>% which
-    # pass <- pass[passPos]
-    if(length(pass) < minReads){return(GenomicRanges::GRanges())} # No reads Return empty GA
     # Boundaries of merged reads
     if(iStrand == "+"){
-        tReads <- data.frame(start = match(GenomicRanges::start(iReads_r1[pass]), iExon),
+        tReads <- data.frame(start    = match(GenomicRanges::start(iReads_r1[pass]), iExon),
                              end      = match(GenomicRanges::end(iReads_r1[pass]), iExon),
                              strand   = GenomicRanges::strand(iReads_r1[pass]),
-                             seqnames = iGene) %>% plyranges::as_granges()
+                             seqnames = iGene) %>%
+            plyranges::as_granges()
     }else if(iStrand == "-"){
-        tReads <- data.frame(start = match(GenomicRanges::end(iReads_r1[pass]), iExon),
+        tReads <- data.frame(start    = match(GenomicRanges::end(iReads_r1[pass]), iExon),
                              end      = match(GenomicRanges::start(iReads_r1[pass]), iExon),
                              strand   = GenomicRanges::strand(iReads_r1[pass]),
-                             seqnames = iGene) %>% plyranges::as_granges()
+                             seqnames = iGene) %>%
+            plyranges::as_granges()
     }
     names(tReads) <- names(reads)[selReadsbyPair][pass]
     GenomeInfoDb::seqlengths(tReads) <- length(iExon)
@@ -424,9 +424,9 @@ hlpr_genCoorTabGenes <- function(genes, geneAnnot, fastaGenome = NULL, nCores = 
 hlp_remove_UTR <- function(x, cut_5p, cut_3p){
     if(!all(diff(x$txcoor) == 1)){
         stop("Transcript coordinates 'txcoors' column is not continuous or has ",
-        "gaps for gene: ", unique(x$gene))
+             "gaps for gene: ", unique(x$gene))
     }
-    tmp <- x[x$txcoor %in% (tail(x$txcoor, -cut_5p) %>% head(-cut_3p)),]
+    tmp <- x[x$txcoor %in% (utils::tail(x$txcoor, -cut_5p) %>% utils::head(-cut_3p)),]
     tmp$txcoor <- tmp$txcoor - cut_5p
     return(tmp)
 }

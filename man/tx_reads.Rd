@@ -2,39 +2,30 @@
 % Please edit documentation in R/tx_core.R
 \name{tx_reads}
 \alias{tx_reads}
-\title{Merge paired-end reads and assign them to gene models}
+\title{Transcriptomic reads convertion}
 \usage{
-tx_reads(
-  reads,
-  geneAnnot,
-  overlapType = "within",
-  minReads = 50,
-  withSeq = F,
-  verbose = T
-)
+tx_reads(reads, geneAnnot, minReads = 50, withSeq = F, verbose = T, nCores = 1)
 }
 \arguments{
-\item{reads}{GAlignmentPairs}
+\item{reads}{GAlignments or GAlignmentPairs. Genomic alignments to be processed}
 
 \item{geneAnnot}{GenomicRanges. Gene annotation loaded via the tx_load_bed()}
 
-\item{overlapType}{character. Overlap type to filter reads by gene
-model.}
-
-\item{minReads}{integer. Minimum number of reads required to overlap a gene
-model to be part of the output object.}
+\item{minReads}{integer. Minimum number of reads required to overlap a gene}
 
 \item{withSeq}{logical. Set to TRUE if sequence should be preserved; 'reads'
 object should contain sequences.}
 
-\item{verbose}{logical. Set to FALSE to show less information}
+\item{verbose}{logical. Set to FALSE to show less information.}
+
+\item{nCores}{integer. Number of cores to use to run function. Multicore
+capability not available in Windows OS.}
 }
 \value{
-list
+A GRanges object which coordinate system is now in transcriptomic
+space. Alignments are located in genes, instead of chromosomes.
 }
 \description{
-Merge paired-end reads and assign them to gene models
-}
-\author{
-M.A. Garcia-Campos
+Assign reads to gene models and convert them to transcriptomic coordinate
+system.
 }
