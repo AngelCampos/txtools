@@ -341,13 +341,21 @@ tx_reads <- function(reads, geneAnnot, minReads = 50,
 #' @export
 #'
 #' @author M.A. Garcia-Campos
+#' @aliases tx_coverageDT
 #'
 #' @examples
-tx_coverageDT <- function(x, geneAnnot, nCores = 1){
+tx_makeDT_coverage <- function(x, geneAnnot, nCores = 1){
     check_mc_windows(nCores)
     check_integerGreaterThanZero_arg(nCores, "nCores")
     hlp_cbind2Tabs(hlp_genCoorTab_mc(x, geneAnnot, nCores),
                        hlp_coverageTab_mc(x, nCores)) %>% tx_merge_DT()
+}
+
+
+#' @export
+tx_coverageDT <- function(x, geneAnnot, nCores = 1){
+    .Deprecated("tx_makeDT_coverage")
+    tx_makeDT_coverage(x, geneAnnot, nCores)
 }
 
 #' Summarized Nucleotide Frequency data.table
@@ -395,14 +403,21 @@ tx_coverageDT <- function(x, geneAnnot, nCores = 1){
 #' @export
 #'
 #' @author M.A. Garcia-Campos
+#' @aliases tx_nucFreqDT
 #'
 #' @examples
-tx_nucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt", nCores = 1){
+tx_makeDT_nucFreq <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt", nCores = 1){
     check_mc_windows(nCores)
     check_integerGreaterThanZero_arg(nCores, "nCores")
     check_GR_has_seq(x, "x")
     hlp_cbind2Tabs(hlp_genCoorTab_mc(x, geneAnnot, nCores),
                        hlp_nucFreqTab_mc(x, simplify_IUPAC, nCores)) %>% tx_merge_DT()
+}
+
+#' @export
+tx_nucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt", nCores = 1){
+    .Deprecated("tx_makeDT_nucFreq")
+    tx_makeDT_nucFreq(x, geneAnnot, simplify_IUPAC, nCores)
 }
 
 #' Summarized Coverage & Nucleotide Frequency data.table
@@ -447,15 +462,22 @@ tx_nucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt", nCores 
 #' @return data.table
 #' @export
 #' @author M.A. Garcia-Campos
+#' @aliases tx_covNucFreqDT
 #'
 #' @examples
-tx_covNucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt", nCores = 1){
+tx_makeDT_covNucFreq <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt", nCores = 1){
     check_GR_has_seq(x, "x")
     check_mc_windows(nCores)
     check_integerGreaterThanZero_arg(nCores, "nCores")
     hlp_cbind3Tabs(hlp_genCoorTab_mc(x, geneAnnot, nCores),
                    hlp_coverageTab_mc(x, nCores),
                    hlp_nucFreqTab_mc(x, simplify_IUPAC, nCores)) %>% tx_merge_DT()
+}
+
+#' @export
+tx_covNucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt", nCores = 1){
+    .Deprecated("tx_makeDT_covNucFreq")
+    tx_makeDT_covNucFreq(x, geneAnnot, nCores)
 }
 
 # Manipulating data.tables and DT lists ########################################
