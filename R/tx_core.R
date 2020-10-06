@@ -169,7 +169,61 @@ tx_load_genome <- function(fastaFile){
     Biostrings::readDNAStringSet(fastaFile)
 }
 
-# Processing GAlignments #######################################################
+# Manipulating GenomicRanges ###################################################
+
+#' Extending GRanges 5' and 3' UTR blocks
+#'
+#' A function that extends the 5' and/or 3' UTR regions of GRanges including the
+#' 'blocks' column, which defines the exon structure of a transcript.
+#' As those loaded by ´tx_load_bed()´.
+#'
+#' @param GR GRanges GRanges containing a blocks
+#' @param ext_5p integer Number of bp for the 5' UTR blocks to be extended
+#' @param ext_3p integer Number of bp for the 3' UTR blocks to be extended
+#'
+#' @return GRanges
+#' @export
+#'
+#' @examples
+tx_extend_UTR <- function(GR, ext_5p = 0, ext_3p = 0){
+    if(is.null(GR$blocks)){
+        stop("GR does not containg 'blocks' meta column.")
+    }
+    GR_out <- plyranges::stretch(plyranges::anchor_5p(GR), ext_3p)
+    GR_out <- plyranges::stretch(plyranges::anchor_3p(GR_out), ext_5p)
+    GR_out$blocks <- stretchBlocks_3p(GR_out$blocks, ext_3p, GenomicRanges::strand(GR))
+    GR_out$blocks <- stretchBlocks_5p(GR_out$blocks, ext_5p, GenomicRanges::strand(GR))
+    return(GR_out)
+}
+
+#' Filter ranges by a maximum width
+#'
+#' @param x CompressedGRangesList. Genomic Ranges list containing genomic
+#' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
+#' functions.
+#' @param thr integer. Threshold for maximum width size allowed on output.
+#' @param nCores integer. Number of cores to use to run function. Multicore
+#' capability not available in Windows OS.
+#'
+#' @return CompressedGRangesList
+#' @export
+#'
+#' @author M.A. Garcia-Campos
+#'
+#' @examples
+tx_filter_max_width <- function(x, thr, nCores = 1){
+    check_integer_arg(nCores, "nCores")
+    check_integer_arg(thr, "thr")
+    check_mc_windows(nCores)
+    tmp <- GenomicAlignments::width(x) %>% magrittr::is_weakly_less_than(thr)
+    parallel::mclapply(mc.cores = nCores, seq(1, length(x)), function(i){
+        if(all(tmp[[i]])){
+            x[[i]]
+        }else{
+            x[[i]][tmp[[i]]]
+        }
+    }) %>% GenomicRanges::GRangesList() %>% magrittr::set_names(names(x))
+}
 
 #' Transcriptomic reads convertion
 #'
@@ -185,14 +239,13 @@ tx_load_genome <- function(fastaFile){
 #' @param nCores integer. Number of cores to use to run function. Multicore
 #' capability not available in Windows OS.
 #'
-#' @return A GRanges object which coordinate system is now in transcriptomic
+#' @return GRanges
 #' space. Alignments are located in genes, instead of chromosomes.
 #' @export
-#'
 tx_reads <- function(reads, geneAnnot, minReads = 50,
                      withSeq = F, verbose = T, nCores = 1){
     # Checks
-    stop_mc_windows(nCores)
+    check_mc_windows(nCores)
     overlapType <-  "within"
     if(!class(reads) %in% c("GAlignmentPairs", "GAlignments")){
         stop("reads argument should be of class GAlignmentPairs. \n")
@@ -206,6 +259,7 @@ tx_reads <- function(reads, geneAnnot, minReads = 50,
             "gene models. \n")
     }
     check_GA_reads_compatibility(reads, geneAnnot)
+    if(minReads < 1){stop("'minReads' argument has to be equal or greater to 1")}
     # Main program
     # Spliting reads by gene
     split_i <- switch(class(reads),
@@ -258,239 +312,7 @@ tx_reads <- function(reads, geneAnnot, minReads = 50,
     return(OUT)
 }
 
-#' Calculate coverage table: coverage, 5prime-starts, and 3prime-ends
-#'
-#' @param x CompressedGRangesList
-#'
-#' @return data.table
-#' @export
-#'
-#' @author M.A. Garcia-Campos
-#'
-#' @examples
-tx_coverageTab <- function(x){
-    if(class(x) != "CompressedGRangesList"){
-        stop("x must be of class SimpleGRangesList")
-    }
-    if(names(x) %>% duplicated() %>% sum() %>% magrittr::is_greater_than(0)){
-        stop("List contains duplicated gene models")
-    }
-    cov <- tx_coverage(x) %>% lapply(as.vector)
-    sta <- GenomicRanges::start(x) %>% lapply(table) %>% magrittr::set_names(names(x))
-    end <- GenomicRanges::end(x) %>% lapply(table) %>% magrittr::set_names(names(x))
-    len <- GenomeInfoDb::seqlengths(x)
-    OUT <- lapply(names(x), function(i){
-        tmpMat <- matrix(0, nrow = len[[i]], ncol = 3) %>% data.frame() %>%
-            data.table::data.table() %>%
-            magrittr::set_rownames(1:len[[i]]) %>%
-            magrittr::set_colnames(c("cov", "start_5p", "end_3p"))
-        tmpMat[names(sta[[i]]), "start_5p"] <- sta[[i]]
-        tmpMat[names(end[[i]]), "end_3p"] <- end[[i]]
-        tmpMat[, "cov"] <- cov[[i]] %>% as.numeric()
-        tmpMat$cov <- as.integer(tmpMat$cov)
-        tmpMat$start_5p <- as.integer(tmpMat$start_5p)
-        tmpMat$end_3p <- as.integer(tmpMat$end_3p)
-        return(tmpMat)
-    }) %>% magrittr::set_names(names(x))
-    return(OUT)
-}
-
-#' Calculate coverage table (coverage, ends, starts) for all gene models
-#' without gene coordinates (Multicore)
-#'
-#' @param x CompressedGRangesList. Genomic Ranges list containing genomic
-#' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
-#' functions.
-#' @param nCores integer. Number of cores to use to run function.
-#'
-#' @return data.table
-#' @export
-#'
-#' @author M.A. Garcia-Campos
-#'
-#' @examples
-tx_coverageTab_mc <- function(x, nCores){
-    if(class(x) != "CompressedGRangesList"){
-        stop("x must be of class SimpleGRangesList")
-    }
-    if(names(x) %>% duplicated() %>% sum() %>% magrittr::is_greater_than(0)){
-        stop("List contains duplicated gene models")
-    }
-    cov <- tx_coverage(x) %>% parallel::mclapply(as.vector, mc.cores = nCores)
-    sta <- GenomicRanges::start(x) %>% lapply(table) %>% magrittr::set_names(names(x))
-    end <- GenomicRanges::end(x) %>% lapply(table) %>% magrittr::set_names(names(x))
-    len <- lapply(cov, length) %>% unlist
-    OUT <- parallel::mclapply(mc.cores = nCores, 1:length(x), function(i){
-        tmpMat <- matrix(0, nrow = len[i], ncol = 3) %>% data.frame() %>%
-            magrittr::set_rownames(1:len[i]) %>%
-            magrittr::set_colnames(c("cov", "start_5p", "end_3p"))
-        tmpMat[names(sta[[i]]), "start_5p"] <- sta[[i]]
-        tmpMat[names(end[[i]]), "end_3p"] <- end[[i]]
-        tmpMat[, "cov"] <- cov[[i]] %>% as.numeric()
-        tmpMat <- tmpMat %>% data.table::data.table()
-        tmpMat$cov <- as.integer(tmpMat$cov)
-        tmpMat$start_5p <- as.integer(tmpMat$start_5p)
-        tmpMat$end_3p <- as.integer(tmpMat$end_3p)
-        return(tmpMat)
-    }) %>% magrittr::set_names(names(x))
-    return(OUT)
-}
-
-#' Calculate nucleotide frequency pileup for all gene models
-#'
-#' @param x CompressedGRangesList. Genomic Ranges list containing genomic
-#' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
-#' functions.
-#' @param simplify_IUPAC character. Method to simplify ambiguous reads:
-#' 1) 'not': Ambiguous reads will be left as their IUPAC_ambiguous code, e.g.
-#' for positions in which a 'G' and and 'A' where read an 'R' will note this.
-#' 2) "splitHalf': Ambiguous reads will be divided in half, in odd cases having
-#' fractions of reads assigned.
-#' 3) "splitForceInt": Ambiguous reads will be divided in half, but forced to be
-#' integers, unassigned fraction of reads will be summed and assigned as 'N'.
-#'
-#' @return data.table
-#' @export
-#'
-#' @author M.A. Garcia-Campos
-#'
-#' @examples
-tx_nucFreqTab <- function(x, simplify_IUPAC = "not"){
-    if(!all(simplify_IUPAC %in% c("not", "splitHalf", "splitForceInt"))){
-        stop("simplify_IUPAC argument must be either: 'not', 'splitHalf' or ",
-             "'splitForceInt'.")
-    }
-    iGenes <- names(x)
-    lapply(iGenes, function(iGene){
-        y <- Biostrings::consensusMatrix(x = x[[iGene]]$seq,
-                                         shift = GenomicRanges::start(x[[iGene]]) -1,
-                                         width = GenomeInfoDb::seqlengths(x[[iGene]])[iGene])
-        if(simplify_IUPAC == "not"){
-            hlp_addMissingNucs(y) %>% t %>% data.table::data.table()
-        }else if(simplify_IUPAC == "splitHalf"){
-            hlp_splitNucsHalf(y) %>% t %>% data.table::data.table()
-        }else if(simplify_IUPAC == "splitForceInt"){
-            hlp_splitNucsForceInt(y) %>% t %>% data.table::data.table()
-        }
-    }) %>% magrittr::set_names(names(x))
-}
-
-#' Calculate nucleotide frequency pileup for all gene models
-#'
-#' @param x CompressedGRangesList. Genomic Ranges list containing genomic
-#' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
-#' functions.
-#' @param simplify_IUPAC character. Method to simplify ambiguous reads:
-#' 1) 'not': Ambiguous reads will be left as their IUPAC_ambiguous code, e.g.
-#' for positions in which a 'G' and and 'A' where read an 'R' will note this.
-#' 2) "splitHalf': Ambiguous reads will be divided in half, in odd cases having
-#' fractions of reads assigned.
-#' 3) "splitForceInt": Ambiguous reads will be divided in half, but forced to be
-#' integers, unassigned fraction of reads will be summed and assigned as 'N'.
-#' @param nCores integer. Number of cores to use to run function.
-#'
-#' @return data.table
-#' @export
-#'
-#' @author M.A. Garcia-Campos
-#'
-#' @examples
-tx_nucFreqTab_mc <- function(x, simplify_IUPAC = "not", nCores){
-    iGenes <- names(x)
-    parallel::mclapply(mc.cores = nCores, X = iGenes, function(iGene){
-        y <- Biostrings::consensusMatrix(x = x[[iGene]]$seq,
-                                         shift = GenomicRanges::start(x[[iGene]]) -1,
-                                         width = GenomeInfoDb::seqlengths(x[[iGene]])[iGene])
-        if(simplify_IUPAC == "not"){
-            hlp_addMissingNucs(y) %>% t %>% data.table::data.table()
-        }else if(simplify_IUPAC == "splitHalf"){
-            hlp_splitNucsHalf(y) %>% t %>% data.table::data.table()
-        }else if(simplify_IUPAC == "splitForceInt"){
-            hlp_splitNucsForceInt(y) %>% t %>% data.table::data.table()
-        }
-    }) %>% magrittr::set_names(names(x))
-}
-
-#' Table with genomic and transcriptomic coordinates
-#'
-#' @param x CompressedGRangesList. Genomic Ranges list containing genomic
-#' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
-#' functions.
-#' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed()
-#'
-#' @return data.table
-#' @export
-#'
-#' @author M.A. Garcia-Campos
-#'
-#' @examples
-tx_genCoorTab <- function(x, geneAnnot){
-    if(all(names(x) %in% geneAnnot$name)){
-        lapply(names(x), function(iGene){
-            tmp2 <- geneAnnot[which(geneAnnot$name == iGene)]
-            tmp3 <- c(GenomicAlignments::seqnames(tmp2),
-                      GenomicRanges::strand(tmp2)) %>% as.character() %>% c(iGene)
-            tmpDT <- rep(tmp3, GenomeInfoDb::seqlengths(x[[iGene]])[iGene]) %>%
-                matrix(ncol = 3, byrow = T) %>%
-                cbind(exonBlockGen(iGene, geneAnnot)) %>%
-                cbind(seq(1, GenomeInfoDb::seqlengths(x[[iGene]])[iGene]))
-            tmpDT <- tmpDT[,c(1,4,2,3,5)] %>% data.table::data.table() %>%
-                magrittr::set_colnames(c("chr", "gencoor", "strand", "gene", "txcoor"))
-            tmpDT$chr <- as.factor(tmpDT$chr)
-            tmpDT$gencoor <- as.integer(tmpDT$gencoor)
-            tmpDT$strand <- as.factor(tmpDT$strand)
-            tmpDT$gene <- as.factor(tmpDT$gene)
-            tmpDT$txcoor <- as.integer(tmpDT$txcoor)
-            return(tmpDT)
-        }) %>% magrittr::set_names(names(x))
-    }else{
-        stop("Names of x are not contained in geneAnnot$name")
-    }
-}
-
-#' Table with genomic and transcriptomic coordinates (Multi-core)
-#'
-#' This function is the multi-core version of tx_genCoorTab(), and is only
-#' available for use in UNIX-like operative systems.
-#'
-#' @param x CompressedGRangesList. Genomic Ranges list containing genomic
-#' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
-#' functions.
-#' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed()
-#' @param nCores integer. Number of cores to use to run function.
-#'
-#' @return data.table
-#' @export
-#'
-#' @author M.A. Garcia-Campos
-#'
-#' @examples
-tx_genCoorTab_mc <- function(x, geneAnnot, nCores){
-    if(.Platform$OS.type == "windows"){
-        stop("This functions is not available in Windows operative systems. \n")
-    }
-    if(all(names(x) %in% geneAnnot$name)){
-        parallel::mclapply(mc.cores = nCores, X = names(x), function(iGene){
-            tmp2 <- geneAnnot[which(geneAnnot$name == iGene)]
-            tmp3 <- c(GenomicAlignments::seqnames(tmp2),
-                      GenomicRanges::strand(tmp2)) %>% as.character() %>% c(iGene)
-            tmpDT <- rep(tmp3, GenomeInfoDb::seqlengths(x[[iGene]])[iGene]) %>%
-                matrix(ncol = 3, byrow = T) %>%
-                cbind(exonBlockGen(iGene, geneAnnot)) %>%
-                cbind(seq(1, GenomeInfoDb::seqlengths(x[[iGene]])[iGene]))
-            tmpDT <- tmpDT[,c(1,4,2,3,5)] %>% data.table::data.table() %>%
-                magrittr::set_colnames(c("chr", "gencoor", "strand", "gene", "txcoor"))
-            tmpDT$chr <- as.factor(tmpDT$chr)
-            tmpDT$gencoor <- as.integer(tmpDT$gencoor)
-            tmpDT$strand <- as.factor(tmpDT$strand)
-            tmpDT$gene <- as.factor(tmpDT$gene)
-            tmpDT$txcoor <- as.integer(tmpDT$txcoor)
-            return(tmpDT)
-        }) %>% magrittr::set_names(names(x))
-    }else{
-        stop("Names of x are not contained in geneAnnot$name .\n")
-    }
-}
+# Generating txtools DTs #######################################################
 
 #' Summarized Coverage data.table
 #'
@@ -515,26 +337,17 @@ tx_genCoorTab_mc <- function(x, geneAnnot, nCores){
 #' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed()
 #' @param nCores integer. Number of cores to use to run function.
 #'
-#' @return list
+#' @return data.table
 #' @export
 #'
 #' @author M.A. Garcia-Campos
 #'
 #' @examples
 tx_coverageDT <- function(x, geneAnnot, nCores = 1){
-    if((nCores - floor(nCores)) > 0 | !is.numeric(nCores)){
-        stop("nCores argument must be an integer.\n")
-    }
-    if(nCores == 1){
-        hlp_cbind2Tabs(tx_genCoorTab(x, geneAnnot),
-                       tx_coverageTab(x))
-    }else{
-        if(.Platform$OS.type == "windows"){
-            stop("The multi-core capability of this function is not available in Windows operating systems.\n")
-        }
-        hlp_cbind2Tabs(tx_genCoorTab_mc(x, geneAnnot, nCores),
-                       tx_coverageTab_mc(x, nCores))
-    }
+    check_mc_windows(nCores)
+    check_integerGreaterThanZero_arg(nCores, "nCores")
+    hlp_cbind2Tabs(hlp_genCoorTab_mc(x, geneAnnot, nCores),
+                       hlp_coverageTab_mc(x, nCores)) %>% tx_merge_DT()
 }
 
 #' Summarized Nucleotide Frequency data.table
@@ -585,19 +398,11 @@ tx_coverageDT <- function(x, geneAnnot, nCores = 1){
 #'
 #' @examples
 tx_nucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt", nCores = 1){
-    if((nCores - floor(nCores)) > 0 | !is.numeric(nCores)){
-        stop("nCores argument must be an integer.\n")
-    }
-    if(nCores == 1){
-        hlp_cbind2Tabs(tx_genCoorTab(x, geneAnnot),
-                       tx_nucFreqTab(x, simplify_IUPAC))
-    }else{
-        if(.Platform$OS.type == "windows"){
-            stop("The multi-core capability of this function is not available in Windows operating systems.\n")
-        }
-        hlp_cbind2Tabs(tx_genCoorTab_mc(x, geneAnnot, nCores),
-                       tx_nucFreqTab_mc(x, simplify_IUPAC, nCores))
-    }
+    check_mc_windows(nCores)
+    check_integerGreaterThanZero_arg(nCores, "nCores")
+    check_GR_has_seq(x, "x")
+    hlp_cbind2Tabs(hlp_genCoorTab_mc(x, geneAnnot, nCores),
+                       hlp_nucFreqTab_mc(x, simplify_IUPAC, nCores)) %>% tx_merge_DT()
 }
 
 #' Summarized Coverage & Nucleotide Frequency data.table
@@ -645,180 +450,15 @@ tx_nucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt", nCores 
 #'
 #' @examples
 tx_covNucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt", nCores = 1){
-    if((nCores - floor(nCores)) > 0 | !is.numeric(nCores)){
-        stop("nCores argument must be an integer.\n")
-    }
-    if(nCores == 1){
-        hlp_cbind3Tabs(tx_genCoorTab(x, geneAnnot),
-                       tx_coverageTab(x),
-                       tx_nucFreqTab(x, simplify_IUPAC))
-    }else{
-        if(.Platform$OS.type == "windows"){
-            stop("The multi-core capability of this function is not available ",
-                 "in Windows operating systems.\n")
-        }
-        hlp_cbind3Tabs(tx_genCoorTab_mc(x, geneAnnot, nCores),
-                       tx_coverageTab_mc(x, nCores),
-                       tx_nucFreqTab_mc(x, simplify_IUPAC, nCores))
-    }
-}
-
-#' Complete and sort a DT according to a gene annotation in GRanges format
-#'
-#' @param DT data.table
-#' @param geneAnnot GRanges
-#' @param fastaGenome character
-#' @param nCores numeric
-#'
-#' @return data.table
-#' @export
-#'
-#' @examples
-tx_complete_DT <- function(DT, geneAnnot, fastaGenome = NULL, nCores = 1){
-    stop_mc_windows(nCores)
-    DT <- check_DT(DT)
-    if(!all(unique(DT$gene) %in% geneAnnot$name)){
-        stop("All genes in DT must be in geneAnnot, missing genes from ",
-             "geneAnnot will be added")
-    }
-    missGenes <- setdiff(geneAnnot$name, unique(DT$gene))
-    tmpCoorTabs <- hlpr_genCoorTabGenes(missGenes, geneAnnot, fastaGenome, nCores)
-    missCols <- setdiff(names(DT), names(tmpCoorTabs[[1]]))
-    tmpCoorTabs <- tmpCoorTabs %>% tx_merge_DT()
-    tmpCoorTabs <- cbind(tmpCoorTabs, data.table::data.table(matrix(0,
-                                                                    nrow = nrow(tmpCoorTabs),
-                                                                    ncol = length(missCols))) %>%
-                             magrittr::set_names(missCols)) %>% tx_split_DT()
-    DT <- tx_split_DT(DT)
-    completeDTL <- c(DT, tmpCoorTabs)
-    completeDTL <- completeDTL[geneAnnot$name]
-    tx_merge_DT(completeDTL)
-}
-
-# Manipulating GenomicRanges ###################################################
-
-#' Filter ranges by a maximum width
-#'
-#' @param x CompressedGRangesList. Genomic Ranges list containing genomic
-#' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
-#' functions.
-#' @param thr numeric. Threshold for maximum width size allowed on output.
-#' @param nCores integer. Number of cores to be used to run function.
-#'
-#' @return CompressedGRangesList
-#' @export
-#'
-#' @author M.A. Garcia-Campos
-#'
-#' @examples
-tx_filter_max_width <- function(x, thr, nCores = 1){
-    if((nCores - floor(nCores)) > 0 | !is.numeric(nCores)){
-        stop("nCores argument must be an integer.\n")
-    }
-    if(nCores == 1){
-        tmp <- GenomicAlignments::width(x) %>% magrittr::is_weakly_less_than(thr)
-        lapply(seq(1, length(x)), function(i){
-            if(all(tmp[[i]])){
-                x[[i]]
-            }else{
-                x[[i]][tmp[[i]]]
-            }
-        }) %>% GenomicRanges::GRangesList() %>% magrittr::set_names(names(x))
-    }else{
-        if(.Platform$OS.type == "windows"){
-            stop("The multi-core capability of this function is not available ",
-                 "in Windows operating systems.\n")
-        }else{
-            tmp <- GenomicAlignments::width(x) %>% magrittr::is_weakly_less_than(thr)
-            parallel::mclapply(mc.cores = nCores, seq(1, length(x)), function(i){
-                if(all(tmp[[i]])){
-                    x[[i]]
-                }else{
-                    x[[i]][tmp[[i]]]
-                }
-            }) %>% GenomicRanges::GRangesList() %>% magrittr::set_names(names(x))
-        }
-    }
-}
-
-#' Quantifies reads by gene model from a tx_reads list
-#'
-#' @param x CompressedGRangesList. Genomic Ranges list containing genomic
-#' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
-#' functions.
-#'
-#' @return table
-#' @export
-#'
-#' @author M.A. Garcia-Campos
-#'
-#' @examples
-tx_counts <- function(x){
-    suppressWarnings(unlist(x)) %>% GenomeInfoDb::seqnames() %>% table()
-}
-
-#' Extending GRanges 5' and 3' UTR blocks
-#'
-#' A function that extends the 5' and/or 3' IRanges contained in the 'blocks'
-#' column of GRanges objects, which define the exon ranges of a transcript.
-#' As those loaded by ´tx_load_bed()´.
-#'
-#' @param GR GRanges GRanges containing a blocks
-#' @param ext_5p integer Number of bp for the 5' UTR blocks to be extended
-#' @param ext_3p integer Number of bp for the 3' UTR blocks to be extended
-#'
-#' @return GRanges
-#' @export
-#'
-#' @examples
-tx_extend_UTR <- function(GR, ext_5p = 0, ext_3p = 0){
-    if(is.null(GR$blocks)){
-        stop("GR does not containg 'blocks' meta column.")
-    }
-    GR_out <- plyranges::stretch(plyranges::anchor_5p(GR), ext_3p)
-    GR_out <- plyranges::stretch(plyranges::anchor_3p(GR_out), ext_5p)
-    GR_out$blocks <- stretchBlocks_3p(GR_out$blocks, ext_3p, GenomicRanges::strand(GR))
-    GR_out$blocks <- stretchBlocks_5p(GR_out$blocks, ext_5p, GenomicRanges::strand(GR))
-    return(GR_out)
+    check_GR_has_seq(x, "x")
+    check_mc_windows(nCores)
+    check_integerGreaterThanZero_arg(nCores, "nCores")
+    hlp_cbind3Tabs(hlp_genCoorTab_mc(x, geneAnnot, nCores),
+                   hlp_coverageTab_mc(x, nCores),
+                   hlp_nucFreqTab_mc(x, simplify_IUPAC, nCores)) %>% tx_merge_DT()
 }
 
 # Manipulating data.tables and DT lists ########################################
-
-#' Merge lists of data.tables
-#'
-#' @param DTL1 list List of data.table with gene names. As output of the
-#' \code{\link{tx_coverageDT}}, \code{\link{tx_nucFreqDT}}, and
-#' \code{\link{tx_covNucFreqDT}} functions.
-#' @param DTL2 list List of data.table with gene names.
-#' @param colsToAdd character. Numeric column(s) to be aggregated (added).
-#' @param keepAll logical. Set to FALSE for just keeping data.tables which
-#' name's are in both DTL.
-#'
-#' @return list
-#' @export
-#'
-#' @examples
-tx_aggregate_DTlist <- function (DTL1, DTL2, colsToAdd, keepAll = TRUE){
-    allNames <- union(names(DTL1), names(DTL2))
-    namesInBoth <- intersect(names(DTL1), names(DTL2))
-    namesOnly1 <- setdiff(names(DTL1), names(DTL2))
-    namesOnly2 <- setdiff(names(DTL2), names(DTL1))
-    tmpDTL <- lapply(namesInBoth, function(iGene){
-        if(!identical(DTL1[[iGene]][, c("chr", "gencoor", "strand", "gene", "txcoor")],
-                      DTL2[[iGene]][, c("chr", "gencoor", "strand", "gene", "txcoor")])){
-            stop(paste("Coordinate data in", iGene, " data.tables are not compatible"))
-        }else{
-            tmp <- DTL1[[iGene]][, colsToAdd, with = FALSE] +
-                DTL2[[iGene]][, colsToAdd, with = FALSE]
-            cbind(DTL1[[iGene]][, c("chr", "gencoor", "strand", "gene", "txcoor"), with = FALSE], tmp)
-        }
-    }) %>% magrittr::set_names(namesInBoth)
-    if(keepAll){
-        c(tmpDTL, DTL1[namesOnly1], DTL2[namesOnly2])[allNames]
-    }else{
-        tmpDTL
-    }
-}
 
 #' Merge data.tables in list to a single data.table
 #'
@@ -838,8 +478,8 @@ tx_merge_DT <- function(x){
 #' Split data.table back to list with individual data.tables by 'gene' names
 #'
 #' @param x data.table. Merged data.table as output by tx_merge_DT()
-#' @param dropEmpty logical. Drops empty list elements, which occur when data
-#' of genes have been entirely removed, but kept listed in the x$gene factor levels
+#' @param dropEmpty logical. Drops empty list elements, which occurs when data
+#' of genes have been entirely removed, but kept listed in the x$gene factor levels.
 #'
 #' @return list
 #' @export
@@ -866,11 +506,53 @@ tx_split_DT <- function(x, dropEmpty = TRUE){
 #'
 #' @examples
 tx_cutDTEnds <- function(DT, cut_5p = 0, cut_3p = 0){
-    DTL <- check_DT(DT) %>% tx_split_DT()
-    OUT <- lapply(DTL, function(x){
+    DTL <- tx_split_DT(check_DT(DT))
+    lapply(DTL, function(x){
         hlp_remove_UTR(x, cut_5p, cut_3p)
     }) %>% tx_merge_DT()
-    return(OUT)
+}
+
+#' Complete a DT object missing genes
+#'
+#' A function that adds the genomic and transcriptomic coordinates of genes
+#' with no data in a data.table generated by the \code{\link{tx_coverageDT}},
+#' \code{\link{tx_nucFreqDT}}, and \code{\link{tx_covNucFreqDT}} functions.
+#'
+#' This function is meant to equalize datasets which don't contain some genes,
+#' as such the order of the genes is the same as in the GRanges object used as
+#' gene annotation.
+#'
+#' @param DT data.table
+#' @param geneAnnot GRanges. Gene annotation, gene models, as loaded using the
+#' \code{\link{tx_load_bed}} function.
+#' @param fastaGenome DNAStrinSet. Sequences that comprise the genome in which
+#' gene models are embedded, loaded using the \code{\link{tx_load_bed}} function.
+#' @param nCores numeric
+#'
+#' @return data.table
+#' @export
+#'
+#' @examples
+tx_complete_DT <- function(DT, geneAnnot, fastaGenome = NULL, nCores = 1){
+    check_mc_windows(nCores)
+    DT <- check_DT(DT)
+    if(!all(unique(DT$gene) %in% geneAnnot$name)){
+        stop("All genes in DT must be in geneAnnot, missing genes from ",
+             "geneAnnot will be added")
+    }
+    missGenes <- setdiff(geneAnnot$name, unique(DT$gene))
+    tmpCoorTabs <- hlpr_genCoorTabGenes(missGenes, geneAnnot, fastaGenome, nCores)
+    missCols <- setdiff(names(DT), names(tmpCoorTabs[[1]]))
+    tmpCoorTabs <- tmpCoorTabs %>% tx_merge_DT()
+    tmpCoorTabs <- cbind(tmpCoorTabs,
+                         data.table::data.table(matrix(0,
+                                                       nrow = nrow(tmpCoorTabs),
+                                                       ncol = length(missCols))) %>%
+                             magrittr::set_names(missCols)) %>% tx_split_DT()
+    DT <- tx_split_DT(DT)
+    completeDTL <- c(DT, tmpCoorTabs)
+    completeDTL <- completeDTL[geneAnnot$name]
+    tx_merge_DT(completeDTL)
 }
 
 # data.table functions #########################################################
@@ -890,7 +572,6 @@ tx_add_diffNucToRef <- function(DT){
     tibble::add_column(DT, diffToRef = OUT)
 }
 
-
 # Add sum of nucleotide frequencies for meaningful nucleotides (i.e. not counting Ns and inserts)
 tx_add_nucTotal <- function(DT){
     DT <- check_DT(DT)
@@ -901,6 +582,7 @@ tx_add_nucTotal <- function(DT){
 
 # Add column of Different Nucleotide to reference ratio, diffToRef and nucTotal columns are required
 tx_add_diffNucToRefRatio <- function(DT, addDiffandTotalCols = FALSE){
+    DT <- check_DT(DT)
     tmpDT <- tx_add_diffNucToRef(DT) %>% tx_add_nucTotal()
     tmp <- round(tmpDT$diffToRef / tmpDT$nucTotal, 6)
     if(addDiffandTotalCols){DT <- tmpDT}
@@ -919,6 +601,7 @@ tx_add_diffNucToRefRatio <- function(DT, addDiffandTotalCols = FALSE){
 #' @export
 #'
 tx_add_startRatio <- function(x){
+    x <- check_DT(x)
     tibble::add_column(x, startRatio = x$start_5p / x$cov, .after = "start_5p")
 }
 
@@ -934,8 +617,38 @@ tx_add_startRatio <- function(x){
 #' @export
 #'
 tx_add_endRatio <- function(x){
+    x <- check_DT(x)
     tibble::add_column(x, endRatio = x$end_3p / x$cov, .after = "end_3p")
 }
+
+#' Add position names column to DT
+#'
+#' Adds a column which pastes the name of the gene with its transcript coordinate
+#' creating a unique position identifier, for use in downstream analysis which
+#' requires it. The column is added after the 'txcoor' column. Unique names are
+#' checked as well.
+#'
+#' @param DT data.table.
+#' @param sep character. Separator between gene and txcoor, by deafult colon sign.
+#' @param check_uniq logical. Set to false to override unique position names check.
+#'
+#' @return data.table
+#' @export
+#'
+#' @author M.A. Garcia-Campos
+#' @examples
+tx_add_pos <- function(DT, sep = ":", check_uniq = T){
+    DT <- check_DT(DT)
+    pos <- paste(DT$gene, DT$txcoor, sep = sep)
+    if(check_uniq){
+        if(!all(!duplicated(pos))){
+            stop("Combinations of gene and txcoor by row in DT are not unique.")
+        }
+    }
+    return(tibble::add_column(DT, pos = pos, .after = "txcoor"))
+}
+
+## Functions that have to be changed to work in multi-gene data-tables ######
 
 #' Add site annotation
 #'
@@ -1004,6 +717,7 @@ tx_add_siteAnnotation <- function (x, GR, type = "logical", colName){
 #'
 #' @examples
 tx_add_refSeqDT <- function (DT, fastaGenome, geneAnnot){
+    DT <- check_DT(DT)
     if (class(DT)[1] != "data.table") {
         stop("DT must be of class list")
     }
@@ -1027,33 +741,6 @@ tx_add_refSeqDT <- function (DT, fastaGenome, geneAnnot){
     tibble::add_column(DT, refSeq = tmp, .after = "txcoor")
 }
 
-#' Add position names column to DT
-#'
-#' Adds a column which pastes the name of the gene with its transcript coordinate
-#' creating a unique position identifier, for use in downstream analysis which
-#' requires it. The column is added after the 'txcoor' column. Unique names are
-#' checked as well.
-#'
-#' @param DT data.table.
-#' @param sep character. Separator between gene and txcoor, by deafult colon sign.
-#' @param check_uniq logical. Set to false to override unique position names check.
-#'
-#' @return data.table
-#' @export
-#'
-#' @author M.A. Garcia-Campos
-#' @examples
-tx_add_pos <- function(DT, sep = ":", check_uniq = T){
-    DT <- check_DT(DT)
-    pos <- paste(DT$gene, DT$txcoor, sep = sep)
-    if(check_uniq){
-        if(!all(!duplicated(pos))){
-            stop("Combinations of gene and txcoor by row in DT are not unique.")
-        }
-    }
-    return(tibble::add_column(DT, pos = pos, .after = "txcoor"))
-}
-
 # Other accesory functions #####################################################
 
 #' Centered numeric sequence
@@ -1075,3 +762,18 @@ window_around <- function(position, windowLength){
     (position - windowLength):(position + windowLength)
 }
 
+#' Total counts of reads per gene model
+#'
+#' @param x CompressedGRangesList. Genomic Ranges list containing genomic
+#' alignments data by gene. Constructed via the tx_reads() function.
+#'
+#' @return integer
+#' @export
+#'
+#' @author M.A. Garcia-Campos
+#'
+#' @examples
+tx_counts <- function(x){
+    tmp <- suppressWarnings(unlist(x)) %>% GenomeInfoDb::seqnames() %>% table()
+    magrittr::set_names(as.integer(tmp), names(tmp))
+}
