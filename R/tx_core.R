@@ -70,6 +70,11 @@ tx_load_bam <- function(file,
         scanFlag <- Rsamtools::scanBamFlag(isDuplicate = FALSE,
                                            isNotPassingQualityControls = FALSE)
     }
+    if(loadSeq){
+        readParams <- Rsamtools::ScanBamParam(flag = scanFlag, what = "seq")
+    }else{
+        readParams <- Rsamtools::ScanBamParam(flag = scanFlag)
+    }
     # CountBam records (each paired end alignments equals two records)
     bC <- Rsamtools::countBam(file)
     if(bC$records == 0){stop("BAM file is empty \n")}
@@ -92,20 +97,12 @@ tx_load_bam <- function(file,
             suppressWarnings(
                 GenomicAlignments::readGAlignmentPairs(BAMFILE,
                                                        use.names = TRUE,
-                                                       param = Rsamtools::ScanBamParam(
-                                                           flag = scanFlag,
-                                                           what = ifelse(loadSeq,
-                                                                         "seq",
-                                                                         character(0)))))
+                                                       param = readParams))
         }else if(pairedEnd == FALSE){
             suppressWarnings(
                 GenomicAlignments::readGAlignments(BAMFILE,
                                                    use.names = TRUE,
-                                                   param = Rsamtools::ScanBamParam(
-                                                       flag = scanFlag,
-                                                       what = ifelse(loadSeq,
-                                                                     "seq",
-                                                                     character(0)))))
+                                                   param = readParams))
         }
     }) %>% do.call(what = c)
     close(BAMFILE)
@@ -510,7 +507,7 @@ tx_split_DT <- function(x, dropEmpty = TRUE){
 #' @export
 #'
 #' @examples
-tx_cutDTEnds <- function(DT, cut_5p = 0, cut_3p = 0){
+tx_cutEnds_DT <- function(DT, cut_5p = 0, cut_3p = 0){
     DTL <- tx_split_DT(check_DT(DT))
     lapply(DTL, function(x){
         hlp_remove_UTR(x, cut_5p, cut_3p)
