@@ -209,9 +209,9 @@ tx_extend_UTR <- function(GR, ext_5p = 0, ext_3p = 0){
 #' @export
 #'
 #' @author M.A. Garcia-Campos
-#'
+#' @aliases tx_filter_max_width
 #' @examples
-tx_filter_max_width <- function(x, thr, nCores = 1){
+tx_filter_maxWidth <- function(x, thr, nCores = 1){
     check_integer_arg(nCores, "nCores")
     check_integer_arg(thr, "thr")
     check_mc_windows(nCores)
@@ -227,8 +227,10 @@ tx_filter_max_width <- function(x, thr, nCores = 1){
 
 #' Transcriptomic reads convertion
 #'
-#' Assign reads to gene models and convert them to transcriptomic coordinate
-#' system.
+#' Assign aligned reads to their respective gene models and convert their
+#' positions into a transcriptomic coordinate system. It also stitches together
+#' paired-end aligned reads into a single character 'word' in which dots '.'
+#' separate Read1 and Read2 by their corresponding insert.
 #'
 #' @param reads GAlignments or GAlignmentPairs. Genomic alignments to be processed
 #' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed()
@@ -351,13 +353,6 @@ tx_makeDT_coverage <- function(x, geneAnnot, nCores = 1){
                        hlp_coverageTab_mc(x, nCores)) %>% tx_merge_DT()
 }
 
-
-#' @export
-tx_coverageDT <- function(x, geneAnnot, nCores = 1){
-    .Deprecated("tx_makeDT_coverage")
-    tx_makeDT_coverage(x, geneAnnot, nCores)
-}
-
 #' Summarized Nucleotide Frequency data.table
 #'
 #' This function constructs a list of data.tables that contains nucleotide frequency
@@ -414,12 +409,6 @@ tx_makeDT_nucFreq <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt", nC
                        hlp_nucFreqTab_mc(x, simplify_IUPAC, nCores)) %>% tx_merge_DT()
 }
 
-#' @export
-tx_nucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt", nCores = 1){
-    .Deprecated("tx_makeDT_nucFreq")
-    tx_makeDT_nucFreq(x, geneAnnot, simplify_IUPAC, nCores)
-}
-
 #' Summarized Coverage & Nucleotide Frequency data.table
 #'
 #' This function constructs a list of data.tables that contains nucleotide frequency
@@ -472,12 +461,6 @@ tx_makeDT_covNucFreq <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt",
     hlp_cbind3Tabs(hlp_genCoorTab_mc(x, geneAnnot, nCores),
                    hlp_coverageTab_mc(x, nCores),
                    hlp_nucFreqTab_mc(x, simplify_IUPAC, nCores)) %>% tx_merge_DT()
-}
-
-#' @export
-tx_covNucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt", nCores = 1){
-    .Deprecated("tx_makeDT_covNucFreq")
-    tx_makeDT_covNucFreq(x, geneAnnot, nCores)
 }
 
 # Manipulating data.tables and DT lists ########################################

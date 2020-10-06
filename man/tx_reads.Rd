@@ -26,6 +26,8 @@ GRanges
 space. Alignments are located in genes, instead of chromosomes.
 }
 \description{
-Assign reads to gene models and convert them to transcriptomic coordinate
-system.
+Assign aligned reads to their respective gene models and convert their
+positions into a transcriptomic coordinate system. It also stitches together
+paired-end aligned reads into a single character 'word' in which dots '.'
+separate Read1 and Read2 by their corresponding insert.
 }
