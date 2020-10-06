@@ -559,6 +559,36 @@ tx_complete_DT <- function(DT, geneAnnot, fastaGenome = NULL, nCores = 1){
 
 # data.table functions #########################################################
 
+#' Add reference sequence to data.table
+#'
+#' @param DT data.table. A summarized data.table object. See tx_coverageDT(),
+#' tx_nucFreq() and tx_covNucFreqDT() functions.
+#' @param genome list. The full reference genome sequences, as prepackaged
+#' by BSgenome, See ?BSgenome::available.genomes(); or loaded by \code{\link{tx_load_genome}}
+#' @param geneAnnot GRanges. Gene annotation loaded as a GenomicRanges object,
+#'  see tx_load_bed().
+#' @param nCores integer. Number of cores to use to run function. Multicore
+#' capability not available in Windows OS.
+#'
+#' @return data.table
+#' @export
+#'
+#' @author M.A. Garcia-Campos
+#'
+#' @examples
+tx_add_refSeqDT <- function(DT, genome, geneAnnot, nCores = 1){
+    check_mc_windows(nCores)
+    check_integerGreaterThanZero_arg(nCores)
+    DT <- check_DT(DT)
+    check_GA_genome_chrCompat(geneAnnot = geneAnnot, genome = genome)
+    DTL <- tx_split_DT(DT)
+    tmp <- parallel::mclapply(mc.cores = nCores, DTL, function(DT){
+        hlp_add_refSeqDT(DT, fastaGenome = genome, geneAnnot = geneAnnot)
+    })
+    OUT <- tx_merge_DT(tmp)
+    return(OUT)
+}
+
 # Add column of sum of nucleotide frequency different to the reference sequence
 # Counting deletions, not counting 'N's and inserts into calculation.
 tx_add_diffNucToRef <- function(DT){
@@ -701,46 +731,6 @@ tx_add_siteAnnotation <- function (x, GR, type = "logical", colName){
         addAnnot[match(foundGenLoc, x$gencoor)] <- TRUE
         tibble::add_column(x, addAnnot) %>% magrittr::set_names(c(oNames, colName))
     }
-}
-
-#' Add reference sequence to data.table
-#'
-#' @param DT data.table. A summarized data.table object. See tx_coverageDT(),
-#' tx_nucFreq() and tx_covNucFreqDT() functions.
-#' @param fastaGenome list. The full reference genome sequences, as prepackaged
-#' by BSgenome. See ?BSgenome::available.genomes()
-#' @param geneAnnot GRanges. Gene annotation loaded as a GenomicRanges object,
-#'  see tx_load_bed().
-#'
-#' @return data.table
-#' @export
-#'
-#' @author M.A. Garcia-Campos
-#'
-#' @examples
-tx_add_refSeqDT <- function (DT, fastaGenome, geneAnnot){
-    DT <- check_DT(DT)
-    if (class(DT)[1] != "data.table") {
-        stop("DT must be of class list")
-    }
-    iGene <- as.character(unique(DT$gene))
-    if (length(iGene) != 1) {
-        stop("DT must be a data.table pertaining only one gene")
-    }
-    iChr <- as.character(DT$chr[1])
-    iStr <- as.character(DT$strand[1])
-    iGA <- geneAnnot[geneAnnot$name == iGene]
-    iBlocks <- S4Vectors::mcols(iGA)$blocks %>% unlist %>%
-        IRanges::shift(IRanges::start(iGA) - 1)
-    tmp <- stringr::str_sub(fastaGenome[[iChr]], start = IRanges::start(iBlocks),
-                            end = IRanges::end(iBlocks)) %>% paste(collapse = "") %>%
-        Biostrings::DNAString()
-    if (iStr == "-") {
-        tmp <- Biostrings::reverseComplement(tmp)
-    }
-    tmp <- stringr::str_split(as.character(tmp), "") %>%
-        unlist
-    tibble::add_column(DT, refSeq = tmp, .after = "txcoor")
 }
 
 # Other accesory functions #####################################################

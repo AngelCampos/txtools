@@ -579,6 +579,25 @@ hlp_cbind3Tabs <- function(gencoorT, tab1, tab2){
     }
 }
 
+# Helper add reference sequence to DT
+hlp_add_refSeqDT <- function (DT, fastaGenome, geneAnnot){
+    iGene <- as.character(DT$gene[1])
+    iChr <- as.character(DT$chr[1])
+    iStr <- as.character(DT$strand[1])
+    iGA <- geneAnnot[geneAnnot$name == iGene]
+    iBlocks <- S4Vectors::mcols(iGA)$blocks %>% unlist %>%
+        IRanges::shift(IRanges::start(iGA) - 1)
+    tmp <- stringr::str_sub(fastaGenome[[iChr]], start = IRanges::start(iBlocks),
+                            end = IRanges::end(iBlocks)) %>% paste(collapse = "") %>%
+        Biostrings::DNAString()
+    if (iStr == "-") {
+        tmp <- Biostrings::reverseComplement(tmp)
+    }
+    tmp <- stringr::str_split(as.character(tmp), "") %>%
+        unlist
+    tibble::add_column(DT, refSeq = tmp, .after = "txcoor")
+}
+
 # Vectorized intersect
 vIntersect <- Vectorize(intersect, c("x", "y"), SIMPLIFY = F)
 

@@ -4,17 +4,20 @@
 \alias{tx_add_refSeqDT}
 \title{Add reference sequence to data.table}
 \usage{
-tx_add_refSeqDT(DT, fastaGenome, geneAnnot)
+tx_add_refSeqDT(DT, genome, geneAnnot, nCores = 1)
 }
 \arguments{
 \item{DT}{data.table. A summarized data.table object. See tx_coverageDT(),
 tx_nucFreq() and tx_covNucFreqDT() functions.}
 
-\item{fastaGenome}{list. The full reference genome sequences, as prepackaged
-by BSgenome. See ?BSgenome::available.genomes()}
+\item{genome}{list. The full reference genome sequences, as prepackaged
+by BSgenome, See ?BSgenome::available.genomes(); or loaded by \code{\link{tx_load_genome}}}
 
 \item{geneAnnot}{GRanges. Gene annotation loaded as a GenomicRanges object,
 see tx_load_bed().}
+
+\item{nCores}{integer. Number of cores to use to run function. Multicore
+capability not available in Windows OS.}
 }
 \value{
 data.table
