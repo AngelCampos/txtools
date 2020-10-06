@@ -22,7 +22,7 @@ object should contain sequences.}
 capability not available in Windows OS.}
 }
 \value{
-A GRanges object which coordinate system is now in transcriptomic
+GRanges object which coordinate system is now in transcriptomic
 space. Alignments are located in genes, instead of chromosomes.
 }
 \description{

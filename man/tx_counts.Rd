@@ -2,20 +2,19 @@
 % Please edit documentation in R/tx_core.R
 \name{tx_counts}
 \alias{tx_counts}
-\title{Quantifies reads by gene model from a tx_reads list}
+\title{Total counts of reads per gene model}
 \usage{
 tx_counts(x)
 }
 \arguments{
 \item{x}{CompressedGRangesList. Genomic Ranges list containing genomic
-alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
-functions.}
+alignments data by gene. Constructed via the tx_reads() function.}
 }
 \value{
-table
+integer
 }
 \description{
-Quantifies reads by gene model from a tx_reads list
+Total counts of reads per gene model
 }
 \author{
 M.A. Garcia-Campos

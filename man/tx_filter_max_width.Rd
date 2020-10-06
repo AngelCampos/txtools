@@ -11,9 +11,10 @@ tx_filter_max_width(x, thr, nCores = 1)
 alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
 functions.}
 
-\item{thr}{numeric. Threshold for maximum width size allowed on output.}
+\item{thr}{integer. Threshold for maximum width size allowed on output.}
 
-\item{nCores}{integer. Number of cores to be used to run function.}
+\item{nCores}{integer. Number of cores to use to run function. Multicore
+capability not available in Windows OS.}
 }
 \value{
 CompressedGRangesList

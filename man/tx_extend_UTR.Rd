@@ -17,7 +17,7 @@ tx_extend_UTR(GR, ext_5p = 0, ext_3p = 0)
 GRanges
 }
 \description{
-A function that extends the 5' and/or 3' IRanges contained in the 'blocks'
-column of GRanges objects, which define the exon ranges of a transcript.
+A function that extends the 5' and/or 3' UTR regions of GRanges including the
+'blocks' column, which defines the exon structure of a transcript.
 As those loaded by ´tx_load_bed()´.
 }

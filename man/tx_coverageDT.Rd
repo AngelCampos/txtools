@@ -16,7 +16,7 @@ functions.}
 \item{nCores}{integer. Number of cores to use to run function.}
 }
 \value{
-list
+data.table
 }
 \description{
 This function constructs a list of data.tables that contains coverage metrics

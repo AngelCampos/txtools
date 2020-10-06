@@ -9,8 +9,8 @@ tx_split_DT(x, dropEmpty = TRUE)
 \arguments{
 \item{x}{data.table. Merged data.table as output by tx_merge_DT()}
 
-\item{dropEmpty}{logical. Drops empty list elements, which occur when data
-of genes have been entirely removed, but kept listed in the x$gene factor levels}
+\item{dropEmpty}{logical. Drops empty list elements, which occurs when data
+of genes have been entirely removed, but kept listed in the x$gene factor levels.}
 }
 \value{
 list
