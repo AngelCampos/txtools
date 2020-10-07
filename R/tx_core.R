@@ -209,7 +209,7 @@ tx_extend_UTR <- function(GR, ext_5p = 0, ext_3p = 0){
 #' @aliases tx_filter_max_width
 #' @examples
 tx_filter_maxWidth <- function(x, thr, nCores = 1){
-    check_integer_arg(nCores, "nCores")
+    check_integerGreaterThanZero_arg(nCores, "nCores")
     check_integer_arg(thr, "thr")
     check_mc_windows(nCores)
     tmp <- GenomicAlignments::width(x) %>% magrittr::is_weakly_less_than(thr)
@@ -241,26 +241,27 @@ tx_filter_maxWidth <- function(x, thr, nCores = 1){
 #' @return GRanges
 #' space. Alignments are located in genes, instead of chromosomes.
 #' @export
-tx_reads <- function(reads, geneAnnot, minReads = 50,
-                     withSeq = F, verbose = T, nCores = 1){
+tx_reads <- function(reads, geneAnnot, minReads = 50, withSeq = F, verbose = T,
+                     nCores = 1){
     # Checks
     check_mc_windows(nCores)
-    overlapType <-  "within"
+    check_integerGreaterThanZero_arg(minReads, "minReads")
+    check_GA_reads_compatibility(reads, geneAnnot)
+    check_BAM_has_seq(reads)
     if(!class(reads) %in% c("GAlignmentPairs", "GAlignments")){
         stop("reads argument should be of class GAlignmentPairs. \n")
     }
-    pairedEnd <- switch(class(reads), GAlignmentPairs = TRUE, GAlignments = FALSE)
     if(class(geneAnnot) != "GRanges"){
         stop("geneAnnot argument should be of class GRanges. \n")
     }
+    pairedEnd <- switch(class(reads), GAlignmentPairs = TRUE, GAlignments = FALSE)
+    # Main program
     if(verbose){
         cat("Processing", length(reads), "reads, using", length(geneAnnot),
             "gene models. \n")
     }
-    check_GA_reads_compatibility(reads, geneAnnot)
-    if(minReads < 1){stop("'minReads' argument has to be equal or greater to 1")}
-    # Main program
     # Spliting reads by gene
+    overlapType <-  "within"
     split_i <- switch(class(reads),
                       GAlignmentPairs = hlpr_splitReadsByGenes(reads, geneAnnot,
                                                                overlapType, minReads),
@@ -315,25 +316,22 @@ tx_reads <- function(reads, geneAnnot, minReads = 50,
 
 #' Summarized Coverage data.table
 #'
-#' This function constructs a list of data.tables that contains coverage metrics
-#' per nucleotide in transcript:
+#' This function constructs a data.table that contains coverage metrics
+#' per nucleotide for all transcripts with corresponding GRanges in its first argument 'x':
 #'\itemize{
 #'\item cov = Insert coverage
 #'\item start_5p = read-start counts
 #'\item end_3p = read-end counts
 #'}
-#' The function requires the input of a GRangesList object output by the
-#' \code{\link{tx_reads}} function, which should contain sequence alignments in the
-#' transcriptomic space, and a gene annotation in GRanges format, as loaded by
-#' the \code{\link{tx_load_bed}} function.
-#'
-#' This function allows for usage of multiple cores to reduce processing times
-#' in UNIX-like OS.
 #'
 #' @param x CompressedGRangesList. Genomic Ranges list containing genomic
-#' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
-#' functions.
-#' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed()
+#' alignments data by gene. Constructed via the \code{\link{tx_reads}}
+#' function.
+#' @param geneAnnot GenomicRanges. Gene annotation loaded via the \code{\link{tx_load_bed}}
+#' @param genome list. The full reference genome sequences, as prepackaged
+#' by BSgenome, See ?BSgenome::available.genomes(); or loaded by \code{\link{tx_load_genome}}
+#' @param fullDT logical. Set to TRUE if it is desired to output a data.table
+#' with all genes and in the same order as 'geneAnnot' object.
 #' @param nCores integer. Number of cores to use to run function.
 #'
 #' @return data.table
@@ -343,11 +341,18 @@ tx_reads <- function(reads, geneAnnot, minReads = 50,
 #' @aliases tx_coverageDT
 #'
 #' @examples
-tx_makeDT_coverage <- function(x, geneAnnot, nCores = 1){
+tx_makeDT_coverage <- function(x, geneAnnot, genome = NULL, fullDT = FALSE,
+                               nCores = 1){
     check_mc_windows(nCores)
     check_integerGreaterThanZero_arg(nCores, "nCores")
-    hlp_cbind2Tabs(hlp_genCoorTab_mc(x, geneAnnot, nCores),
+    OUT <- hlp_cbind2Tabs(hlp_genCoorTab_mc(x, geneAnnot, nCores),
                        hlp_coverageTab_mc(x, nCores)) %>% tx_merge_DT()
+    if(fullDT){
+        OUT <- tx_complete_DT(DT = OUT, geneAnnot = geneAnnot, genome = genome, nCores = nCores)
+    }
+    if(!is.null(genome)){
+        OUT <- tx_add_refSeqDT(OUT, genome = genome, geneAnnot = geneAnnot, nCores = nCores)
+    }else{return(OUT)}
 }
 
 #' Summarized Nucleotide Frequency data.table
@@ -377,6 +382,8 @@ tx_makeDT_coverage <- function(x, geneAnnot, nCores = 1){
 #' @param x CompressedGRangesList. Genomic Ranges list containing genomic
 #' alignments data by gene. Constructed via the \code{\link{tx_reads}} function.
 #' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed()
+#' @param genome list. The full reference genome sequences, as prepackaged
+#' by BSgenome, See ?BSgenome::available.genomes(); or loaded by \code{\link{tx_load_genome}}
 #' @param simplify_IUPAC string. Available options are :
 #' \itemize{
 #' \item "not": Will output the complete nucleotide frequency table including
@@ -389,6 +396,8 @@ tx_makeDT_coverage <- function(x, geneAnnot, nCores = 1){
 #' their corresponding nucleotides, in cases where frequency is odd creating
 #' non-integer frequencies.
 #' }
+#' @param fullDT logical. Set to TRUE if it is desired to output a data.table
+#' with all genes and in the same order as 'geneAnnot' object.
 #' @param nCores integer. Number of cores to use to run function.
 #'
 #' @return data.table
@@ -398,12 +407,20 @@ tx_makeDT_coverage <- function(x, geneAnnot, nCores = 1){
 #' @aliases tx_nucFreqDT
 #'
 #' @examples
-tx_makeDT_nucFreq <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt", nCores = 1){
+tx_makeDT_nucFreq <- function(x, geneAnnot, genome = NULL,
+                              simplify_IUPAC = "splitForceInt", fullDT = FALSE,
+                              nCores = 1){
     check_mc_windows(nCores)
     check_integerGreaterThanZero_arg(nCores, "nCores")
     check_GR_has_seq(x, "x")
-    hlp_cbind2Tabs(hlp_genCoorTab_mc(x, geneAnnot, nCores),
+    OUT <- hlp_cbind2Tabs(hlp_genCoorTab_mc(x, geneAnnot, nCores),
                        hlp_nucFreqTab_mc(x, simplify_IUPAC, nCores)) %>% tx_merge_DT()
+    if(fullDT){
+        OUT <- tx_complete_DT(DT = OUT, geneAnnot = geneAnnot, genome = genome, nCores = nCores)
+    }
+    if(!is.null(genome)){
+        tx_add_refSeqDT(OUT, genome = genome, geneAnnot = geneAnnot, nCores = nCores)
+    }else{return(OUT)}
 }
 
 #' Summarized Coverage & Nucleotide Frequency data.table
@@ -432,6 +449,8 @@ tx_makeDT_nucFreq <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt", nC
 #' functions.
 #' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed()
 #' function.
+#' @param genome list. The full reference genome sequences, as prepackaged
+#' by BSgenome, See ?BSgenome::available.genomes(); or loaded by \code{\link{tx_load_genome}}
 #' @param simplify_IUPAC string. Available options are :
 #' \itemize{
 #' \item "not": Will output the complete nucleotide frequency table including
@@ -443,6 +462,8 @@ tx_makeDT_nucFreq <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt", nC
 #' their corresponding nucleotides, in cases where frequency is odd creating
 #' non-integer frequencies.
 #' }
+#' @param fullDT logical. Set to TRUE if it is desired to output a data.table
+#' with all genes and in the same order as 'geneAnnot' object.
 #' @param nCores integer. Number of cores to use to run function.
 #'
 #' @return data.table
@@ -451,27 +472,35 @@ tx_makeDT_nucFreq <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt", nC
 #' @aliases tx_covNucFreqDT
 #'
 #' @examples
-tx_makeDT_covNucFreq <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt", nCores = 1){
+tx_makeDT_covNucFreq <- function(x, geneAnnot, genome = NULL,
+                                 simplify_IUPAC = "splitForceInt", fullDT = FALSE,
+                                 nCores = 1){
     check_GR_has_seq(x, "x")
     check_mc_windows(nCores)
     check_integerGreaterThanZero_arg(nCores, "nCores")
-    hlp_cbind3Tabs(hlp_genCoorTab_mc(x, geneAnnot, nCores),
+    OUT <- hlp_cbind3Tabs(hlp_genCoorTab_mc(x, geneAnnot, nCores),
                    hlp_coverageTab_mc(x, nCores),
                    hlp_nucFreqTab_mc(x, simplify_IUPAC, nCores)) %>% tx_merge_DT()
+    if(fullDT){
+        OUT <- tx_complete_DT(DT = OUT, geneAnnot = geneAnnot, genome = genome, nCores = nCores)
+    }
+    if(!is.null(genome)){
+        tx_add_refSeqDT(OUT, genome = genome, geneAnnot = geneAnnot, nCores = nCores)
+    }else{return(OUT)}
 }
 
 # Manipulating data.tables and DT lists ########################################
 
 #' Merge data.tables in list to a single data.table
 #'
-#' @param x list. List of data.tables. A summarized data.table object.
-#' See tx_coverageDT(), tx_nucFreqDT() and tx_covNucFreqDT() functions.
+#' @param DTL list. A data.tables list. See tx_coverageDT(), tx_nucFreqDT()
+#' and tx_covNucFreqDT() functions.
 #'
 #' @return data.table
 #' @export
 #'
-tx_merge_DT <- function(x){
-    do.call(x, what = rbind)
+tx_merge_DT <- function(DTL){
+    do.call(DTL, what = rbind)
 }
 
 
@@ -479,15 +508,15 @@ tx_merge_DT <- function(x){
 #'
 #' Split data.table back to list with individual data.tables by 'gene' names
 #'
-#' @param x data.table. Merged data.table as output by tx_merge_DT()
+#' @param DT data.table. Merged data.table as output by tx_merge_DT()
 #' @param dropEmpty logical. Drops empty list elements, which occurs when data
 #' of genes have been entirely removed, but kept listed in the x$gene factor levels.
 #'
 #' @return list
 #' @export
 #'
-tx_split_DT <- function(x, dropEmpty = TRUE){
-    tmp <- split(x, by = "gene", drop = dropEmpty)
+tx_split_DT <- function(DT, dropEmpty = TRUE){
+    tmp <- split(DT, by = "gene", drop = dropEmpty)
     lapply(tmp, function(y) {
         y[order(y$txcoor), ]
     })
@@ -527,15 +556,16 @@ tx_cutEnds_DT <- function(DT, cut_5p = 0, cut_3p = 0){
 #' @param DT data.table
 #' @param geneAnnot GRanges. Gene annotation, gene models, as loaded using the
 #' \code{\link{tx_load_bed}} function.
-#' @param fastaGenome DNAStrinSet. Sequences that comprise the genome in which
-#' gene models are embedded, loaded using the \code{\link{tx_load_bed}} function.
+#' @param genome list. The full reference genome sequences, as loaded by
+#' \code{\link{tx_load_genome}}; or prepackaged by BSgenome, see
+#' \code{\link[BSgenome]{available.genomes}}
 #' @param nCores numeric
 #'
 #' @return data.table
 #' @export
 #'
 #' @examples
-tx_complete_DT <- function(DT, geneAnnot, fastaGenome = NULL, nCores = 1){
+tx_complete_DT <- function(DT, geneAnnot, genome = NULL, nCores = 1){
     check_mc_windows(nCores)
     DT <- check_DT(DT)
     if(!all(unique(DT$gene) %in% geneAnnot$name)){
@@ -543,16 +573,21 @@ tx_complete_DT <- function(DT, geneAnnot, fastaGenome = NULL, nCores = 1){
              "geneAnnot will be added")
     }
     missGenes <- setdiff(geneAnnot$name, unique(DT$gene))
-    tmpCoorTabs <- hlpr_genCoorTabGenes(missGenes, geneAnnot, fastaGenome, nCores)
-    missCols <- setdiff(names(DT), names(tmpCoorTabs[[1]]))
-    tmpCoorTabs <- tmpCoorTabs %>% tx_merge_DT()
+    tmpCoorTabs <- hlpr_genCoorTabGenes(missGenes, geneAnnot, genome, nCores) %>%
+        tx_merge_DT()
+    # Add refSeq if present in DT
+    if("refSeq" %in% names(DT)){
+        tmpCoorTabs <- tx_add_refSeqDT(DT = tmpCoorTabs, genome = genome,
+                                       geneAnnot = geneAnnot, nCores = nCores)
+    }
+    missCols <- setdiff(names(DT), names(tmpCoorTabs))
     tmpCoorTabs <- cbind(tmpCoorTabs,
                          data.table::data.table(matrix(0,
                                                        nrow = nrow(tmpCoorTabs),
                                                        ncol = length(missCols))) %>%
                              magrittr::set_names(missCols)) %>% tx_split_DT()
-    DT <- tx_split_DT(DT)
-    completeDTL <- c(DT, tmpCoorTabs)
+    DTL <- tx_split_DT(DT)
+    completeDTL <- c(DTL, tmpCoorTabs)
     completeDTL <- completeDTL[geneAnnot$name]
     tx_merge_DT(completeDTL)
 }
@@ -578,7 +613,7 @@ tx_complete_DT <- function(DT, geneAnnot, fastaGenome = NULL, nCores = 1){
 #' @examples
 tx_add_refSeqDT <- function(DT, genome, geneAnnot, nCores = 1){
     check_mc_windows(nCores)
-    check_integerGreaterThanZero_arg(nCores)
+    check_integerGreaterThanZero_arg(nCores, "nCores")
     DT <- check_DT(DT)
     check_GA_genome_chrCompat(geneAnnot = geneAnnot, genome = genome)
     DTL <- tx_split_DT(DT)
@@ -625,32 +660,32 @@ tx_add_diffNucToRefRatio <- function(DT, addDiffandTotalCols = FALSE){
 #'
 #' Add read-starts ratio over coverage.
 #'
-#' @param x data.table. Output of txtools data.tables with coverage information
+#' @param DT data.table. Output of txtools data.tables with coverage information
 #' as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT}}
 #' functions
 #'
 #' @return data.table
 #' @export
 #'
-tx_add_startRatio <- function(x){
-    x <- check_DT(x)
-    tibble::add_column(x, startRatio = x$start_5p / x$cov, .after = "start_5p")
+tx_add_startRatio <- function(DT){
+    DT <- check_DT(DT)
+    tibble::add_column(DT, startRatio = DT$start_5p / DT$cov, .after = "start_5p")
 }
 
 #' Add endRatio to data.table
 #'
 #' Add read-ends ratio over coverage.
 #'
-#' @param x data.table. Output of txtools data.tables with coverage information
+#' @param DT data.table. Output of txtools data.tables with coverage information
 #' as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT}}
 #' functions
 #'
 #' @return data.table
 #' @export
 #'
-tx_add_endRatio <- function(x){
-    x <- check_DT(x)
-    tibble::add_column(x, endRatio = x$end_3p / x$cov, .after = "end_3p")
+tx_add_endRatio <- function(DT){
+    DT <- check_DT(DT)
+    tibble::add_column(DT, endRatio = DT$end_3p / DT$cov, .after = "end_3p")
 }
 
 #' Add position names column to DT
@@ -680,57 +715,38 @@ tx_add_pos <- function(DT, sep = ":", check_uniq = T){
     return(tibble::add_column(DT, pos = pos, .after = "txcoor"))
 }
 
-## Functions that have to be changed to work in multi-gene data-tables ######
-
-#' Add site annotation
+#' Add 1bp-site logical annotation
 #'
-#' Add a logical variable column in which desired genomic coordinates are
-#' marked as TRUE. Useful for example when distinguishing between known
-#' modified sites.
+#' Add a logical variable column in DT, for which the genomic coordinates of a
+#' GRanges object are used to mark differentiate between sites in the GRanges
+#' object and all others. TRUE = site in GRanges object. This is useful for
+#' example when marking already known RNA modification sites.
 #'
-#' @param x data.table. Output of txtools data.tables with coverage information
+#' @param DT data.table. Output of txtools data.tables with coverage information
 #' as output of tx_coverageDT() and tx_covNucFreqDT()
-#' @param GR GenomicRanges. Length 1 ranges which want to be marked in the
-#' data.tables objects.
-#' @param type character. Type of variable to be added:
-#' 1) 'logical': Found coordinates will be marked as TRUE while the rest will be
-#' left as FALSE.
+#' @param GRanges GRanges. Ranges of length 1, to be marked in the data.table
 #' @param colName character. Name of the new column to be added.
+#' @param nCores integer. Number of cores to use to run function. Multicore
+#' capability not available in Windows OS.
 #'
 #' @return data.table
 #' @export
 #'
 #' @examples
-tx_add_siteAnnotation <- function (x, GR, type = "logical", colName){
-    if(class(GR) != "GRanges"){
-        stop("GR must be of class GRanges")
+tx_add_siteAnnotation <- function (DT, GRanges, colName, nCores = 1){
+    check_mc_windows(nCores)
+    check_integerGreaterThanZero_arg(nCores, "nCores")
+    DT <- check_DT(DT)
+    if(!all(GenomicRanges::start(GRanges) == GenomicRanges::end(GRanges))){
+        stop("start and ends are not the same in GRanges, only 1-nuc-long sites allowed")
     }
-    if(class(x)[1] != "data.table"){
-        stop("x must be of class data.table")
+    if(class(GRanges) != "GRanges"){
+        stop("GRanges must be of class GRanges")
     }
-    if(!all(GenomicRanges::start(GR) == GenomicRanges::end(GR))){
-        stop("start and ends are not the same in GR, only 1-nuc-long sites allowed")
-    }
-    if(length(unique(x$chr)) > 1){
-        stop("x should be contained in only one chromosome")
-    }
-    subGR <- GR[as.character(x$chr[1]) == GenomicRanges::seqnames(GR)]
-    oNames <- names(x)
-    if(type == "logical"){
-        addAnnot <- rep(FALSE, nrow(x))
-        if(length(subGR) == 0){
-            tibble::add_column(x, addAnnot) %>% magrittr::set_names(c(oNames, colName))
-        }
-        foundGenLoc <- GenomicRanges::start(subGR)[
-            which((GenomicRanges::start(subGR) %in% x$gencoor) &
-                      (GenomicRanges::strand(subGR) == as.character(unique(x$strand))))]
-        if(length(foundGenLoc) == 0){
-            tibble::add_column(x, addAnnot) %>% magrittr::set_names(c(oNames,
-                                                                      colName))
-        }
-        addAnnot[match(foundGenLoc, x$gencoor)] <- TRUE
-        tibble::add_column(x, addAnnot) %>% magrittr::set_names(c(oNames, colName))
-    }
+    DTL <- tx_split_DT(DT)
+    tx_merge_DT(parallel::mclapply(mc.cores = nCores, DTL, function(x){
+        hlp_add_siteAnnotation(x, GRanges, colName)
+    }))
 }
 
 # Other accesory functions #####################################################

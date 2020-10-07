@@ -2,28 +2,27 @@
 % Please edit documentation in R/tx_core.R
 \name{tx_add_siteAnnotation}
 \alias{tx_add_siteAnnotation}
-\title{Add site annotation}
+\title{Add 1bp-site logical annotation}
 \usage{
-tx_add_siteAnnotation(x, GR, type = "logical", colName)
+tx_add_siteAnnotation(DT, GRanges, colName, nCores = 1)
 }
 \arguments{
-\item{x}{data.table. Output of txtools data.tables with coverage information
+\item{DT}{data.table. Output of txtools data.tables with coverage information
 as output of tx_coverageDT() and tx_covNucFreqDT()}
 
-\item{GR}{GenomicRanges. Length 1 ranges which want to be marked in the
-data.tables objects.}
-
-\item{type}{character. Type of variable to be added:
-1) 'logical': Found coordinates will be marked as TRUE while the rest will be
-left as FALSE.}
+\item{GRanges}{GRanges. Ranges of length 1, to be marked in the data.table}
 
 \item{colName}{character. Name of the new column to be added.}
+
+\item{nCores}{integer. Number of cores to use to run function. Multicore
+capability not available in Windows OS.}
 }
 \value{
 data.table
 }
 \description{
-Add a logical variable column in which desired genomic coordinates are
-marked as TRUE. Useful for example when distinguishing between known
-modified sites.
+Add a logical variable column in DT, for which the genomic coordinates of a
+GRanges object are used to mark differentiate between sites in the GRanges
+object and all others. TRUE = site in GRanges object. This is useful for
+example when marking already known RNA modification sites.
 }

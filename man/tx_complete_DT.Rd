@@ -4,7 +4,7 @@
 \alias{tx_complete_DT}
 \title{Complete a DT object missing genes}
 \usage{
-tx_complete_DT(DT, geneAnnot, fastaGenome = NULL, nCores = 1)
+tx_complete_DT(DT, geneAnnot, genome = NULL, nCores = 1)
 }
 \arguments{
 \item{DT}{data.table}
@@ -12,8 +12,9 @@ tx_complete_DT(DT, geneAnnot, fastaGenome = NULL, nCores = 1)
 \item{geneAnnot}{GRanges. Gene annotation, gene models, as loaded using the
 \code{\link{tx_load_bed}} function.}
 
-\item{fastaGenome}{DNAStrinSet. Sequences that comprise the genome in which
-gene models are embedded, loaded using the \code{\link{tx_load_bed}} function.}
+\item{genome}{list. The full reference genome sequences, as loaded by
+\code{\link{tx_load_genome}}; or prepackaged by BSgenome, see
+\code{\link[BSgenome]{available.genomes}}}
 
 \item{nCores}{numeric}
 }

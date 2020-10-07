@@ -4,10 +4,10 @@
 \alias{tx_add_endRatio}
 \title{Add endRatio to data.table}
 \usage{
-tx_add_endRatio(x)
+tx_add_endRatio(DT)
 }
 \arguments{
-\item{x}{data.table. Output of txtools data.tables with coverage information
+\item{DT}{data.table. Output of txtools data.tables with coverage information
 as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT}}
 functions}
 }

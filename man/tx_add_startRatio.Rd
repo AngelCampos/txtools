@@ -4,10 +4,10 @@
 \alias{tx_add_startRatio}
 \title{Add startRatio to data.table}
 \usage{
-tx_add_startRatio(x)
+tx_add_startRatio(DT)
 }
 \arguments{
-\item{x}{data.table. Output of txtools data.tables with coverage information
+\item{DT}{data.table. Output of txtools data.tables with coverage information
 as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT}}
 functions}
 }

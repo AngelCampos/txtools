@@ -5,13 +5,23 @@
 \alias{tx_nucFreqDT}
 \title{Summarized Nucleotide Frequency data.table}
 \usage{
-tx_makeDT_nucFreq(x, geneAnnot, simplify_IUPAC = "splitForceInt", nCores = 1)
+tx_makeDT_nucFreq(
+  x,
+  geneAnnot,
+  genome = NULL,
+  simplify_IUPAC = "splitForceInt",
+  fullDT = FALSE,
+  nCores = 1
+)
 }
 \arguments{
 \item{x}{CompressedGRangesList. Genomic Ranges list containing genomic
 alignments data by gene. Constructed via the \code{\link{tx_reads}} function.}
 
 \item{geneAnnot}{GenomicRanges. Gene annotation loaded via the tx_load_bed()}
+
+\item{genome}{list. The full reference genome sequences, as prepackaged
+by BSgenome, See ?BSgenome::available.genomes(); or loaded by \code{\link{tx_load_genome}}}
 
 \item{simplify_IUPAC}{string. Available options are :
 \itemize{
@@ -25,6 +35,9 @@ if the frequency is an odd number the uneven count will be assigned as "N".
 their corresponding nucleotides, in cases where frequency is odd creating
 non-integer frequencies.
 }}
+
+\item{fullDT}{logical. Set to TRUE if it is desired to output a data.table
+with all genes and in the same order as 'geneAnnot' object.}
 
 \item{nCores}{integer. Number of cores to use to run function.}
 }

@@ -598,6 +598,26 @@ hlp_add_refSeqDT <- function (DT, fastaGenome, geneAnnot){
     tibble::add_column(DT, refSeq = tmp, .after = "txcoor")
 }
 
+# Helper add annotation of sites in GRanges
+hlp_add_siteAnnotation <- function (x, GRanges, colName){
+    subGR <- GRanges[as.character(x$chr[1]) == GenomicRanges::seqnames(GRanges)]
+    oNames <- names(x)
+    addAnnot <- rep(FALSE, nrow(x))
+    if(length(subGR) == 0){
+        tibble::add_column(x, addAnnot) %>% magrittr::set_names(c(oNames, colName))
+    }
+    foundGenLoc <- GenomicRanges::start(subGR)[
+        which(as.logical((GenomicRanges::start(subGR) %in% x$gencoor) &
+                             (GenomicRanges::strand(subGR) == as.character(unique(x$strand)))))]
+    if(length(foundGenLoc) == 0){
+        tibble::add_column(x, addAnnot) %>% magrittr::set_names(c(oNames,
+                                                                  colName))
+    }else{
+        addAnnot[match(foundGenLoc, x$gencoor)] <- TRUE
+        tibble::add_column(x, addAnnot) %>% magrittr::set_names(c(oNames, colName))
+    }
+}
+
 # Vectorized intersect
 vIntersect <- Vectorize(intersect, c("x", "y"), SIMPLIFY = F)
 
@@ -804,6 +824,24 @@ check_GR_has_seq <- function(x, argName){
     }
     if(!("seq" %in% names(GenomicRanges::mcols(x)))){
         stop("'", argName, "' has no seq (sequences) meta-column")
+    }
+}
+
+check_BAM_has_seq <- function(x){
+    pairedEnd <- switch(class(x), GAlignmentPairs = TRUE, GAlignments = FALSE)
+    if(pairedEnd){
+        if(!all(c("seq" %in% names(GenomicRanges::mcols(x@first)),
+              "seq" %in% names(GenomicRanges::mcols(x@last))))){
+            stop("Input GAlignmentPairs object has no 'seq' metacolumn for either
+                 first or last reads")
+        }
+    }else{
+        if(!"seq" %in% names(GenomicRanges::mcols(x))){
+            stop("Input GAlignments object has no 'seq' metacolumn for either ",
+                 "first or last reads, required to work with nucleotide sequence. ",
+                 "Load sequence information using the tx_load_bam() function by ",
+                 "setting the 'loadSeq' argument to TRUE.")
+        }
     }
 }
 

@@ -4,11 +4,11 @@
 \alias{tx_merge_DT}
 \title{Merge data.tables in list to a single data.table}
 \usage{
-tx_merge_DT(x)
+tx_merge_DT(DTL)
 }
 \arguments{
-\item{x}{list. List of data.tables. A summarized data.table object.
-See tx_coverageDT(), tx_nucFreqDT() and tx_covNucFreqDT() functions.}
+\item{DTL}{list. A data.tables list. See tx_coverageDT(), tx_nucFreqDT()
+and tx_covNucFreqDT() functions.}
 }
 \value{
 data.table

@@ -1,7 +1,7 @@
 #' @export
-tx_coverageDT <- function(x, geneAnnot, nCores = 1){
+tx_coverageDT <- function(x, geneAnnot, genome = NULL, nCores = 1){
     .Deprecated("tx_makeDT_coverage")
-    tx_makeDT_coverage(x, geneAnnot, nCores)
+    tx_makeDT_coverage(x, geneAnnot, genome, nCores)
 }
 
 #' @export

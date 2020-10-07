@@ -5,14 +5,20 @@
 \alias{tx_coverageDT}
 \title{Summarized Coverage data.table}
 \usage{
-tx_makeDT_coverage(x, geneAnnot, nCores = 1)
+tx_makeDT_coverage(x, geneAnnot, genome = NULL, fullDT = FALSE, nCores = 1)
 }
 \arguments{
 \item{x}{CompressedGRangesList. Genomic Ranges list containing genomic
-alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
-functions.}
+alignments data by gene. Constructed via the \code{\link{tx_reads}}
+function.}
 
-\item{geneAnnot}{GenomicRanges. Gene annotation loaded via the tx_load_bed()}
+\item{geneAnnot}{GenomicRanges. Gene annotation loaded via the \code{\link{tx_load_bed}}}
+
+\item{genome}{list. The full reference genome sequences, as prepackaged
+by BSgenome, See ?BSgenome::available.genomes(); or loaded by \code{\link{tx_load_genome}}}
+
+\item{fullDT}{logical. Set to TRUE if it is desired to output a data.table
+with all genes and in the same order as 'geneAnnot' object.}
 
 \item{nCores}{integer. Number of cores to use to run function.}
 }
@@ -20,21 +26,13 @@ functions.}
 data.table
 }
 \description{
-This function constructs a list of data.tables that contains coverage metrics
-per nucleotide in transcript:
+This function constructs a data.table that contains coverage metrics
+per nucleotide for all transcripts with corresponding GRanges in its first argument 'x':
 \itemize{
 \item cov = Insert coverage
 \item start_5p = read-start counts
 \item end_3p = read-end counts
 }
-The function requires the input of a GRangesList object output by the
-\code{\link{tx_reads}} function, which should contain sequence alignments in the
-transcriptomic space, and a gene annotation in GRanges format, as loaded by
-the \code{\link{tx_load_bed}} function.
-}
-\details{
-This function allows for usage of multiple cores to reduce processing times
-in UNIX-like OS.
 }
 \author{
 M.A. Garcia-Campos
