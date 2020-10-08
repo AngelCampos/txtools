@@ -6,6 +6,7 @@
 \usage{
 tx_plot_staEndCov(
   DT,
+  gene,
   txRange = 1:nrow(DT),
   makePlotly = F,
   show_yLabels = T,
@@ -15,6 +16,8 @@ tx_plot_staEndCov(
 }
 \arguments{
 \item{DT}{data.table or data.frame. Input data from which to generate the plot}
+
+\item{gene}{character. Name of the gene in DT which wants to be plotted.}
 
 \item{txRange}{integer. Range in data to be used, 'txcoor' column is used to
 delimit this range in the data.table.}

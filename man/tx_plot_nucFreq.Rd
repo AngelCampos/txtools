@@ -6,6 +6,7 @@
 \usage{
 tx_plot_nucFreq(
   DT,
+  gene,
   txRange = 1:nrow(DT),
   removeInsert = T,
   makePlotly = F,
@@ -15,7 +16,9 @@ tx_plot_nucFreq(
 )
 }
 \arguments{
-\item{DT}{data.table or data.frame. Input data from which to generate the plot}
+\item{DT}{data.table. Input data from which to generate the plot}
+
+\item{gene}{character. Name of the gene in DT which wants to be plotted.}
 
 \item{txRange}{integer. Range in data to be used, 'txcoor' column is used to
 delimit this range in the data.table.}

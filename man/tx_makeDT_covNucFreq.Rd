@@ -49,6 +49,9 @@ data.table
 This function constructs a list of data.tables that contains nucleotide frequency
 metrics per nucleotide by transcript:
 \itemize{
+\item cov = Insert coverage
+\item start_5p = read-start counts
+\item end_3p = read-end counts
 \item A = Adenine
 \item C = Cytosine
 \item G = Guanine
