@@ -34,7 +34,8 @@ tx_plot_nucFreq <- function(DT,
         stop("DT must containg the reference sequence column 'refSeq' along ",
         "nucleotide frequency columns 'A', 'C', 'G', 'T', 'N', and '-'")
     }
-    DT <- DT[gene == gene,]
+    if(!(gene %in% DT$gene)){stop("gene not found in DT object")}
+    DT <- DT[DT$gene == gene,]
     DT <- DT[DT$txcoor %in% txRange,]
     DT$REF <- 0
     nucsInRef <- unique(DT$refSeq)
@@ -55,7 +56,8 @@ tx_plot_nucFreq <- function(DT,
             ggplot2::theme_minimal() + scale_fill_txBrowser_2() +
             ggplot2::ylab("Frequency") + ggplot2::xlab("Transcriptome coordinate") +
             ggplot2::theme(legend.position="bottom") +
-            ggplot2::guides(fill= ggplot2::guide_legend(nrow=1, byrow=TRUE, title = ""))
+            ggplot2::guides(fill= ggplot2::guide_legend(nrow=1, byrow=TRUE, title = "")) +
+            ggplot2::ggtitle(gene)
     }else{
         tmpData$nuc <- factor(tmpData$nuc, levels = c(".", "REF", "A", "C", "G", "T", "-", "N"))
         tmpGG <- ggplot2::ggplot(tmpData, ggplot2::aes(x = tmpData$pos,
@@ -64,7 +66,8 @@ tx_plot_nucFreq <- function(DT,
             ggplot2::theme_minimal() + scale_fill_txBrowser() +
             ggplot2::ylab("Frequency") + ggplot2::xlab("Transcriptome coordinate") +
             ggplot2::theme(legend.position="bottom") +
-            ggplot2::guides(fill= ggplot2::guide_legend(nrow = 1, byrow = TRUE, title = ""))
+            ggplot2::guides(fill= ggplot2::guide_legend(nrow = 1, byrow = TRUE, title = "")) +
+            ggplot2::ggtitle(gene)
     }
     if(bar_border){
         tmpGG <- tmpGG + ggplot2::geom_bar(stat = "identity", colour = "black", size = 0.3)
@@ -121,7 +124,8 @@ tx_plot_staEndCov <- function(DT,
                               showLegend = T){
     check_refSeq(DT)
     DT <- check_DT(DT)
-    DT <- DT[gene == gene,]
+    if(!(gene %in% DT$gene)){stop("gene not found in DT object")}
+    DT <- DT[DT$gene == gene,]
     DT <- DT[DT$txcoor %in% txRange,]
     DT$pos <- paste(DT$txcoor, DT$refSeq, sep = "-")
     DT$pos <- factor(DT$pos, levels = DT$pos)
@@ -140,8 +144,8 @@ tx_plot_staEndCov <- function(DT,
         ggplot2::scale_fill_manual(values = c("#c2c2c2", "#5b54a0", "#f1876d")) +
         ggplot2::ylab("Frequency") + ggplot2::xlab("Transcriptome coordinate") +
         ggplot2::theme(legend.position="bottom") +
-        ggplot2::guides(fill = ggplot2::guide_legend(nrow=1, byrow=TRUE, title = ""))
-
+        ggplot2::guides(fill = ggplot2::guide_legend(nrow=1, byrow=TRUE, title = "")) +
+        ggplot2::ggtitle(gene)
     if(bar_border){
         tmpGG <- tmpGG + ggplot2::geom_bar(stat = "identity",
                                            colour = "black",
