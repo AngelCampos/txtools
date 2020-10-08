@@ -112,7 +112,7 @@ tx_load_bam <- function(file,
     if(verbose){cat(" \n")}
     if(verbose){
         cat(length(bamData$GAligns), "Reads succesfully loaded \n")
-        cat("Dumped ambioguous reads:", length(bamData$dumpedAmbigPairs), "\n")
+        cat("Dumped ambiguous reads:", length(bamData$dumpedAmbigPairs), "\n")
     }
     if(recoverDumpedAligns == F){
         if(length(bamData$dumpedAmbigPairs) > 0){
@@ -274,7 +274,8 @@ tx_reads <- function(reads, geneAnnot, minReads = 50, withSeq = F, verbose = T,
                 length(geneAnnot), "gene models \n")
             cat("Filtering reads by gene model... \n")
             if(withSeq){
-                cat("Processing sequences. This may take several minutes... \n")
+                cat("Processing sequences. This may take several minutes ",
+                "depending on geneAnnot size ... \n")
             }
         }
     }else{stop("There where no reads, or not enough reads overlapping the gene models. \n")}
@@ -360,9 +361,6 @@ tx_makeDT_coverage <- function(x, geneAnnot, genome = NULL, fullDT = FALSE,
 #' This function constructs a list of data.tables that contains nucleotide frequency
 #' metrics per nucleotide by transcript:
 #'\itemize{
-#'\item cov = Insert coverage
-#'\item start_5p = read-start counts
-#'\item end_3p = read-end counts
 #'\item A = Adenine
 #'\item C = Cytosine
 #'\item G = Guanine
@@ -428,6 +426,9 @@ tx_makeDT_nucFreq <- function(x, geneAnnot, genome = NULL,
 #' This function constructs a list of data.tables that contains nucleotide frequency
 #' metrics per nucleotide by transcript:
 #'\itemize{
+#'\item cov = Insert coverage
+#'\item start_5p = read-start counts
+#'\item end_3p = read-end counts
 #'\item A = Adenine
 #'\item C = Cytosine
 #'\item G = Guanine
@@ -639,7 +640,17 @@ tx_add_diffNucToRef <- function(DT){
     tibble::add_column(DT, diffToRef = OUT)
 }
 
-# Add sum of nucleotide frequencies for meaningful nucleotides (i.e. not counting Ns and inserts)
+#' Add total of nucleotide reads per bp
+#'
+#' Add a column to DT of the sum of nucleotide frequencies for meaningful
+#' nucleotide reads, this is not counting Ns and inserts '.'.
+#'
+#' @param DT data.table
+#'
+#' @return
+#' @export
+#'
+#' @examples
 tx_add_nucTotal <- function(DT){
     DT <- check_DT(DT)
     selNucs <- setdiff(intersect(txtools::IUPAC_code_2nucs, names(DT)), c(".", "N"))
@@ -647,7 +658,19 @@ tx_add_nucTotal <- function(DT){
     tibble::add_column(DT, nucTotal = out)
 }
 
-# Add column of Different Nucleotide to reference ratio, diffToRef and nucTotal columns are required
+
+#' Add column of Different Nucleotide to reference ratio
+#'
+#' Add column of Different Nucleotide to reference ratio, diffToRef and nucTotal columns are required
+#'
+#' @param DT data.table
+#' @param addDiffandTotalCols Set to TRUE to add counts of total nucleotides
+#' read (nucTotal) and different to reference nucleotide (diffToRef) columns.
+#'
+#' @return
+#' @export
+#'
+#' @examples
 tx_add_diffNucToRefRatio <- function(DT, addDiffandTotalCols = FALSE){
     DT <- check_DT(DT)
     tmpDT <- tx_add_diffNucToRef(DT) %>% tx_add_nucTotal()
@@ -785,3 +808,83 @@ tx_counts <- function(x){
     tmp <- suppressWarnings(unlist(x)) %>% GenomeInfoDb::seqnames() %>% table()
     magrittr::set_names(as.integer(tmp), names(tmp))
 }
+
+# Built-in data loading functions ##############################################
+
+#' D. melanogaster gene annotation subset path
+#'
+#' Returns the local path to the in-package BED file containing gene models
+#' for highly expressed genes in the 'Pasilla' experiment.
+#'
+#' @return character. Path to dm3 gene annotation file
+#' @export
+#'
+#' @examples
+tx_dm3_geneAnnot <- function(){
+    system.file("extdata", "dm3_chr4_RefSeqGenes_UCSC_top10genes.bed",
+                package = "txtools")
+}
+
+# Potential functions ##########################################################
+
+# Apply rolling function to DT object and specific column, creates a vector of
+# # same size as DT n.rows
+# rollapply_DT <- function(DT, colName, winSize, FUN = mean, fill = NA, align = "center"){
+#     rollapply(DT[[colName]], width = winSize, FUN = FUN, fill = fill, align = align)
+# }
+#
+# # Mark motif location in tx_DT as TRUE, it can be set for specific nuc positions or all
+# tx_add_motifPresence <- function(DT, motif, nucPositions = "all", motifColName = "auto"){
+#     DT <- check_DT(DT)
+#     if(!("refSeq" %in% names(DT))){
+#         stop("DT must contain the refSeq column, as added by tx_add_refSeqDT() function.")
+#     }
+#     # Process motif
+#     if(motifColName == "auto"){
+#         motifColName <- paste(motif, "motif", paste(nucPositions, collapse = "_"), sep = "_")
+#     }
+#     oNames <- names(DT)
+#     DTseq <- paste(DT$refSeq, collapse = "")
+#     tmpLoc <- Biostrings::matchPattern(Biostrings::DNAString(motif),
+#                                        Biostrings::DNAString(DTseq), fixed = F)
+#     tmpLoc <- data.frame(tmpLoc@ranges)
+#     addMotif <- rep(FALSE, nrow(DT))
+#     if(is.numeric(nucPositions)){
+#         if(max(nucPositions) > nchar(motif)){
+#             stop("nucPositions are bigger than motif number of characters.")
+#         }
+#         if(!nrow(tmpLoc) == 0){
+#             for(i in 1:nrow(tmpLoc)){
+#                 addMotif[(tmpLoc[i, 1]) + nucPositions - 1] <- TRUE
+#             }
+#         }
+#     }else if(nucPositions == "all"){
+#         for(i in 1:nrow(tmpLoc)){
+#             addMotif[(tmpLoc[i, 1]):(tmpLoc[i, 2])] <- TRUE
+#         }
+#     }else if(nucPositions == "center"){
+#         if((nchar(motif) %% 2) == 0){
+#             stop("motif has even number of characters, center cannot be determined.")
+#         }else{
+#             midMot <- ceiling(nchar(motif) / 2)
+#             for(i in 1:nrow(tmpLoc)){
+#                 addMotif[(tmpLoc[i, 1]) + midMot - 1] <- TRUE
+#             }
+#         }
+#     }else{
+#         stop("nucPositions must be either: 'all', 'center', or a numeric vector
+#                  with positions in motif to be marked.")
+#     }
+#     tibble::add_column(DT, addMotif) %>%
+#         magrittr::set_names(c(oNames, motifColName))
+# }
+#
+# # Apply a function in a binned manner to a data.table column
+# tx_DT_bin_function <- function(DT, col, bins = 100, fun = mean){
+#     tapply(X = DT[[col]], INDEX = cut_interval(1:nrow(DT), bins), FUN = fun) %>% set_names(c())
+# }
+#
+# # Apply a function in a binned mmaner to a vector
+# tx_bin_function <- function(x, bins = 100, fun = mean){
+#     tapply(X = x, INDEX = cut_interval(1:length(x), bins), FUN = fun) %>% set_names(c())
+# }
