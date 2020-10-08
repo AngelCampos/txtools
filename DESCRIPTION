@@ -18,7 +18,9 @@ Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.1
 Suggests: 
-    testthat (>= 2.1.0)
+    testthat (>= 2.1.0),
+    knitr,
+    rmarkdown
 Imports: 
     magrittr,
     stringr,
@@ -36,4 +38,6 @@ Imports:
     rlang (>= 0.4.3),
     ggplot2,
     plotly,
-    tidyr
+    tidyr,
+    pasillaBamSubset
+VignetteBuilder: knitr
