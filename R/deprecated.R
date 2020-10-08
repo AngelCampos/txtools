@@ -5,15 +5,15 @@ tx_coverageDT <- function(x, geneAnnot, genome = NULL, nCores = 1){
 }
 
 #' @export
-tx_nucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt", nCores = 1){
+tx_nucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt", genome = NULL, nCores = 1){
     .Deprecated("tx_makeDT_nucFreq")
-    tx_makeDT_nucFreq(x, geneAnnot, simplify_IUPAC, nCores)
+    tx_makeDT_nucFreq(x, geneAnnot, simplify_IUPAC, genome, nCores)
 }
 
 #' @export
-tx_covNucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt", nCores = 1){
+tx_covNucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt", genome = NULL, nCores = 1){
     .Deprecated("tx_makeDT_covNucFreq")
-    tx_makeDT_covNucFreq(x, geneAnnot, nCores)
+    tx_makeDT_covNucFreq(x, geneAnnot, simplify_IUPAC, genome, nCores)
 }
 
 #' @export
