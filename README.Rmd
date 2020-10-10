@@ -28,8 +28,8 @@ nucleotide resolution. A quick example of its capabilities is shown bellow.
 ## Quick example
 
 As an example we will use the 'Pasilla' experiment data (from its own package)
-which contains a BAM file for the alignments on chromosome 4 of a 
-*D. melanogaster* RNA-seq experiment, along with a FASTA file containing the 
+which contains a BAM file for the paired-end alignments of a *D. melanogaster* 
+RNA-seq experiment on chromosome 4, along with a FASTA file comprising the 
 genome sequence for the same chromosome.
 
 Using txtools we can load the **genome** (FASTA), the **gene annotation** 
@@ -52,8 +52,8 @@ dm3_PEreads <- tx_load_bam(file = PE_BAM_file, pairedEnd = T, loadSeq = T)
 ```
 
 Then we process the alignments to their transcriptomic versions using the
-`tx_reads()` function, and summarize the alignments into a data.table that
-contains coverage, and nucleotide frequency count data using the 
+`tx_reads()` function, and summarize the alignments into a DT that contains 
+coverage, and nucleotide frequency count data using the 
 `tx_makeDT_covNucFreq()`function.
 
 ```{r}
@@ -62,25 +62,31 @@ reads_SE <- tx_reads(reads = dm3_PEreads,
                      withSeq = T, 
                      nCores = 10, 
                      minReads = 1)
+
 DT <- tx_makeDT_covNucFreq(reads_SE, geneAnnot = dm3_geneAnnot, genome = dm3_genome)
 ```
 
-The resulting DT contains all summarized information from the RNA-seq reads 
+The resulting DT comprise all summarized information from the RNA-seq reads 
 aligned to the genome and contained within the genes in the gene annotation 
-(this example contains the top 10 expressed genes). For more information on the
+(this example consists of only the top 10 expressed genes). For more information on the
 columns of DT consult the `tx_makeDT_covNucFreq()` documentation.
 
-To extend the base metrics contained in the data.tables that the `tx_makeDT_*()`
-functions provide txtools contains the `tx_add_*()` functions family. One
+To extend the base metrics that the `tx_makeDT_*()`
+functions provide txtools provides the `tx_add_*()` functions family. One
 example of such functions is `tx_add_diffNucToRefRatio()` which calculates the 
-ratio of nucleotide counts different to the reference sequence (genome). Using
-these metric we can easily spot locations in which RNA transcripts are sequenced
-differently than the reference sequence. And using the `tx_plot_nucFreq()` 
+ratio of nucleotide counts different to the reference sequence. Using
+these metric we can easily spot locations in which RNA transcripts sequence is
+different from that of the reference sequence. 
+
+```{r}
+DT <- tx_add_diffNucToRefRatio(DT, addDiffandTotalCols = TRUE)
+DT[which(diffToRefRatio > 0.5 & nucTotal > 40),]
+```
+
+Finally, using the `tx_plot_nucFreq()` 
 function we can visualize that data in the DT at an specific location.
 
 ```{r, fig.width = 6, fig.height = 4}
-DT <- tx_add_diffNucToRefRatio(DT, addDiffandTotalCols = TRUE)
-DT[which(diffToRefRatio > 0.5 & nucTotal > 40),]
 tx_plot_nucFreq(DT, gene = "NM_079901", txRange = window_around(3803, 15))
 ```
 
