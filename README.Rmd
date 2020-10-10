@@ -125,8 +125,3 @@ functions, but such functionality is only available for UNIX and MAC OS.
 * As many R packages meant for high-throughput data analysis and manipulation, 
 using ***txtools*** may require high ammounts of RAM memory, depending mainly on
 the size of BAM files being processed.
-
-## Session Info
-```{r}
-utils::sessionInfo()
-```
