@@ -2,7 +2,7 @@
 % Please edit documentation in R/tx_core.R
 \name{tx_add_startRatio}
 \alias{tx_add_startRatio}
-\title{Add startRatio to data.table}
+\title{Add starts to coverage ratio}
 \usage{
 tx_add_startRatio(DT)
 }
@@ -15,5 +15,5 @@ functions}
 data.table
 }
 \description{
-Add read-starts ratio over coverage.
+Add a column to DT of the read-starts to coverage ratio.
 }

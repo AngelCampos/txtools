@@ -193,35 +193,6 @@ tx_extend_UTR <- function(GR, ext_5p = 0, ext_3p = 0){
     return(GR_out)
 }
 
-#' Filter ranges by a maximum width
-#'
-#' @param x CompressedGRangesList. Genomic Ranges list containing genomic
-#' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
-#' functions.
-#' @param thr integer. Threshold for maximum width size allowed on output.
-#' @param nCores integer. Number of cores to use to run function. Multicore
-#' capability not available in Windows OS.
-#'
-#' @return CompressedGRangesList
-#' @export
-#'
-#' @author M.A. Garcia-Campos
-#' @aliases tx_filter_max_width
-#' @examples
-tx_filter_maxWidth <- function(x, thr, nCores = 1){
-    check_integerGreaterThanZero_arg(nCores, "nCores")
-    check_integer_arg(thr, "thr")
-    check_mc_windows(nCores)
-    tmp <- GenomicAlignments::width(x) %>% magrittr::is_weakly_less_than(thr)
-    parallel::mclapply(mc.cores = nCores, seq(1, length(x)), function(i){
-        if(all(tmp[[i]])){
-            x[[i]]
-        }else{
-            x[[i]][tmp[[i]]]
-        }
-    }) %>% GenomicRanges::GRangesList() %>% magrittr::set_names(names(x))
-}
-
 #' Transcriptomic reads convertion
 #'
 #' Assign aligned reads to their respective gene models and convert their
@@ -274,7 +245,7 @@ tx_reads <- function(reads, geneAnnot, minReads = 50, withSeq = F, verbose = T,
                 length(geneAnnot), "gene models \n")
             cat("Filtering reads by gene model... \n")
             if(withSeq){
-                cat("Processing sequences. This may take several minutes ",
+                cat("Processing sequences. This may take several minutes",
                 "depending on geneAnnot size ... \n")
             }
         }
@@ -313,6 +284,59 @@ tx_reads <- function(reads, geneAnnot, minReads = 50, withSeq = F, verbose = T,
     return(OUT)
 }
 
+# Manipulate GRangesList #######################################################
+
+#' Filter ranges by a maximum width
+#'
+#' @param x CompressedGRangesList. Genomic Ranges list containing genomic
+#' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
+#' functions.
+#' @param thr integer. Threshold for maximum width size allowed on output.
+#' @param nCores integer. Number of cores to use to run function. Multicore
+#' capability is not available in Windows OS.
+#'
+#' @return CompressedGRangesList
+#' @export
+#'
+#' @author M.A. Garcia-Campos
+#' @aliases tx_filter_max_width
+#' @examples
+tx_filter_maxWidth <- function(x, thr, nCores = 1){
+    check_integerGreaterThanZero_arg(nCores, "nCores")
+    check_integer_arg(thr, "thr")
+    check_mc_windows(nCores)
+    tmp <- GenomicAlignments::width(x) %>% magrittr::is_weakly_less_than(thr)
+    parallel::mclapply(mc.cores = nCores, seq(1, length(x)), function(i){
+        if(all(tmp[[i]])){
+            x[[i]]
+        }else{
+            x[[i]][tmp[[i]]]
+        }
+    }) %>% GenomicRanges::GRangesList() %>% magrittr::set_names(names(x))
+}
+
+
+#' Sampling alignments
+#'
+#' Sampling of alignmnets in a GRanges list using a binomial distribution.
+#'
+#' @param x CompressedGRangesList. A list containing alignments, meant to be used
+#' for the output of the \code{\link{tx_reads}} function.
+#' @param p Probabilty for each read to be sampled.
+#' @param nCores integer. Number of cores to use to run function. Multicore
+#' capability not available in Windows OS.
+#'
+#' @return CompressedGRangesList.
+#' @export
+#'
+#' @examples
+tx_sample_GRList <- function(x, p, nCores = 1){
+    parallel::mclapply(mc.cores = nCores, x, function(GR){
+        GR[sample(c(T,F), prob = c(p, 1-p), replace = T, size = length(GR))]
+    }) %>% GenomicRanges::GRangesList()
+}
+
+
 # Generating txtools DTs #######################################################
 
 #' Summarized Coverage data.table
@@ -338,6 +362,7 @@ tx_reads <- function(reads, geneAnnot, minReads = 50, withSeq = F, verbose = T,
 #' @return data.table
 #' @export
 #'
+#' @family makeDT functions
 #' @author M.A. Garcia-Campos
 #' @aliases tx_coverageDT
 #'
@@ -401,6 +426,7 @@ tx_makeDT_coverage <- function(x, geneAnnot, genome = NULL, fullDT = FALSE,
 #' @return data.table
 #' @export
 #'
+#' @family makeDT functions
 #' @author M.A. Garcia-Campos
 #' @aliases tx_nucFreqDT
 #'
@@ -469,6 +495,8 @@ tx_makeDT_nucFreq <- function(x, geneAnnot, genome = NULL,
 #'
 #' @return data.table
 #' @export
+#'
+#' @family makeDT functions
 #' @author M.A. Garcia-Campos
 #' @aliases tx_covNucFreqDT
 #'
@@ -595,10 +623,16 @@ tx_complete_DT <- function(DT, geneAnnot, genome = NULL, nCores = 1){
 
 # data.table functions #########################################################
 
-#' Add reference sequence to data.table
+#' Add reference sequence to a data.table
 #'
-#' @param DT data.table. A summarized data.table object. See tx_coverageDT(),
-#' tx_nucFreq() and tx_covNucFreqDT() functions.
+#' Adds a column of characters representing the corresponsing nucleotide at
+#' the reference genome position, considering the strand of the transcript.
+#' The input DT must be the output, or resemble it, of the
+#'
+#'
+#' @param DT data.table. A data.table object. See
+#' \code{\link{tx_makeDT_coverage}}, \code{\link{tx_makeDT_nucFreq}} or
+#' \code{\link{tx_makeDT_covNucFreq}} functions.
 #' @param genome list. The full reference genome sequences, as prepackaged
 #' by BSgenome, See ?BSgenome::available.genomes(); or loaded by \code{\link{tx_load_genome}}
 #' @param geneAnnot GRanges. Gene annotation loaded as a GenomicRanges object,
@@ -625,8 +659,20 @@ tx_add_refSeqDT <- function(DT, genome, geneAnnot, nCores = 1){
     return(OUT)
 }
 
-# Add column of sum of nucleotide frequency different to the reference sequence
-# Counting deletions, not counting 'N's and inserts into calculation.
+#' Add number of nucleotide reads different to the reference genome
+#'
+#' Add a column to DT of the sum of nucleotide frequency different to the
+#' reference sequence counting deletions, without considering 'N's nor inserts
+#' '.' into the calculation.
+#'
+#' @param DT data.table. A data.table object. See
+#' \code{\link{tx_makeDT_coverage}}, \code{\link{tx_makeDT_nucFreq}} or
+#' \code{\link{tx_makeDT_covNucFreq}} functions.
+#'
+#' @return data.table
+#' @export
+#'
+#' @examples
 tx_add_diffNucToRef <- function(DT){
     DT <- check_DT(DT)
     selNucs <- setdiff(intersect(txtools::IUPAC_code_2nucs, names(DT)), c(".", "N"))
@@ -640,15 +686,16 @@ tx_add_diffNucToRef <- function(DT){
     tibble::add_column(DT, diffToRef = OUT)
 }
 
-#' Add total of nucleotide reads per bp
+#' Add total number of nucleotide reads
 #'
 #' Add a column to DT of the sum of nucleotide frequencies for meaningful
-#' nucleotide reads, this is not counting Ns and inserts '.'.
+#' nucleotide reads not counting undetermined 'N' and inserts '.'.
 #'
 #' @param DT data.table
 #'
-#' @return
+#' @return data.table
 #' @export
+#'
 #'
 #' @examples
 tx_add_nucTotal <- function(DT){
@@ -659,16 +706,19 @@ tx_add_nucTotal <- function(DT){
 }
 
 
-#' Add column of Different Nucleotide to reference ratio
+#' Add different nucleotide reads to total ratio
 #'
-#' Add column of Different Nucleotide to reference ratio, diffToRef and nucTotal columns are required
+#' Add a column to DT of the ratio of different nucleotides to the total of
+#' meaningfuk nucleotide reads not counting undetermined 'N' and inserts '.'.
 #'
 #' @param DT data.table
 #' @param addDiffandTotalCols Set to TRUE to add counts of total nucleotides
 #' read (nucTotal) and different to reference nucleotide (diffToRef) columns.
 #'
-#' @return
+#' @return data.table
 #' @export
+#'
+#' @seealso \code{\link{tx_add_diffNucToRef}} and \code{\link{tx_add_nucTotal}}
 #'
 #' @examples
 tx_add_diffNucToRefRatio <- function(DT, addDiffandTotalCols = FALSE){
@@ -679,9 +729,9 @@ tx_add_diffNucToRefRatio <- function(DT, addDiffandTotalCols = FALSE){
     tibble::add_column(DT, diffToRefRatio = tmp)
 }
 
-#' Add startRatio to data.table
+#' Add starts to coverage ratio
 #'
-#' Add read-starts ratio over coverage.
+#' Add a column to DT of the read-starts to coverage ratio.
 #'
 #' @param DT data.table. Output of txtools data.tables with coverage information
 #' as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT}}
@@ -695,9 +745,9 @@ tx_add_startRatio <- function(DT){
     tibble::add_column(DT, startRatio = DT$start_5p / DT$cov, .after = "start_5p")
 }
 
-#' Add endRatio to data.table
+#' Add ends to coverage ratio
 #'
-#' Add read-ends ratio over coverage.
+#' Adds a column to DT of the read-ends to coverage ratio.
 #'
 #' @param DT data.table. Output of txtools data.tables with coverage information
 #' as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT}}
@@ -711,12 +761,12 @@ tx_add_endRatio <- function(DT){
     tibble::add_column(DT, endRatio = DT$end_3p / DT$cov, .after = "end_3p")
 }
 
-#' Add position names column to DT
+#' Add position unique names
 #'
-#' Adds a column which pastes the name of the gene with its transcript coordinate
-#' creating a unique position identifier, for use in downstream analysis which
-#' requires it. The column is added after the 'txcoor' column. Unique names are
-#' checked as well.
+#' Adds a column to DT which pastes the name of the gene with its transcript coordinate
+#' creating unique position identifiers, for use in downstream analysis which
+#' requires them. The column is added after the mandatory 'txcoor' column.
+#' Unique names formation is expected and checked by default.
 #'
 #' @param DT data.table.
 #' @param sep character. Separator between gene and txcoor, by deafult colon sign.
@@ -741,9 +791,10 @@ tx_add_pos <- function(DT, sep = ":", check_uniq = T){
 #' Add 1bp-site logical annotation
 #'
 #' Add a logical variable column in DT, for which the genomic coordinates of a
-#' GRanges object are used to mark differentiate between sites in the GRanges
-#' object and all others. TRUE = site in GRanges object. This is useful for
-#' example when marking already known RNA modification sites.
+#' GRanges object are used to differentiate between 1-bp length sites.
+#' In which TRUE equals to presence of site in the provided GRanges object.
+#' This annotation is useful, for example, when marking already known RNA
+#' modification sites.
 #'
 #' @param DT data.table. Output of txtools data.tables with coverage information
 #' as output of tx_coverageDT() and tx_covNucFreqDT()
@@ -772,6 +823,64 @@ tx_add_siteAnnotation <- function (DT, GRanges, colName, nCores = 1){
     }))
 }
 
+
+#' Adds the presence of a motif
+#'
+#' @param DT data.table. Output of txtools data.tables with coverage information
+#' as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT}}
+#' functions.
+#' @param motif character. A word which depicts a DNA sequence motif to annotate.
+#' The function allows IUPAC ambiguity codes, e.g. R={A|G}.
+#' @param nucPositions character or numeric.
+#' \itemize{
+#' \item "all": Will mark all the positions of the motif
+#' \item "center": Will mark the center of the motif
+#' \item "i": A number can be passed in which the **i**th position will be
+#' marked. For example, for the 'CAC' motif a value of '2' will mark all 'A's
+#' surrounded by 'C's
+#' }
+#' @param motifColName character. Name of the new column to be added for
+#' annotating motif presence. Automatically is set to be a combination of the
+#' input motif and nucPositions arguments.
+#' @param nCores integer. Number of cores to use to run function. Multicore
+#' capability is not available in Windows OS.
+#'
+#' @return data.table
+#' @export
+#'
+#' @examples
+tx_add_motifPresence <- function (DT, motif, nucPositions = "all",
+                                  motifColName = "auto", nCores = 1){
+    check_mc_windows(nCores)
+    check_integerGreaterThanZero_arg(nCores, "nCores")
+    DT <- check_DT(DT)
+    if(!("refSeq" %in% names(DT))){
+        stop("DT must contain the refSeq column, as added by tx_add_refSeqDT() function.")
+    }
+    # Process motif
+    midMot <- NULL
+    if(motifColName == "auto"){
+        motifColName <- paste(motif, "motif", paste(nucPositions, collapse = "_"), sep = "_")
+    }
+    if(nucPositions == "center"){
+        if((nchar(motif) %% 2) == 0){
+            stop("motif has even number of characters, center cannot be determined.")
+        }
+        midMot <- ceiling(nchar(motif) / 2)
+    }else if(is.numeric(nucPositions)){
+        if(max(nucPositions) > nchar(motif)){
+            stop("nucPositions are bigger than motif length.")
+        }
+    }else{
+        stop("nucPositions must be either: 'all', 'center', or a numeric vector
+                 with positions in motif to be marked.")
+    }
+    oNames <- names(DT)
+    DTL <- tx_split_DT(DT)
+    tx_merge_DT(parallel::mclapply(mc.cores = nCores, DTL, function(x){
+        hlp_add_motifPresence(x, motif, nucPositions, midMot)
+    })) %>% magrittr::set_names(c(oNames, motifColName))
+}
 # Other accesory functions #####################################################
 
 #' Centered numeric sequence
@@ -833,51 +942,8 @@ tx_dm3_geneAnnot <- function(){
 #     rollapply(DT[[colName]], width = winSize, FUN = FUN, fill = fill, align = align)
 # }
 #
-# # Mark motif location in tx_DT as TRUE, it can be set for specific nuc positions or all
-# tx_add_motifPresence <- function(DT, motif, nucPositions = "all", motifColName = "auto"){
-#     DT <- check_DT(DT)
-#     if(!("refSeq" %in% names(DT))){
-#         stop("DT must contain the refSeq column, as added by tx_add_refSeqDT() function.")
-#     }
-#     # Process motif
-#     if(motifColName == "auto"){
-#         motifColName <- paste(motif, "motif", paste(nucPositions, collapse = "_"), sep = "_")
-#     }
-#     oNames <- names(DT)
-#     DTseq <- paste(DT$refSeq, collapse = "")
-#     tmpLoc <- Biostrings::matchPattern(Biostrings::DNAString(motif),
-#                                        Biostrings::DNAString(DTseq), fixed = F)
-#     tmpLoc <- data.frame(tmpLoc@ranges)
-#     addMotif <- rep(FALSE, nrow(DT))
-#     if(is.numeric(nucPositions)){
-#         if(max(nucPositions) > nchar(motif)){
-#             stop("nucPositions are bigger than motif number of characters.")
-#         }
-#         if(!nrow(tmpLoc) == 0){
-#             for(i in 1:nrow(tmpLoc)){
-#                 addMotif[(tmpLoc[i, 1]) + nucPositions - 1] <- TRUE
-#             }
-#         }
-#     }else if(nucPositions == "all"){
-#         for(i in 1:nrow(tmpLoc)){
-#             addMotif[(tmpLoc[i, 1]):(tmpLoc[i, 2])] <- TRUE
-#         }
-#     }else if(nucPositions == "center"){
-#         if((nchar(motif) %% 2) == 0){
-#             stop("motif has even number of characters, center cannot be determined.")
-#         }else{
-#             midMot <- ceiling(nchar(motif) / 2)
-#             for(i in 1:nrow(tmpLoc)){
-#                 addMotif[(tmpLoc[i, 1]) + midMot - 1] <- TRUE
-#             }
-#         }
-#     }else{
-#         stop("nucPositions must be either: 'all', 'center', or a numeric vector
-#                  with positions in motif to be marked.")
-#     }
-#     tibble::add_column(DT, addMotif) %>%
-#         magrittr::set_names(c(oNames, motifColName))
-# }
+
+
 #
 # # Apply a function in a binned manner to a data.table column
 # tx_DT_bin_function <- function(DT, col, bins = 100, fun = mean){

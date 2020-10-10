@@ -2,7 +2,7 @@
 % Please edit documentation in R/tx_core.R
 \name{tx_add_diffNucToRefRatio}
 \alias{tx_add_diffNucToRefRatio}
-\title{Add column of Different Nucleotide to reference ratio}
+\title{Add different nucleotide reads to total ratio}
 \usage{
 tx_add_diffNucToRefRatio(DT, addDiffandTotalCols = FALSE)
 }
@@ -13,8 +13,12 @@ tx_add_diffNucToRefRatio(DT, addDiffandTotalCols = FALSE)
 read (nucTotal) and different to reference nucleotide (diffToRef) columns.}
 }
 \value{
-
+data.table
 }
 \description{
-Add column of Different Nucleotide to reference ratio, diffToRef and nucTotal columns are required
+Add a column to DT of the ratio of different nucleotides to the total of
+meaningfuk nucleotide reads not counting undetermined 'N' and inserts '.'.
+}
+\seealso{
+\code{\link{tx_add_diffNucToRef}} and \code{\link{tx_add_nucTotal}}
 }

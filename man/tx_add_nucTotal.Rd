@@ -2,7 +2,7 @@
 % Please edit documentation in R/tx_core.R
 \name{tx_add_nucTotal}
 \alias{tx_add_nucTotal}
-\title{Add total of nucleotide reads per bp}
+\title{Add total number of nucleotide reads}
 \usage{
 tx_add_nucTotal(DT)
 }
@@ -10,9 +10,9 @@ tx_add_nucTotal(DT)
 \item{DT}{data.table}
 }
 \value{
-
+data.table
 }
 \description{
 Add a column to DT of the sum of nucleotide frequencies for meaningful
-nucleotide reads, this is not counting Ns and inserts '.'.
+nucleotide reads not counting undetermined 'N' and inserts '.'.
 }

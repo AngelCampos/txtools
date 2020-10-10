@@ -34,6 +34,12 @@ per nucleotide for all transcripts with corresponding GRanges in its first argum
 \item end_3p = read-end counts
 }
 }
+\seealso{
+Other makeDT functions: 
+\code{\link{tx_makeDT_covNucFreq}()},
+\code{\link{tx_makeDT_nucFreq}()}
+}
 \author{
 M.A. Garcia-Campos
 }
+\concept{makeDT functions}

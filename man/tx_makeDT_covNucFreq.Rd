@@ -69,6 +69,12 @@ the \code{\link{tx_load_bed}} function.
 This function allows for usage of multiple cores to reduce processing times
 in UNIX-like OS.
 }
+\seealso{
+Other makeDT functions: 
+\code{\link{tx_makeDT_coverage}()},
+\code{\link{tx_makeDT_nucFreq}()}
+}
 \author{
 M.A. Garcia-Campos
 }
+\concept{makeDT functions}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/tx_core.R
 \name{tx_add_endRatio}
 \alias{tx_add_endRatio}
-\title{Add endRatio to data.table}
+\title{Add ends to coverage ratio}
 \usage{
 tx_add_endRatio(DT)
 }
@@ -15,5 +15,5 @@ functions}
 data.table
 }
 \description{
-Add read-ends ratio over coverage.
+Adds a column to DT of the read-ends to coverage ratio.
 }

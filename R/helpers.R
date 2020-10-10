@@ -598,6 +598,33 @@ hlp_add_refSeqDT <- function (DT, fastaGenome, geneAnnot){
     tibble::add_column(DT, refSeq = tmp, .after = "txcoor")
 }
 
+# tx_add_XXX() #################################################################
+
+# Mark motif location in tx_DT as TRUE, it can be set for specific nuc positions or all
+hlp_add_motifPresence <- function(DT, motif, nucPositions, midMot){
+    DTseq <- paste(DT$refSeq, collapse = "")
+    tmpLoc <- Biostrings::matchPattern(Biostrings::DNAString(motif),
+                                       Biostrings::DNAString(DTseq), fixed = F)
+    tmpLoc <- data.frame(tmpLoc@ranges)
+    addMotif <- rep(FALSE, nrow(DT))
+    if(is.numeric(nucPositions)){
+        if(!nrow(tmpLoc) == 0){
+            for(i in 1:nrow(tmpLoc)){
+                addMotif[(tmpLoc[i, 1]) + nucPositions - 1] <- TRUE
+            }
+        }
+    }else if(nucPositions == "all"){
+        for(i in 1:nrow(tmpLoc)){
+            addMotif[(tmpLoc[i, 1]):(tmpLoc[i, 2])] <- TRUE
+        }
+    }else if(nucPositions == "center"){
+        for(i in 1:nrow(tmpLoc)){
+            addMotif[(tmpLoc[i, 1]) + midMot - 1] <- TRUE
+        }
+    }
+    tibble::add_column(DT, addMotif)
+}
+
 # Helper add annotation of sites in GRanges
 hlp_add_siteAnnotation <- function (x, GRanges, colName){
     subGR <- GRanges[as.character(x$chr[1]) == GenomicRanges::seqnames(GRanges)]

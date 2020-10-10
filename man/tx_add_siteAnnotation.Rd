@@ -22,7 +22,8 @@ data.table
 }
 \description{
 Add a logical variable column in DT, for which the genomic coordinates of a
-GRanges object are used to mark differentiate between sites in the GRanges
-object and all others. TRUE = site in GRanges object. This is useful for
-example when marking already known RNA modification sites.
+GRanges object are used to differentiate between 1-bp length sites.
+In which TRUE equals to presence of site in the provided GRanges object.
+This annotation is useful, for example, when marking already known RNA
+modification sites.
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/tx_core.R
 \name{tx_add_pos}
 \alias{tx_add_pos}
-\title{Add position names column to DT}
+\title{Add position unique names}
 \usage{
 tx_add_pos(DT, sep = ":", check_uniq = T)
 }
@@ -17,10 +17,10 @@ tx_add_pos(DT, sep = ":", check_uniq = T)
 data.table
 }
 \description{
-Adds a column which pastes the name of the gene with its transcript coordinate
-creating a unique position identifier, for use in downstream analysis which
-requires it. The column is added after the 'txcoor' column. Unique names are
-checked as well.
+Adds a column to DT which pastes the name of the gene with its transcript coordinate
+creating unique position identifiers, for use in downstream analysis which
+requires them. The column is added after the mandatory 'txcoor' column.
+Unique names formation is expected and checked by default.
 }
 \author{
 M.A. Garcia-Campos

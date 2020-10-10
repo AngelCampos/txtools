@@ -15,7 +15,7 @@ functions.}
 \item{thr}{integer. Threshold for maximum width size allowed on output.}
 
 \item{nCores}{integer. Number of cores to use to run function. Multicore
-capability not available in Windows OS.}
+capability is not available in Windows OS.}
 }
 \value{
 CompressedGRangesList
