@@ -1,4 +1,5 @@
 .Rproj.user
 .Rhistory
-sandbox.R
+sandbox.Rmd
 inst/doc
+sandbox.R
