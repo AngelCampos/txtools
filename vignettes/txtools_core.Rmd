@@ -3,476 +3,168 @@ title: "txtools_core"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{txtools_core}
-  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: inline
 ---
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",  
+  fig.width = 6, 
+  fig.height = 4
 )
 ```
 
-### From genomic to transcriptomic
+# txtools. The full tour.
 
-The main input that we want to process are **BAM files**, to do this we first
-load them as Genomic Alignments, along gene models in the form of
-**BED-12 or BED-6 files**. Using these two elements we can then assign reads
-to their transcriptomes and process the reads when required to fit the
-transcriptomic space; for example, when reads traverse more than one exon.
 
-In this basic example we use data provided within **txtools**.
+The aim of txtools is to provide a versatile framework to analyze transcriptomic
+data in a quick and simple manner. 
 
-We first load the BAM file we want to process and the BED file's gene models,
-using the `tx_load_bam()` and `tx_load_bed()` functions.
+To acomplish this we propose the processing of data in two stages, and the 
+use of two data structures which is the output at each step:
 
-```{r, demo, message = FALSE}
-# Load packages
+1. Transfer read-alignments from a *genomic* to  a ***transcriptomic*** 
+coordinates space.
+2. Summarize transcriptomic-alignments into table structures.
+
+## Loading the data
+
+The first step of the txtools framework is to transfer read-alignments from a
+genomic coordinate system to a transcriptomic coordinate system. 
+
+Note: *This step can be circumvented by aligning to the transcriptome, but in most* 
+*cases it is necessary and desirable to keep track of both the genomic location*
+*of transcripts and the read-alignments data.*
+
+To use txtools it is REQUIRED to have a **Gene Annotation** file in the
+form of a BED-6/12 file. Importantly, a BED-12 file contains the information 
+to construct the exon structure, while using a BED6 assumes that the gene
+consists of a single exon block.
+
+Additionally it is recommended to have a **Reference Genome** sequence file
+in the form of a FASTA file, in which each entry corresponds to each chromosome.
+
+Using txtools we can seamlessly load RNA-seq data into the R environment
+with the `tx_load_bam()` function. For this example we will use a paired-end
+BAM file and we will require the function to load the sequence data.
+
+```{r}
 library(txtools)
-
-# This example files are installed along txtools
-bamFile <- system.file("extdata", "example_hg19.bam", package = "txtools")
-bedFile <- system.file("extdata", "twoUCSCgenes_hg19.bed", package = "txtools")
-
-# Loading files and processing them using the gene models
-reads <- tx_load_bam(bamFile, pairedEnd = T, loadSeq = T, verbose = T, yieldSize = 100000)
-geneAnnot <- tx_load_bed(bedFile) # plyranges read_bed function
-```
-
-The object `reads` now contains the aligned **genomic** reads, previously
-aligned with a genomic aligner (in this case STAR (Dobin et al., 2013)).
-Sorted BAM files enables faster loading, and is recommended that each read has
-a different name. See [samtools sort](https://www.htslib.org/doc/samtools-sort.html) and
-[samtools view](https://www.htslib.org/doc/samtools-view.html) for
-more info on this.
-
-For converting the loaded genomic reads to **transcriptomic** reads we use the
-`tx_reads()` function. Importantly, the function will assign mappings to their
-corresponding genes ONLY if they are completely contained within the exonic
-structure of the gene model.
-
-```{r}
-txReads <- tx_reads(reads, geneAnnot, withSeq = T, verbose = T)
-# txReads <- tx_reads_mc(reads, geneAnnot, nCores = 2,
-                       # withSeq = T, verbose = T) # Multicore option
-```
-
-Currently, txtools is designed for and requires RNA-seq libraries that are
-**paired-end** and **strand-specific**.
-
-**To accelerate processing the multi-core function** `tx_reads_mc()`
-**is available for UNIX systems**
-
-### Compatibility with GenomicRanges
-
-Now `txReads` contains a list with all paired-end RNA-seq mappings divided by
-their corresponding gene models, along with their sequences as specified in the
-call to `tx_reads()`.
-
-The resulting object is a GenomicRangesList (*GRangesList*) a list that contains
-*GenomicRanges* the core object of their homonymous package, but their
-coordinates belong now to the transcriptomic references used. In this way we can
-take advantage of **GenomicRanges** functions and accesors to retrieve
-information from the mappings, and manipulate them.
-
-For example:
-
-* The start of reads
-
-```{r, message=F}
-GenomicRanges::start(txReads)
-```
-
-* Extracting the ranges of the mappings for an specific gene using the `@ranges`
-operator
-```{r}
-txReads$uc003lam.1@ranges # Ranges of reads in transcriptomic space
-```
-
-* Extracting meta columns, with additional data, using the mcols() function.
-In this case, we extract the values for the 6th mapping of the 'uc010nap.1'
-gene, which is one of the paired-end sequence, as we loaded this information
-setting tx_reads() argument `withSeq` to TRUE.
-
-```{r}
-GenomicRanges::mcols(txReads$uc010nap.1)[6,]
-```
-
-Although using GenomicRanges functions may be useful in some cases for user
-specific tasks, txtools contains several functions that allow further
-processing and manipulation of the resulting transcriptomic mappings, and
-are shown in the next sections.
-
-### Raw Gene Counts
-
-A common task in RNA-seq analysis workflows is simply counting the reads (or
-mappings) that fall into a gene model to calculate gene expression levels. We
-can easily calculate that for all the genes using the `tx_counts()` function.
-
-```{r}
-tx_counts(txReads)
-```
-
-### Filtering
-
-To control for spurious mappings we can filter for too long mappings, now in the
-transcriptomic space, with the `tx_filter_max_width()` function. In this example
-we set the threshold to 300, removing mappings longer than 300 nucleotides at
-the transcript level.
-
-```{r}
-txReads <- tx_filter_max_width(txReads, 300) # Filter out transcripts longer than 500 bases
-tx_counts(txReads)
-```
-
-### Summarizing reads into data.tables (DT)
-
-A useful representation of RNA-seq information we came up with is to summarise
-read metrics into tables spanning the whole transcript with information per
-nucleotide. Currently the metrics that we extract  are the following:
-
-* Coverage
-* Starts or 5'-ends counts
-* Ends or 3'-ends counts
-* Nucleotide frequencies
-* Deletion frequencies
-
-txtools provides three main functions to calculate all or parts of this
-information:
-
-* `tx_coverageDT()`: Calculates coverage, read-starts, and read-ends
-counts.
-
-```{r, }
-resTab1 <- tx_coverageDT(txReads, geneAnnot)
-# resTab1 <- tx_coverageDT(txReads, geneAnnot, nCores = 2) # Using multi-cores
-resTab1[[1]]
-```
-
-* `tx_nucFreqDT()`: Calculates the nucleotide frequency pileup.
-
-```{r, }
-resTab2 <- tx_nucFreqDT(txReads, geneAnnot)
-# resTab2 <- tx_nucFreqDT(txReads, geneAnnot, nCores = 2) # Using multi-cores
-resTab2[[1]]
-```
-
-* `tx_coverageDT()`: Calculates all previous (coverage, read-starts counts, and
-read-ends counts, and nucleotide frequency).
-
-```{r, }
-resTab3 <- tx_covNucFreqDT(txReads, geneAnnot)
-# resTab3 <- tx_covNucFreqDT(txReads, geneAnnot, nCores = 2) # Using multi-cores
-resTab3[[1]]
-
-```
-
-The resulting object is of class `data.table`. A fast and memory efficient
-relative to the data.frame.
-
-The resulting data.table enables easy and fast access to data, ready for
-manipulation and analysis, for example, creating a barplot with the coverage
-column:
-
-* Coverage barplot
-
-```{r, barplot_coverage}
-iGene <- "uc003lam.1"
-barplot(resTab3[[iGene]]$cov, main = paste(iGene, "Coverage"),
-        ylab = "Counts", xlab = iGene)
-```
-
-* Nucleotide frequency barplot
-
-```{r, barplot_nucfreq}
-iGene <- "uc010nap.1"
-barplot(t(data.frame(resTab3[[iGene]][,c("A", "T", "G", "C", "N")])),
-        col = c("#E41A1C", "#377EB8", "#4DAF4A", "#984EA3", "black"), border = "gray",
-        main = paste("Nucleotide Frequency"), ylab = "Counts", xlab = iGene)
-```
-
-### Aggregating and splitting data.tables
-
-Some features of data.tables can be only taken advantage when merging all the
-data of the genes into one single data.table, we can do this with the
-`tx_merge_DT()` function. Similarly going back to gene independent data tables
-is done with the `tx_split_DT()` function.
-
-```{r}
-# Merge
-mergedDT <- tx_merge_DT(resTab1)
-class(mergedDT)
-# Split
-split_DT <- tx_split_DT(mergedDT)
-class(split_DT)
-summary(split_DT)
-```
-
-A nice example of using data.tables is the x[i, j, by] syntax, which can be
-used to apply functions to groups of values in the data.table. For example,
-using the **merged data.table** we can calculate the median coverage per gene.
-
-```{r}
-mergedDT[, median(cov), by = gene]
-```
-
-We can see that the median coverage of "uc003lam.1" is 61 and for "uc010nap.1"
-is 10.
-
-### Adding the reference sequence to the DT
-
-When working with transcriptomic data one would like to easily get the
-relevant sequence. To add this info to a DT simply use the `tx_add_refSeqDT()`
-function.
-
-Preparation: To use the `tx_add_refSeqDT()` function we need a reference genome.
-In this case we use a BSgenome, a collection of pre-packaged genomes for
-easy installation. In this case we will use the BSgenome for human
-"BSgenome.Hsapiens.UCSC.hg19".
-
-```{r}
-# BiocManager::install("BSgenome.Hsapiens.UCSC.hg19") # Uncomment if you need to install
-# Loading reference genome
-genome <- BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19
-# Adding the reference sequence to the summarized DT object
-newDT <- tx_add_refSeqDT(resTab3$uc003lam.1, genome, geneAnnot)
-newDT
-```
-
-### Plots
-```{r}
-tx_plot_nucFreq(newDT, window_around(800, 50))
-tx_plot_staEndCov(newDT, window_around(811, 15))
-```
-
-### Writing individual DTs to files
-
-Additionally, storing the tables in a file for later use can be done using the
-`fwrite()` frunction from the **data.table** package, which allows for fast
-writing of data in table structures.
-
-```{r, eval = F}
-# Writes datatable to file
-data.table::fwrite(mergedDT, "tableName.txt", sep = "\t")
-```
-
-
-# New tutorial
-
-```{r}
-library(RNAseqData.HNRNPC.bam.chr14)
-bamfiles <- RNAseqData.HNRNPC.bam.chr14_BAMFILES
-bam <- tx_load_bam(bamfiles[1], loadSeq = T, verbose = T, pairedEnd = T)
-
-GAfile <- system.file("extdata", "hg19_UCSCgenes_chr14.bed", package = "txtools")
-chr14_GA <- tx_load_bed(GAfile)
-chr14_GA <- tx_extend_UTR(chr14_GA, ext_5p = 200 , ext_3p = 300)
-GA_chr14 <- chr14_GA
-
-txReads_cp <- tx_reads_mc(bam, chr14_GA, withSeq = T, nCores = 10)
-txReads <- tx_reads(bam, chr14_GA, withSeq = T, nCores = 10)
-identical(txReads_cp, txReads)
-topGenes <- txReads %>% sapply(length) %>% sort %>% tail(10) %>% names()
-
-hg19_genome <- BSgenome.Hsapiens.UCSC.hg19::BSgenome.Hsapiens.UCSC.hg19
-
-covNucFreq_DT <- tx_covNucFreqDT(txReads[topGenes], geneAnnot = chr14_GA, simplify_IUPAC = "splitForceInt")
-names(covNucFreq_DT[[1]])
-covNucFreq_DT2 <- tx_covNucFreqDT(txReads[topGenes], geneAnnot = chr14_GA, simplify_IUPAC = "splitHalf")
-names(covNucFreq_DT2[[1]])
-covNucFreq_DT3 <- tx_covNucFreqDT(txReads[topGenes], geneAnnot = chr14_GA, simplify_IUPAC = "not")
-names(covNucFreq_DT3[[1]])
-
-covNucFreq_DT <- lapply(covNucFreq_DT, function(DT){
-    tx_add_refSeqDT(DT, fastaGenome = hg19_genome, geneAnnot = chr14_GA)
-})
-
-sapply(txReads, length)[topGenes]
-
-DT <- covNucFreq_DT$uc001yks.2 %>% 
-    tx_add_diffNucToRefRatio(addDiffandTotalCols = T) %>% 
-    tx_add_startRatio() %>% 
-    tx_add_endRatio()
-
-View(DT)
-tx_plot_nucFreq(DT, window_around(13244, 10), makePlotly = F,
-                showLegend = T, bar_border = T)
-tx_plot_nucFreq(DT, window_around(12781, 10))
-
-which(DT$startRatio > 0.5)
-which.max(DT$start_5p)
-which.max(DT$end_3p)
-
-tx_plot_staEndCov(DT, 
-                  window_around(13371, 10), 
-                  show_yLabels = T, 
-                  makePlotly = F)
-
-GA <- c(GA_chr14[1:10], GA_chr14[GA_chr14$name == "uc001yks.2"])
-```
-
-Complete DT with missing genes from Gene Annotation
-
-```{r}
-tx_complete_DT(DT, geneAnnot = GA)
-```
-
-Add pos column, a combination of transcript name and transcript coordinate
-
-```{r}
-tx_add_pos(DT)
-```
-
-Cut txDT to reduce 3' and 5' UTR extended regions
-```{r}
-DT <- tx_merge_DT(covNucFreq_DT)
-# cut_5p <- 200
-# cut_3p <- 300
-# DT$gene %>% unique
-
-DT2 <- tx_cutTxEnds(DT, cut_5p = 200, cut_3p = 300)
-
-dim(DT)
-dim(DT2)
-```
-
-## Single-end reads
-
-```{r}
 library(pasillaBamSubset)
-# Loading gene annotation BED-12
-bedFile <- system.file("extdata", "dm3_chr4_RefSeqGenes_UCSC_top10genes.bed", 
-                       package = "txtools")
-bedFile <- paste0("/home/labs/schwartzlab/miguelg/github_repos/txtools/inst/",
-                  "extdata/dm3_chr4_RefSeqGenes_UCSC_top10genes.bed")
-dm3_geneAnnot <- tx_load_bed(bedFile)
+
+# Loading gene-annotation in BED-12 format.
+pathToBED <- tx_dm3_geneAnnot()
+dm3_geneAnnot <- tx_load_bed(pathToBED)
 
 # Loading genome
 fastaFile <- pasillaBamSubset::dm3_chr4()
 dm3_genome <- tx_load_genome(fastaFile)
 
-# Loading BAM files
-singleEndBamFile <- pasillaBamSubset::untreated1_chr4()
-bam_SE <- tx_load_bam(file = singleEndBamFile, pairedEnd = F, loadSeq = T)
-
-reads_SE <- tx_reads(reads = bam_SE, 
-                     geneAnnot = dm3_geneAnnot, 
-                     withSeq = T, 
-                     nCores = 10, 
-                     minReads = 1)
-
-covDT <- tx_makeDT_coverage(reads_SE, dm3_geneAnnot, dm3_genome, nCores = 10)
-starts <- covDT[,sum(start_5p), by = gene]
-tmpGA <- dm3_geneAnnot[dm3_geneAnnot$name %in% as.character(starts[order(-starts$V1),]$gene[1:10])]
-plyranges::write_bed(tmpGA, file = "inst/extdata/dm3_chr4_RefSeqGenes_UCSC_top10genes.bed")
-
-
-nucFreqDT <- tx_makeDT_nucFreq(reads_SE, dm3_geneAnnot, dm3_genome, nCores = 10)
-
-GRtest <- data.frame(start = c(64403, 797100), 
-                     width= 1, 
-                     strand = c("-", "+"), 
-                     seqnames = "chr4") %>% plyranges::as_granges()
-
-covDT <- tx_add_siteAnnotation(covDT, GRtest, "testAnnot")
-covDT[testAnnot == T,]
+# Loading RNA-seq data (paired-end)
+pathToBAM <- pasillaBamSubset::untreated3_chr4()
+bam_PE <- tx_load_bam(file = pathToBAM, pairedEnd = TRUE, loadSeq = TRUE)
+summary(bam_PE)
 ```
+
+## From Genomic to Transcriptomic
+
+### tx_reads()
+
+Now to convert the genomic-alignments into their transcriptomic versions we
+use the `tx_reads()` function, and require it to keep the sequence data 
+setting the `withSeq` argument to 'TRUE', this will allow us to later summarize
+nucleotide frequency. If nucleotide frequency is not required in downstream 
+analysis setting `withSeq` to 'FALSE' will expedite the processing. 
+
+Importantly, `tx_reads()` can use multiple cores to accelerate processing,
+just set the `nCores` argument to the ammount of cores you want to use.
+In practice a number of cores between 6-8 is enough, but this may depend on 
+your infrastructure.
+
+```{r}
+txreads_PE <- tx_reads(reads = bam_PE, geneAnnot = dm3_geneAnnot, 
+                       withSeq = TRUE, minReads = 1, nCores = 1)
+```
+
+The resulting object is a `CompressedGRangesList`, a list of GRanges,
+grouped by their corresponding gene. `GRanges` is a class from the
+`GenomicRanges` package. Therefore they can be manipulated using this 
+package. At the time of writing, txtools does not focus on the use of `GRanges`.
+nevertheless provides some functions to manipulate them before summarizing them
+into data.tables.
+
+### txtools function for GRangesLists
+
+**tx_counts**
+
+A function that simply counts the num
+
+```{r}
+tx_counts(txreads_PE)
+```
+
+
+**tx_sample_GRList()**
+
+A function that samples GRanges from a GRangesList, useful for simulation 
+of lower coverages in samples.
+
+```{r}
+txreads_PE_half <- tx_sample_GRList(txreads_PE, 0.5)
+tx_counts(txreads_PE_half)
+```
+
+**tx_filter_maxWidth()**
+
+A function that filters out Granges longer than a certain width. Useful to
+filter spurious alignments that are not possible due to RNA insert length
+selection.
+
+```{r, fig.height = 2, fig.width= 6, fig.show="hold"}
+txreads_PE_filtered <- tx_filter_maxWidth(txreads_PE, 600)
+
+boxplot(unlist(GenomicRanges::width(txreads_PE)), xlab = "Insert Width",
+        horizontal = T, main = "Not filtered alignments") 
+boxplot(unlist(GenomicRanges::width(txreads_PE_filtered)), xlab = "Insert Width",
+        horizontal = T, main = "Filtered alignments") 
+```
+
+## Summarizing transcriptomic GRanges
+
+### tx_makeDT_* functions
+
+Due to GRanges contrains it is not possible to keep summarized metrics into the 
+same structure as GRanges or GRangesList objects. For example, the coverage
+of a certain gene pertains to an specific range of coordinates and cannot be 
+assigned to an element in particular. This is the reason we opt to create
+a summarized table that holds the relevant information from the reads in a way
+that is easier to interpret and further analyze.
+
+To summarize GRangesList txtools contains three functions which do the job:
+
+* **tx_makeDT_coverage()**
+* **tx_makeDT_nucFreq()**
+* **tx_makeDT_covNucFreq()**
 
 
 ```{r}
-library(pasillaBamSubset)
-# Loading gene Annotation
-BEDfile <- system.file("extdata", "dm3_chr4_RefSeqGenes_UCSC_top10genes.bed", 
-                       package = "txtools")
-dm3_geneAnnot <- tx_load_bed(BEDfile)
-# Loading genome
-fastaFile <- pasillaBamSubset::dm3_chr4()
-dm3_genome <- tx_load_genome(fastaFile)
-# Loading BAM files
-singleEndBamFile <- pasillaBamSubset::untreated1_chr4()
-
-bam_SE <- tx_load_bam(file = singleEndBamFile, pairedEnd = F, loadSeq = T)
-reads_SE <- tx_reads(reads = bam_SE, 
-                     geneAnnot = dm3_geneAnnot, 
-                     withSeq = T, 
-                     nCores = 10, 
-                     minReads = 1)
-DT <- tx_makeDT_covNucFreq(reads_SE, geneAnnot = dm3_geneAnnot, genome = dm3_genome)
+DT_cov <- tx_makeDT_covNucFreq(txreads_PE_filtered, geneAnnot = dm3_geneAnnot,
+                     dm3_genome, nCores = 1)
+unique(DT_cov$gene)
+barplot(DT_cov[gene == "NM_079879",]$cov)
 ```
 
-## Paired-end reads
+2. Summarize the read-alignments corresponding to each gene model into 
+a table structure, that keeps per nucleotide information. 
 
-```{r}
-pairedEndBamFile <- pasillaBamSubset::untreated3_chr4()
-bam_PE <- tx_load_bam(file = pairedEndBamFile, pairedEnd = T, loadSeq = T)
-class(bam_SE)
-reads <- bam_PE
-geneAnnot <- dm3_geneAnnot
+The two main functions to process *genomic alignments* data
+into **transcriptomic** data are `tx_reads()` and `tx_makeDT_*()` family 
+functions.
 
-
-# Genomic to transcriptomic
-txreads_PE <- tx_reads_mc(reads = bam_PE, geneAnnot = dm3_geneAnnot, withSeq = T,
-                         nCores = 10, minReads = 1)
-topGenes <- sapply(txreads_PE, length) %>% sort(decreasing = T) %>% names %>% head(10)
-
-mcols(txreads_SE[[10]])$seq %>% stringr::str_split(pattern = "") %>% unlist %>% table
-grep("\\.", mcols(txreads_SE[[10]])$seq)
-length(txreads_SE[[10]])
-txreads_SE[[10]][grep("\\.", mcols(txreads_SE[[10]])$seq)]
-txreads_SE[[10]][which(names(txreads_SE[[10]]) == "SRR031729.3528094")]
-
-bam_SE[which(bam_SE@NAMES == "SRR031729.3528094")]
-bam_SE[which(bam_SE@NAMES == "SRR031729.3528094")] %>% mcols %>% .$seq
-
-DTL_1 <- tx_covNucFreqDT(txreads_SE, dm3_geneAnnot_top10)
-DTL_2 <- tx_covNucFreqDT(txreads_PE, dm3_geneAnnot_top10)
-
-
-class(txreads_PE)
-
-CompressedGRangesList
-dm3_GA <- tx_load_bed(dm3_bed)
-length(dm3_GA)
-
-tx_reads(tmp, dm3_GA)
-Rsamtools::quickBamFlagSummary(pasillaBamSubset::untreated1_chr4())
-Rsamtools::countBam(pasillaBamSubset::untreated1_chr4())
-pasPaired <- tx_load_bam(pasillaBamSubset::untreated3_chr4(), pairedEnd = T)
-
-
-
-```
-
-## Extending 5' and 3' UTR regions
-
-```{r}
-
-library(pasillaBamSubset)
-# Loading gene annotation BED-12
-bedFile <- system.file("extdata", "dm3_chr4_RefSeqGenes_UCSC.bed", 
-                       package = "txtools")
-bedFile <- paste0("/home/labs/schwartzlab/miguelg/github_repos/txtools/inst/",
-                  "extdata/dm3_chr4_RefSeqGenes_UCSC.bed")
-dm3_geneAnnot <- tx_load_bed(bedFile)
-
-
-
-```
-
-## Cut txDT by ends
-
-```{r}
-pairedEndBamFile <- pasillaBamSubset::untreated3_chr4()
-bam_PE <- tx_load_bam(file = pairedEndBamFile, pairedEnd = T, loadSeq = T)
-
-reads <- bam_PE
-geneAnnot <- dm3_geneAnnot
-geneAnnot <- tx_extend_UTR(geneAnnot, ext_5p = 200, ext_3p = 300)
-# Genomic to transcriptomic
-txreads_PE <- tx_reads_mc(reads = reads, geneAnnot = dm3_geneAnnot, withSeq = T, 
-                          nCores = 10, minReads = 1)
-topGenes <- sapply(txreads_PE, length) %>% sort(decreasing = T) %>% names %>% head(10)
-
-
-```
+To fully understand what happens under the hood using txtools to process your 
+data we will use toy examples of **genomic alignments** and **gene annotation**,
+the main inputs to process the data into transcriptomic data.
