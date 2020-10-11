@@ -8,11 +8,13 @@
 
 ## Description
 
-**txtools** is a package that processes genome aligned RNA-seq data into
-transcriptomic-oriented data.tables (DT), enabling a quick and
-simplified analysis, as well as close inspection of summary metrics per
-transcript, at nucleotide resolution. A quick example of its
-capabilities is shown bellow.
+**txtools** is a package that processes RNA-seq reads alignments into
+transcriptomic-oriented objects, focusing on data.tables (DT). This
+enables a quick and simplified analysis, to closely inspection summary
+metrics per transcript, at nucleotide resolution, i.e. coverage,
+read-starts, read-ends, deletions, and nucleotide frequency.
+
+![mainFunctions](man/figures/readme_1.png)
 
 ## Quick example
 
