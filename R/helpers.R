@@ -483,9 +483,7 @@ hlp_genCoorTab <- function(x, geneAnnot){
 #'
 #' @examples
 hlp_genCoorTab_mc <- function(x, geneAnnot, nCores){
-    if(.Platform$OS.type == "windows"){
-        stop("This functions is not available in Windows operative systems. \n")
-    }
+    check_mc_windows()
     if(all(names(x) %in% geneAnnot$name)){
         parallel::mclapply(mc.cores = nCores, X = names(x), function(iGene){
             tmp2 <- geneAnnot[which(geneAnnot$name == iGene)]
