@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-This will be a more in depth tutorial on how to use txtools.
+This will be a more in depth tutorial showing all of the main functions.
 
 We will check how to:
 
@@ -24,36 +24,7 @@ We will check how to:
 4. Use tx_add_* functions to calculate metrics into data.tables
 5. Plot interesting regions using the tx_plot_* functions
 
+```{r}
 
-```{r, fig.width = 6, fig.height= 4}
-# Load package
-library(txtools)
-library(pasillaBamSubset)
-
-# Loading gene Annotation
-BEDfile <- system.file("extdata", "dm3_chr4_RefSeqGenes_UCSC_top10genes.bed", 
-                       package = "txtools")
-dm3_geneAnnot <- tx_load_bed(BEDfile)
-# Loading genome
-fastaFile <- pasillaBamSubset::dm3_chr4()
-dm3_genome <- tx_load_genome(fastaFile)
-# Loading BAM files
-singleEndBamFile <- pasillaBamSubset::untreated1_chr4()
-
-bam_SE <- tx_load_bam(file = singleEndBamFile, pairedEnd = F, loadSeq = T, verbose = F)
-reads_SE <- tx_reads(reads = bam_SE, 
-                     geneAnnot = dm3_geneAnnot, 
-                     withSeq = T, 
-                     nCores = 10, 
-                     minReads = 1)
-DT <- tx_makeDT_covNucFreq(reads_SE, geneAnnot = dm3_geneAnnot, genome = dm3_genome)
-DT <- tx_add_diffNucToRefRatio(DT, addDiffandTotalCols = TRUE)
-
-DT[which(DT$diffToRefRatio > 0.8 & cov > 70),]
-
-tx_plot_nucFreq(DT, gene = "NM_079901", txRange = window_around(2171, 10), makePlotly = T)
-    
 ```
-
-
 

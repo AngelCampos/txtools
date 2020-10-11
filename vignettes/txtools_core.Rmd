@@ -3,10 +3,8 @@ title: "txtools_core"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{txtools_core}
-  %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
-editor_options: 
-  chunk_output_type: inline
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include = FALSE}
