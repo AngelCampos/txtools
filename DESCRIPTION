@@ -1,6 +1,6 @@
 Package: txtools
 Title: An interface betwen GenomicAlignments and transcriptomic representations
-Version: 0.0.0.9009
+Version: 0.0.0.9010
 Date: 2020-17-07
 Authors@R: 
     person(given = "Miguel Angel",
