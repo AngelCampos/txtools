@@ -483,7 +483,7 @@ hlp_genCoorTab <- function(x, geneAnnot){
 #'
 #' @examples
 hlp_genCoorTab_mc <- function(x, geneAnnot, nCores){
-    check_mc_windows()
+    check_mc_windows(nCores)
     if(all(names(x) %in% geneAnnot$name)){
         parallel::mclapply(mc.cores = nCores, X = names(x), function(iGene){
             tmp2 <- geneAnnot[which(geneAnnot$name == iGene)]
