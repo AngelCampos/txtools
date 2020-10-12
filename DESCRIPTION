@@ -1,12 +1,12 @@
 Package: txtools
 Title: An interface betwen GenomicAlignments and transcriptomic representations
-Version: 0.0.0.9010
+Version: 0.0.1
 Date: 2020-17-07
 Authors@R: 
     person(given = "Miguel Angel",
            family = "Garcia-Campos",
            role = c("aut", "cre"),
-           email = "angel.campos@weizmann.ac.il",
+           email = "angel.campos@ciencias.unam.mx",
            comment = c(ORCID = "0000-0001-5223-8174", 
                        webpage = "https://angelcampos.github.io/"))
 Description: txtools extends the functionality of GenomicAlignments filtering 
@@ -41,3 +41,5 @@ Imports:
     tidyr,
     pasillaBamSubset
 VignetteBuilder: knitr
+biocViews: DataImport, DataRepresentation, Coverage, 
+    Epitranscriptomics, RNASeq, Transcription, SNP
