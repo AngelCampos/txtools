@@ -3,7 +3,7 @@
 
 <!-- badges: start -->
 
-[![](https://img.shields.io/badge/devel%20version-0.0.0.9009-blue.svg)](https://github.com/AngelCampos/txtools)
+[![](https://img.shields.io/badge/devel%20version-0.0.1-blue.svg)](https://github.com/AngelCampos/txtools)
 <!-- badges: end -->
 
 ## Description
@@ -43,10 +43,8 @@ dm3_genome <- tx_load_genome(FASTA_file)
 dm3_PEreads <- tx_load_bam(file = PE_BAM_file, pairedEnd = T, loadSeq = T)
 ```
 
-Then we process the alignments to their transcriptomic versions using
-the `tx_reads()` function, and summarize the alignments into a DT that
-contains coverage, and nucleotide frequency count data using the
-`tx_makeDT_covNucFreq()`function.
+First, we process the alignments to their transcriptomic versions using
+the `tx_reads()` function.
 
 ``` r
 reads_SE <- tx_reads(reads = dm3_PEreads, 
@@ -59,7 +57,15 @@ reads_SE <- tx_reads(reads = dm3_PEreads,
 #> Filtering reads by gene model... 
 #> Processing sequences. This may take several minutes depending on geneAnnot size ... 
 #> Output contains: 12252 unique reads in 10 gene models
+```
 
+Then we just need to summarize the alignments into a DT. In this case
+using the `tx_makeDT_covNucFreq()` function outputs a table with all the
+base metrics, including read coverage (‘cov’ column), and nucleotide
+frequency (A,C,T,G
+columns).
+
+``` r
 DT <- tx_makeDT_covNucFreq(reads_SE, geneAnnot = dm3_geneAnnot, genome = dm3_genome)
 ```
 
@@ -97,7 +103,7 @@ location.
 tx_plot_nucFreq(DT, gene = "NM_079901", txRange = window_around(3803, 15))
 ```
 
-![](man/figures/README-unnamed-chunk-5-1.png)<!-- -->
+![](man/figures/README-plotNucFreq-1.png)<!-- -->
 
 ## Installation
 
