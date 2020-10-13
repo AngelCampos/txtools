@@ -287,7 +287,7 @@ hlpr_ReadsInGene_SingleEnd <- function(reads, iGene, geneAnnot, split_i,
 # Calculate coverage table: coverage, 5prime-starts, and 3prime-ends
 hlp_coverageTab <- function(x){
     if(class(x) != "CompressedGRangesList"){
-        stop("x must be of class SimpleGRangesList")
+        stop("x must be of class CompressedGRangesList")
     }
     if(names(x) %>% duplicated() %>% sum() %>% magrittr::is_greater_than(0)){
         stop("List contains duplicated gene models")
