@@ -105,6 +105,7 @@ tx_plot_nucFreq <- function(DT,
 #' @param gene character. Name of the gene in DT which wants to be plotted.
 #' @param txRange integer. Range in data to be used, 'txcoor' column is used to
 #' delimit this range in the data.table.
+#' @param removeCov logical. If set to TRUE remove coverage counts.
 #' @param makePlotly logical. Outputs an interactive plot by using the ggplotly()
 #' function.
 #' @param show_yLabels logical. If set to FALSE hides the y axis labels.
@@ -115,13 +116,9 @@ tx_plot_nucFreq <- function(DT,
 #' @export
 #'
 #' @examples
-tx_plot_staEndCov <- function(DT,
-                              gene,
-                              txRange = 1:nrow(DT),
-                              makePlotly = F,
-                              show_yLabels = T,
-                              bar_border = T,
-                              showLegend = T){
+tx_plot_staEndCov <- function(
+    DT, gene, txRange = 1:nrow(DT), makePlotly = FALSE, removeCov = FALSE,
+    show_yLabels = TRUE, bar_border = TRUE, showLegend = TRUE){
     check_refSeq(DT)
     DT <- check_DT(DT)
     if(!(gene %in% DT$gene)){stop("gene not found in DT object")}
@@ -130,6 +127,7 @@ tx_plot_staEndCov <- function(DT,
     DT$pos <- paste(DT$txcoor, DT$refSeq, sep = "-")
     DT$pos <- factor(DT$pos, levels = DT$pos)
     DT$cov <- DT$cov - DT$start_5p - DT$end_3p
+    if(removeCov){DT$cov <- 0}
     tmpData <- tidyr::pivot_longer(DT, cols = c("start_5p", "end_3p", "cov"),
                             values_to = "counts", names_to = "coverage") %>%
         data.table::data.table()
