@@ -22,7 +22,7 @@ knitr::opts_chunk$set(
 
 **txtools** is a package that processes RNA-seq reads alignments into 
 transcriptomic-oriented objects, focusing on data.tables (DT). This enables a 
-quick and simplified analysis, to closely inspection summary metrics per 
+quick and simplified analysis, to closely inspect summarized RNA-seq data per 
 transcript, at nucleotide resolution, i.e. coverage, read-starts, read-ends,
 deletions, and nucleotide frequency.
 
@@ -30,10 +30,11 @@ deletions, and nucleotide frequency.
 
 ## Quick example
 
-As an example we will use the 'Pasilla' experiment data (from its own package)
+In this small example we will use the 'Pasilla' experiment data (from its own package)
 which contains a BAM file for the paired-end alignments of a *D. melanogaster* 
 RNA-seq experiment on chromosome 4, along with a FASTA file comprising the 
 genome sequence for the same chromosome.
+
 
 Using txtools we can load the **genome** (FASTA), the **gene annotation** 
 (BED-12), and the **RNA-seq reads alignment** (BAM) files into R with ease.
