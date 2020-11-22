@@ -208,13 +208,13 @@ tx_extend_UTR <- function(GR, ext_5p = 0, ext_3p = 0){
 #' @return GRanges
 #' space. Alignments are located in genes, instead of chromosomes.
 #' @export
-tx_reads <- function(reads, geneAnnot, minReads = 50, withSeq = F, verbose = T,
+tx_reads <- function(reads, geneAnnot, minReads = 50, withSeq = FALSE, verbose = TRUE,
                      nCores = 1){
     # Checks
     check_mc_windows(nCores)
     check_integerGreaterThanZero_arg(minReads, "minReads")
     check_GA_reads_compatibility(reads, geneAnnot)
-    check_BAM_has_seq(reads)
+    if(withSeq){check_BAM_has_seq(reads)}
     if(!class(reads) %in% c("GAlignmentPairs", "GAlignments")){
         stop("reads argument should be of class GAlignmentPairs. \n")
     }
