@@ -3,25 +3,25 @@
 
 <!-- badges: start -->
 
-[![](https://img.shields.io/badge/devel%20version-0.0.1-blue.svg)](https://github.com/AngelCampos/txtools)
+[![](https://img.shields.io/badge/devel%20version-0.0.2-blue.svg)](https://github.com/AngelCampos/txtools)
 <!-- badges: end -->
 
 ## Description
 
 **txtools** is a package that processes RNA-seq reads alignments into
 transcriptomic-oriented objects, focusing on data.tables (DT). This
-enables a quick and simplified analysis, to closely inspection summary
-metrics per transcript, at nucleotide resolution, i.e. coverage,
+enables a quick and simplified analysis, to closely inspect summarized
+RNA-seq data per transcript, at nucleotide resolution, i.e. coverage,
 read-starts, read-ends, deletions, and nucleotide frequency.
 
 ![mainFunctions](man/figures/readme_1.png)
 
 ## Quick example
 
-As an example we will use the ‘Pasilla’ experiment data (from its own
-package) which contains a BAM file for the paired-end alignments of a
-*D. melanogaster* RNA-seq experiment on chromosome 4, along with a FASTA
-file comprising the genome sequence for the same chromosome.
+In this small example we will use the ‘Pasilla’ experiment data (from
+its own package) which contains a BAM file for the paired-end alignments
+of a *D. melanogaster* RNA-seq experiment on chromosome 4, along with a
+FASTA file comprising the genome sequence for the same chromosome.
 
 Using txtools we can load the **genome** (FASTA), the **gene
 annotation** (BED-12), and the **RNA-seq reads alignment** (BAM) files
@@ -62,8 +62,7 @@ reads_SE <- tx_reads(reads = dm3_PEreads,
 Then we just need to summarize the alignments into a DT. In this case
 using the `tx_makeDT_covNucFreq()` function outputs a table with all the
 base metrics, including read coverage (‘cov’ column), and nucleotide
-frequency (A,C,T,G
-columns).
+frequency (A,C,T,G columns).
 
 ``` r
 DT <- tx_makeDT_covNucFreq(reads_SE, geneAnnot = dm3_geneAnnot, genome = dm3_genome)
@@ -96,8 +95,7 @@ DT[which(diffToRefRatio > 0.5 & nucTotal > 40),]
 ```
 
 Finally, using the `tx_plot_nucFreq()` function we can visualize that
-data in the DT at an specific
-location.
+data in the DT at an specific location.
 
 ``` r
 tx_plot_nucFreq(DT, gene = "NM_079901", txRange = window_around(3803, 15))
