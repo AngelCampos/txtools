@@ -1,7 +1,7 @@
 Package: txtools
-Title: An interface betwen GenomicAlignments and transcriptomic representations
-Version: 0.0.2
-Date: 2020-17-07
+Title: An interface between GenomicAlignments and transcriptomic representations
+Version: 0.0.3
+Date: 2020-22-12
 Authors@R: 
     person(given = "Miguel Angel",
            family = "Garcia-Campos",
@@ -11,8 +11,9 @@ Authors@R:
                        webpage = "https://angelcampos.github.io/"))
 Description: txtools extends the functionality of GenomicAlignments filtering 
     and processing RNA-seq reads aligned to a genome into their transcriptomic
-    versions and allows data to be represented in a transcriptomic oriented way.
-Depends: R (>= 3.6.0)
+    versions and allows data to be represented in a transcriptomic oriented way,
+    along generating easy-handling summarizing tables.
+Depends: R (>= 4.0.0)
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

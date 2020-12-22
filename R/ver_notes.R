@@ -4,9 +4,9 @@
 # function.
 # Fix: Changing an lapply iterate for the names of the genes in list
 #---
-# date() ------------------------------
-# Bug:
-# Fix:
+# Tue Dec 22 13:55:03 2020 ------------------------------
+# Bug: tx_add_refSeqDT() couldn't deal with geneAnnots with only one exon genes.
+# Fix: if_IRangesList_Unlist(), unlists only if blocks are in a list.
 #---
 # date() ------------------------------
 # Bug:
