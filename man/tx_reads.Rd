@@ -4,7 +4,14 @@
 \alias{tx_reads}
 \title{Transcriptomic reads convertion}
 \usage{
-tx_reads(reads, geneAnnot, minReads = 50, withSeq = F, verbose = T, nCores = 1)
+tx_reads(
+  reads,
+  geneAnnot,
+  minReads = 50,
+  withSeq = FALSE,
+  verbose = TRUE,
+  nCores = 1
+)
 }
 \arguments{
 \item{reads}{GAlignments or GAlignmentPairs. Genomic alignments to be processed}

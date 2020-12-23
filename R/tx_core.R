@@ -598,6 +598,10 @@ tx_complete_DT <- function(DT, geneAnnot, genome = NULL, nCores = 1){
              "geneAnnot will be added")
     }
     missGenes <- setdiff(geneAnnot$name, unique(DT$gene))
+    if(length(missGenes) == 0){
+        warning("No missing genes, tx_complete_DT() didn't add genes.")
+        return(DT)
+    } # No missing genes
     tmpCoorTabs <- hlpr_genCoorTabGenes(missGenes, geneAnnot, genome, nCores) %>%
         tx_merge_DT()
     # Add refSeq if present in DT
