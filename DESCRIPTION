@@ -40,7 +40,8 @@ Imports:
     ggplot2,
     plotly,
     tidyr,
-    pasillaBamSubset
+    pasillaBamSubset,
+    methods
 VignetteBuilder: knitr
 biocViews: DataImport, DataRepresentation, Coverage, 
     Epitranscriptomics, RNASeq, Transcription, SNP

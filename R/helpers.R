@@ -579,7 +579,7 @@ hlp_cbind3Tabs <- function(gencoorT, tab1, tab2){
 
 # Unlist if IrangesList
 if_IRangesList_Unlist <- function(x){
-    if("IRangesList" %in% is(x)){
+    if("IRangesList" %in% methods::is(x)){
         unlist(x)
     }else{
         x

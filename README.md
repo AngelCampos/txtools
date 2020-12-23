@@ -49,8 +49,8 @@ the `tx_reads()` function.
 ``` r
 reads_SE <- tx_reads(reads = dm3_PEreads, 
                      geneAnnot = dm3_geneAnnot, 
-                     withSeq = T, 
-                     nCores = 10, 
+                     withSeq = TRUE, 
+                     nCores = 1, 
                      minReads = 1)
 #> Processing 75409 reads, using 10 gene models. 
 #> 12563 reads overlap 10 gene models 
