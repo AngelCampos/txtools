@@ -3,16 +3,17 @@
 
 <!-- badges: start -->
 
-[![](https://img.shields.io/badge/devel%20version-0.0.4-blue.svg)](https://github.com/AngelCampos/txtools)
+[![](https://img.shields.io/badge/devel%20version-0.0.5-blue.svg)](https://github.com/AngelCampos/txtools)
 <!-- badges: end -->
 
 ## Description
 
 **txtools** is a package that processes RNA-seq reads alignments into
-transcriptomic-oriented objects, focusing on data.tables (DT). This
-enables a quick and simplified analysis, to closely inspect summarized
-RNA-seq data per transcript, at nucleotide resolution, i.e. coverage,
-read-starts, read-ends, deletions, and nucleotide frequency.
+transcriptomic-oriented tables. Enabling a quick and simplified
+analysis, to closely inspect summarized RNA-seq data per transcript, at
+nucleotide resolution, i.e. coverage, read-starts, read-ends, deletions,
+and nucleotide frequency. Attractive plotting is also readily available
+to visualize data.
 
 ![mainFunctions](man/figures/readme_1.png)
 
@@ -110,10 +111,9 @@ You can install the development version from
 commands in the R console:
 
 ``` r
-if (!requireNamespace("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
-
-BiocManager::install("AngelCampos/txtools")
+if (!requireNamespace("remotes", quietly = TRUE))
+    install.packages("remotes")
+devtools::install_github("AngelCampos/txtools", build_vignettes = TRUE)
 ```
 
 ## Further documentation
