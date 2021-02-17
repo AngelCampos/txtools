@@ -62,8 +62,8 @@ First, we process the alignments to their transcriptomic versions using the
 ```{r}
 reads_SE <- tx_reads(reads = dm3_PEreads, 
                      geneAnnot = dm3_geneAnnot, 
-                     withSeq = T, 
-                     nCores = 10, 
+                     withSeq = TRUE, 
+                     nCores = 1, 
                      minReads = 1)
 ```
 
