@@ -7,3 +7,5 @@
 ^tx_tools\.Rprofile$
 ^doc$
 ^Meta$
+sandbox\.Rmd
+txtools\.Rproj

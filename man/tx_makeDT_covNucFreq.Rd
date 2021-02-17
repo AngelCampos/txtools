@@ -16,8 +16,7 @@ tx_makeDT_covNucFreq(
 }
 \arguments{
 \item{x}{CompressedGRangesList. Genomic Ranges list containing genomic
-alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
-functions.}
+alignments data by gene. Constructed via tx_reads().}
 
 \item{geneAnnot}{GenomicRanges. Gene annotation loaded via the tx_load_bed()
 function.}

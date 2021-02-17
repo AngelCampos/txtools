@@ -316,8 +316,7 @@ hlp_coverageTab <- function(x){
 #' without gene coordinates (Multicore)
 #'
 #' @param x CompressedGRangesList. Genomic Ranges list containing genomic
-#' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
-#' functions.
+#' alignments data by gene. Constructed via tx_reads().
 #' @param nCores integer. Number of cores to use to run function.
 #'
 #' @return data.table
@@ -356,8 +355,7 @@ hlp_coverageTab_mc <- function(x, nCores){
 #' Calculate nucleotide frequency pileup for all gene models
 #'
 #' @param x CompressedGRangesList. Genomic Ranges list containing genomic
-#' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
-#' functions.
+#' alignments data by gene. Constructed via tx_reads().
 #' @param simplify_IUPAC character. Method to simplify ambiguous reads:
 #' 1) 'not': Ambiguous reads will be left as their IUPAC_ambiguous code, e.g.
 #' for positions in which a 'G' and and 'A' where read an 'R' will note this.
@@ -395,8 +393,7 @@ hlp_nucFreqTab <- function(x, simplify_IUPAC = "not"){
 #' Calculate nucleotide frequency pileup for all gene models
 #'
 #' @param x CompressedGRangesList. Genomic Ranges list containing genomic
-#' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
-#' functions.
+#' alignments data by gene. Constructed via tx_reads().
 #' @param simplify_IUPAC character. Method to simplify ambiguous reads:
 #' 1) 'not': Ambiguous reads will be left as their IUPAC_ambiguous code, e.g.
 #' for positions in which a 'G' and and 'A' where read an 'R' will note this.
@@ -431,8 +428,7 @@ hlp_nucFreqTab_mc <- function(x, simplify_IUPAC = "not", nCores){
 #' Table with genomic and transcriptomic coordinates
 #'
 #' @param x CompressedGRangesList. Genomic Ranges list containing genomic
-#' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
-#' functions.
+#' alignments data by gene. Constructed via tx_reads().
 #' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed()
 #'
 #' @return data.table
@@ -471,8 +467,7 @@ hlp_genCoorTab <- function(x, geneAnnot){
 #' available for use in UNIX-like operative systems.
 #'
 #' @param x CompressedGRangesList. Genomic Ranges list containing genomic
-#' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
-#' functions.
+#' alignments data by gene. Constructed via tx_reads().
 #' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed()
 #' @param nCores integer. Number of cores to use to run function.
 #'
@@ -579,7 +574,7 @@ hlp_cbind3Tabs <- function(gencoorT, tab1, tab2){
 
 # Unlist if IrangesList
 if_IRangesList_Unlist <- function(x){
-    if("IRangesList" %in% is(x)){
+    if(methods::is(x, "IRangesList")){
         unlist(x)
     }else{
         x

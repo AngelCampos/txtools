@@ -19,15 +19,11 @@ tx_covNucFreqDT <- function(x, geneAnnot, simplify_IUPAC = "splitForceInt", geno
 #' @export
 tx_filter_max_width <- function(x, thr, nCores = 1){
     .Deprecated("tx_filter_maxWidth")
-    check_integer_arg(nCores, "nCores")
-    check_integer_arg(thr, "thr")
-    check_mc_windows(nCores)
-    tmp <- GenomicAlignments::width(x) %>% magrittr::is_weakly_less_than(thr)
-    parallel::mclapply(mc.cores = nCores, seq(1, length(x)), function(i){
-        if(all(tmp[[i]])){
-            x[[i]]
-        }else{
-            x[[i]][tmp[[i]]]
-        }
-    }) %>% GenomicRanges::GRangesList() %>% magrittr::set_names(names(x))
+    tx_filter_maxWidth(x, thr, nCores)
+}
+
+#' @export
+tx_reads_mc <- function(reads, geneAnnot, minReads = 50, withSeq = FALSE, verbose = TRUE, nCores = 1){
+    .Deprecated("tx_reads")
+    tx_reads(reads, geneAnnot, minReads, withSeq, verbose, nCores)
 }

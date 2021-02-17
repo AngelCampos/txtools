@@ -8,8 +8,7 @@ hlp_nucFreqTab(x, simplify_IUPAC = "not")
 }
 \arguments{
 \item{x}{CompressedGRangesList. Genomic Ranges list containing genomic
-alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
-functions.}
+alignments data by gene. Constructed via tx_reads().}
 
 \item{simplify_IUPAC}{character. Method to simplify ambiguous reads:
 1) 'not': Ambiguous reads will be left as their IUPAC_ambiguous code, e.g.

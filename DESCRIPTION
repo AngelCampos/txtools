@@ -1,6 +1,6 @@
 Package: txtools
 Title: An interface between GenomicAlignments and transcriptomic representations
-Version: 0.0.4
+Version: 0.0.5
 Date: 2020-22-12
 Authors@R: 
     person(given = "Miguel Angel",
@@ -12,7 +12,7 @@ Authors@R:
 Description: txtools extends the functionality of GenomicAlignments filtering 
     and processing RNA-seq reads aligned to a genome into their transcriptomic
     versions and allows data to be represented in a transcriptomic oriented way,
-    along generating easy-handling summarizing tables.
+    along generating easy-handling summarized tables.
 Depends: R (>= 4.0.0)
 License: MIT + file LICENSE
 Encoding: UTF-8
@@ -22,25 +22,36 @@ Suggests:
     testthat (>= 2.1.0),
     knitr,
     rmarkdown
+Remotes:
+    bioc::GenomicRanges,
+    bioc::Biostrings,
+    bioc::IRanges,
+    bioc::Rsamtools,
+    bioc::S4Vectors,
+    bioc::GenomicAlignments,
+    bioc::plyranges,
+    bioc::pasillaBamSubset,
+    bioc::GenomeInfoDb
 Imports: 
-    magrittr,
-    stringr,
     GenomicRanges,
-    Rsamtools,
-    GenomicAlignments,
-    GenomeInfoDb,
-    data.table,
-    plyranges,
-    S4Vectors (>= 0.23.20),
     Biostrings,
     IRanges,
+    Rsamtools,
+    S4Vectors (>= 0.23.20),
+    GenomicAlignments,
+    plyranges,
+    pasillaBamSubset,
+    GenomeInfoDb,
+    magrittr,
+    stringr,
+    data.table,
     tibble,
     utils,
     rlang (>= 0.4.3),
     ggplot2,
     plotly,
     tidyr,
-    pasillaBamSubset
+    methods
 VignetteBuilder: knitr
 biocViews: DataImport, DataRepresentation, Coverage, 
     Epitranscriptomics, RNASeq, Transcription, SNP

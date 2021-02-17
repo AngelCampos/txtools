@@ -2,6 +2,7 @@
 % Please edit documentation in R/tx_core.R
 \name{tx_reads}
 \alias{tx_reads}
+\alias{tx_reads_mc}
 \title{Transcriptomic reads convertion}
 \usage{
 tx_reads(

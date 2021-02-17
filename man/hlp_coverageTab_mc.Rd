@@ -9,8 +9,7 @@ hlp_coverageTab_mc(x, nCores)
 }
 \arguments{
 \item{x}{CompressedGRangesList. Genomic Ranges list containing genomic
-alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
-functions.}
+alignments data by gene. Constructed via tx_reads().}
 
 \item{nCores}{integer. Number of cores to use to run function.}
 }

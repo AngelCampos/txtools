@@ -205,6 +205,8 @@ tx_extend_UTR <- function(GR, ext_5p = 0, ext_3p = 0){
 #' @param nCores integer. Number of cores to use to run function. Multicore
 #' capability not available in Windows OS.
 #'
+#' @aliases tx_reads_mc
+#'
 #' @return GRanges
 #' space. Alignments are located in genes, instead of chromosomes.
 #' @export
@@ -285,8 +287,7 @@ tx_reads <- function(reads, geneAnnot, minReads = 50, withSeq = FALSE, verbose =
 #' Filter ranges by a maximum width
 #'
 #' @param x CompressedGRangesList. Genomic Ranges list containing genomic
-#' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
-#' functions.
+#' alignments data by gene. Constructed via tx_reads().
 #' @param thr integer. Threshold for maximum width size allowed on output.
 #' @param nCores integer. Number of cores to use to run function. Multicore
 #' capability is not available in Windows OS.
@@ -468,8 +469,7 @@ tx_makeDT_nucFreq <- function(x, geneAnnot, genome = NULL,
 #' in UNIX-like OS.
 #'
 #' @param x CompressedGRangesList. Genomic Ranges list containing genomic
-#' alignments data by gene. Constructed via the tx_reads() or tx_reads_mc()
-#' functions.
+#' alignments data by gene. Constructed via tx_reads().
 #' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed()
 #' function.
 #' @param genome list. The full reference genome sequences, as prepackaged
