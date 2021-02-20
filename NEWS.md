@@ -4,6 +4,7 @@
 
 * Update Bioconductor remotes.
 * Adding tx_core_mc() which is deprecated as alias of tx_reads().
+* Fix bug in tx_complete_DT() which added refSeq before necessary.
 
 ## v0.0.4
 

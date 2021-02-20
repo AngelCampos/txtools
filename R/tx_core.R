@@ -602,7 +602,9 @@ tx_complete_DT <- function(DT, geneAnnot, genome = NULL, nCores = 1){
         warning("No missing genes, tx_complete_DT() didn't add genes.")
         return(DT)
     } # No missing genes
-    tmpCoorTabs <- hlpr_genCoorTabGenes(missGenes, geneAnnot, genome, nCores) %>%
+    tmpCoorTabs <- hlpr_genCoorTabGenes(genes = missGenes, 
+                                        geneAnnot = geneAnnot, 
+                                        nCores = nCores) %>%
         tx_merge_DT()
     # Add refSeq if present in DT
     if("refSeq" %in% names(DT)){
