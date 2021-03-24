@@ -541,7 +541,7 @@ tx_merge_DT <- function(DTL){
 #' @export
 #'
 tx_split_DT <- function(DT, dropEmpty = TRUE){
-    tmp <- split(DT, by = "gene", drop = dropEmpty)
+    tmp <- split(DT, f = DT$gene, drop = dropEmpty)
     lapply(tmp, function(y) {
         y[order(y$txcoor), ]
     })
@@ -602,8 +602,8 @@ tx_complete_DT <- function(DT, geneAnnot, genome = NULL, nCores = 1){
         warning("No missing genes, tx_complete_DT() didn't add genes.")
         return(DT)
     } # No missing genes
-    tmpCoorTabs <- hlpr_genCoorTabGenes(genes = missGenes, 
-                                        geneAnnot = geneAnnot, 
+    tmpCoorTabs <- hlpr_genCoorTabGenes(genes = missGenes,
+                                        geneAnnot = geneAnnot,
                                         nCores = nCores) %>%
         tx_merge_DT()
     # Add refSeq if present in DT
