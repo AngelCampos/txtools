@@ -1,5 +1,10 @@
 # Updates during development
 
+## v0.0.6
+
+* Fixed a bug detected when loading BAM files with mappings with empty 
+sequence field
+
 ## v0.0.5
 
 * Update Bioconductor remotes.

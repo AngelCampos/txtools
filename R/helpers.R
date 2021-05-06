@@ -599,6 +599,20 @@ hlp_add_refSeqDT <- function (DT, fastaGenome, geneAnnot){
     tibble::add_column(DT, refSeq = tmp, .after = "txcoor")
 }
 
+# Remove reads with nucleotide sequence length of 0 (bug detected when using Nanopore reads from Amit)
+hlp_cleanBam_emptySeq <- function(reads, verbose){
+    if(methods::is(reads, class2 = "GAlignments")){
+        lSel <- BiocGenerics::width(S4Vectors::mcols(reads)$seq) != 0
+        if(verbose){cat(length(reads) - sum(lSel), "reads filtered out for empty sequence field")}
+        reads[lSel]
+    }else if(methods::is(reads, class2 = "GAlignmentPairs")){
+        lSel <- BiocGenerics::width(S4Vectors::mcols(reads@first)$seq) != 0 &
+            BiocGenerics::width(S4Vectors::mcols(reads@last)$seq) != 0
+        if(verbose){cat(length(reads) - sum(lSel), "reads filtered out for empty sequence field")}
+        reads[lSel]
+    }
+}
+
 # tx_add_XXX() #################################################################
 
 # Mark motif location in tx_DT as TRUE, it can be set for specific nuc positions or all

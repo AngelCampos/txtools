@@ -103,6 +103,7 @@ tx_load_bam <- function(file, pairedEnd, yieldSize = 100000,
     }) %>% do.call(what = c)
     close(BAMFILE)
     if(verbose){close(pb)}
+    if(loadSeq){reads <- hlp_cleanBam_emptySeq(reads, verbose)}
     bamData <- list(GAligns = reads,
                     dumpedAmbigPairs = GenomicAlignments::getDumpedAlignments())
     if(verbose){cat(" \n")}
