@@ -3,7 +3,7 @@
 
 <!-- badges: start -->
 
-[![](https://img.shields.io/badge/devel%20version-0.0.5-blue.svg)](https://github.com/AngelCampos/txtools)
+[![](https://img.shields.io/badge/devel%20version-0.0.6-blue.svg)](https://github.com/AngelCampos/txtools)
 <!-- badges: end -->
 
 ## Description
@@ -16,6 +16,18 @@ and nucleotide frequency. Attractive plotting is also readily available
 to visualize data.
 
 ![mainFunctions](man/figures/readme_1.png)
+
+## Installation
+
+You can install the development version from
+[GitHub](https://github.com/AngelCampos/txtools) typing in the following
+commands in the R console:
+
+``` r
+if (!requireNamespace("remotes", quietly = TRUE))
+    install.packages("remotes")
+devtools::install_github("AngelCampos/txtools", build_vignettes = TRUE)
+```
 
 ## Quick example
 
@@ -38,7 +50,7 @@ BED_file <- tx_dm3_geneAnnot()
 FASTA_file <- dm3_chr4()
 PE_BAM_file <- untreated3_chr4()
 
-# Loading gene annotation, genome, and alignments into R.
+# Loading D. melanogaster gene annotation, genome, and alignments into R.
 dm3_geneAnnot <- tx_load_bed(BED_file)
 dm3_genome <- tx_load_genome(FASTA_file)
 dm3_PEreads <- tx_load_bam(file = PE_BAM_file, pairedEnd = T, loadSeq = T)
@@ -104,29 +116,17 @@ tx_plot_nucFreq(DT, gene = "NM_079901", txRange = window_around(3803, 15))
 
 ![](man/figures/README-plotNucFreq-1.png)<!-- -->
 
-## Installation
-
-You can install the development version from
-[GitHub](https://github.com/AngelCampos/txtools) typing in the following
-commands in the R console:
-
-``` r
-if (!requireNamespace("remotes", quietly = TRUE))
-    install.packages("remotes")
-devtools::install_github("AngelCampos/txtools", build_vignettes = TRUE)
-```
-
 ## Further documentation
 
 ## Current limitations:
 
-  - Insertions: txtools is not able to deal with insertions. This is
+-   Insertions: txtools is not able to deal with insertions. This is
     mainly because insertions are not part of the original
     trasncriptomic nor genomic reference space as they would alter the
     length of the gene model. This could be an added feature in future
     versions but is not a priority.
 
-  - Potentially long processing times: Loading big BAM files into R
+-   Potentially long processing times: Loading big BAM files into R
     commonly requires a lot of time, having this in mind txtools
     provides a progress bar to keep users informed about the loading
     status. Most importantly, depending on the ammount of both loaded
@@ -138,6 +138,6 @@ devtools::install_github("AngelCampos/txtools", build_vignettes = TRUE)
 
 ## Additional notes:
 
-  - As many R packages meant for high-throughput data analysis and
+-   As many R packages meant for high-throughput data analysis and
     manipulation, using ***txtools*** may require high ammounts of RAM
     memory, depending mainly on the size of BAM files being processed.

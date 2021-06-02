@@ -29,8 +29,19 @@ visualize data.
 
 ![mainFunctions](man/figures/readme_1.png)
 
-## Quick example
+## Installation
 
+You can install the development version from
+[GitHub](https://github.com/AngelCampos/txtools) typing in the following 
+commands in the R console:
+
+```{r, installation, eval = F}
+if (!requireNamespace("remotes", quietly = TRUE))
+    install.packages("remotes")
+devtools::install_github("AngelCampos/txtools", build_vignettes = TRUE)
+```
+
+## Quick example
 In this small example we will use the 'Pasilla' experiment data (from its own package)
 which contains a BAM file for the paired-end alignments of a *D. melanogaster* 
 RNA-seq experiment on chromosome 4, along with a FASTA file comprising the 
@@ -50,7 +61,7 @@ BED_file <- tx_dm3_geneAnnot()
 FASTA_file <- dm3_chr4()
 PE_BAM_file <- untreated3_chr4()
 
-# Loading gene annotation, genome, and alignments into R.
+# Loading D. melanogaster gene annotation, genome, and alignments into R.
 dm3_geneAnnot <- tx_load_bed(BED_file)
 dm3_genome <- tx_load_genome(FASTA_file)
 dm3_PEreads <- tx_load_bam(file = PE_BAM_file, pairedEnd = T, loadSeq = T)
@@ -98,18 +109,6 @@ function we can visualize that data in the DT at an specific location.
 
 ```{r, plotNucFreq, fig.width = 6, fig.height = 4}
 tx_plot_nucFreq(DT, gene = "NM_079901", txRange = window_around(3803, 15))
-```
-
-## Installation
-
-You can install the development version from
-[GitHub](https://github.com/AngelCampos/txtools) typing in the following 
-commands in the R console:
-
-```{r, installation, eval = F}
-if (!requireNamespace("remotes", quietly = TRUE))
-    install.packages("remotes")
-devtools::install_github("AngelCampos/txtools", build_vignettes = TRUE)
 ```
 
 ## Further documentation
