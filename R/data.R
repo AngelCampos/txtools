@@ -7,7 +7,7 @@
 #'
 #' @format Named character vector
 #'
-#' @source Adapted from \code{\link[Biostrings]{IUPAC_CODE_MAP}}
+#' @source Adapted from Biostrings object \code{\link[Biostrings]{IUPAC_CODE_MAP}}
 "IUPAC_CODE_MAP_extended"
 
 #' IUPAC ambiguity alphabet (2nc)

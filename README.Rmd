@@ -64,7 +64,7 @@ PE_BAM_file <- untreated3_chr4()
 # Loading D. melanogaster gene annotation, genome, and alignments into R.
 dm3_geneAnnot <- tx_load_bed(BED_file)
 dm3_genome <- tx_load_genome(FASTA_file)
-dm3_PEreads <- tx_load_bam(file = PE_BAM_file, pairedEnd = T, loadSeq = T)
+dm3_PEreads <- tx_load_bam(file = PE_BAM_file, pairedEnd = TRUE, loadSeq = TRUE)
 ```
 
 First, we process the alignments to their transcriptomic versions using the

@@ -36,9 +36,6 @@ NULL
 #' See \code{\link[Rsamtools]{ScanBamParam}}
 #' @param loadSeq logical. Set to TRUE for loading the sequences contained
 #' in the BAM file
-#' @param recoverDumpedAligns logical. If set to TRUE ambiguous alignments
-#' will be retrieved and output along correctly paired reads. More info:
-#' ?GenomicAlignments::readGAlignments
 #' @param verbose logical. Set to FALSE to show less information
 #'
 #' @return GRanges
@@ -52,8 +49,7 @@ NULL
 #' hg19_bam <- tx_load_bam(bamFile, pairedEnd = TRUE, loadSeq = TRUE, verbose = TRUE)
 #' summary(hg19_bam)
 tx_load_bam <- function(file, pairedEnd, yieldSize = 100000,
-                        scanFlag = "default", loadSeq = FALSE,
-                        recoverDumpedAligns = FALSE, verbose = TRUE){
+                        scanFlag = "default", loadSeq = FALSE, verbose = TRUE){
     if(!is.logical(pairedEnd)){stop("Argument 'pairedEnd' must be of class logical")}
     if(!is.logical(loadSeq)){stop("Argument 'loadSeq' must be of class logical")}
     if(verbose){cat("Reading number of records in file \n")}
@@ -104,24 +100,17 @@ tx_load_bam <- function(file, pairedEnd, yieldSize = 100000,
     close(BAMFILE)
     if(verbose){close(pb)}
     if(loadSeq){reads <- hlp_cleanBam_emptySeq(reads, verbose)}
-    bamData <- list(GAligns = reads,
-                    dumpedAmbigPairs = GenomicAlignments::getDumpedAlignments())
     if(verbose){cat(" \n")}
     if(verbose){
-        cat(length(bamData$GAligns), "Reads succesfully loaded \n")
-        cat("Dumped ambiguous reads:", length(bamData$dumpedAmbigPairs), "\n")
+        cat(length(reads), "Reads succesfully loaded \n")
+        cat("Dumped ambiguous reads:", GenomicAlignments::countDumpedAlignments(), "\n")
     }
-    if(recoverDumpedAligns == F){
-        if(length(bamData$dumpedAmbigPairs) > 0){
-            warning(length(bamData$dumpedAmbigPairs), " dumped ambiguous reads. ",
-                    "Use 'GenomicAlignments::getDumpedAlignments()' to retrieve ",
-                    "them from the dump environment, or set the ",
-                    "'recoverDumpedAligns' argument to TRUE")
-        }
-        return(reads)
-    }else{
-        return(bamData)
+    if(GenomicAlignments::countDumpedAlignments() > 0){
+        warning(GenomicAlignments::countDumpedAlignments(), " dumped ambiguous reads. ",
+                "Use 'getDumpedAlignments()' to retrieve ",
+                "them from the dump environment.")
     }
+    return(reads)
 }
 
 #' Load gene models from bed-12 and bed-6 files
@@ -163,32 +152,7 @@ tx_load_genome <- function(fastaFile){
     Biostrings::readDNAStringSet(fastaFile)
 }
 
-# Manipulating GenomicRanges ###################################################
-
-#' Extending GRanges 5' and 3' UTR blocks
-#'
-#' A function that extends the 5' and/or 3' UTR regions of GRanges including the
-#' 'blocks' column, which defines the exon structure of a transcript.
-#' As those loaded by ´tx_load_bed()´.
-#'
-#' @param GR GRanges GRanges containing a blocks
-#' @param ext_5p integer Number of bp for the 5' UTR blocks to be extended
-#' @param ext_3p integer Number of bp for the 3' UTR blocks to be extended
-#'
-#' @return GRanges
-#' @export
-#'
-#' @examples
-tx_extend_UTR <- function(GR, ext_5p = 0, ext_3p = 0){
-    if(is.null(GR$blocks)){
-        stop("GR does not containg 'blocks' meta column.")
-    }
-    GR_out <- plyranges::stretch(plyranges::anchor_5p(GR), ext_3p)
-    GR_out <- plyranges::stretch(plyranges::anchor_3p(GR_out), ext_5p)
-    GR_out$blocks <- stretchBlocks_3p(GR_out$blocks, ext_3p, GenomicRanges::strand(GR))
-    GR_out$blocks <- stretchBlocks_5p(GR_out$blocks, ext_5p, GenomicRanges::strand(GR))
-    return(GR_out)
-}
+# Assignment of GenomicAlignments to genes #####################################
 
 #' Transcriptomic reads convertion
 #'
@@ -240,12 +204,12 @@ tx_reads <- function(reads, geneAnnot, minReads = 50, withSeq = FALSE, verbose =
     geneAnnot <- geneAnnot[which(geneAnnot$name %in% names(split_i))]
     if(length(geneAnnot) > 0){
         if(verbose){
-            cat(length(unique(unlist(split_i))), "reads overlap",
+            cat(length(unique(unlist(split_i))), "alignments overlap",
                 length(geneAnnot), "gene models \n")
-            cat("Filtering reads by gene model... \n")
+            cat("Assigning alignments to gene model... \n")
             if(withSeq){
                 cat("Processing sequences. This may take several minutes",
-                "depending on geneAnnot size ... \n")
+                    "depending on geneAnnot size ... \n")
             }
         }
     }else{stop("There where no reads, or not enough reads overlapping the gene models. \n")}
@@ -280,7 +244,45 @@ tx_reads <- function(reads, geneAnnot, minReads = 50, withSeq = FALSE, verbose =
         cat("Output contains:", lapply(OUT, names) %>% unlist %>% unique %>% length,
             "unique reads in", length(OUT), "gene models \n")
     }
+    # Dump not assigned alignments into dump environment
+    if(length(setdiff(names(reads), unique(unlist(lapply(OUT, names))))) > 1L){
+        warning("Some alignments were not assigned to any gene, you can ",
+                "retrieve them using the tx_getUnassignedAlignments() function.")
+        hlp_dump_notAssigned(reads, OUT)
+    }
     return(OUT)
+}
+
+# Retrieve dumped alignments
+tx_getUnassignedAlignments <- function(){
+    do.call(c, unname(mget("notAssignedAlignments", envir = .dumpEnvirTxtools())))
+}
+
+# Manipulating GenomicRanges ###################################################
+
+#' Extending GRanges 5' and 3' UTR blocks
+#'
+#' A function that extends the 5' and/or 3' UTR regions of GRanges including the
+#' 'blocks' column, which defines the exon structure of a transcript.
+#' As those loaded by ´tx_load_bed()´.
+#'
+#' @param GR GRanges GRanges containing a blocks
+#' @param ext_5p integer Number of bp for the 5' UTR blocks to be extended
+#' @param ext_3p integer Number of bp for the 3' UTR blocks to be extended
+#'
+#' @return GRanges
+#' @export
+#'
+#' @examples
+tx_extend_UTR <- function(GR, ext_5p = 0, ext_3p = 0){
+    if(is.null(GR$blocks)){
+        stop("GR does not containg 'blocks' meta column.")
+    }
+    GR_out <- plyranges::stretch(plyranges::anchor_5p(GR), ext_3p)
+    GR_out <- plyranges::stretch(plyranges::anchor_3p(GR_out), ext_5p)
+    GR_out$blocks <- stretchBlocks_3p(GR_out$blocks, ext_3p, GenomicRanges::strand(GR))
+    GR_out$blocks <- stretchBlocks_5p(GR_out$blocks, ext_5p, GenomicRanges::strand(GR))
+    return(GR_out)
 }
 
 # Manipulate GRangesList #######################################################

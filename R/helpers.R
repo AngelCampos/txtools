@@ -613,6 +613,18 @@ hlp_cleanBam_emptySeq <- function(reads, verbose){
     }
 }
 
+.dump_envir_txtools <- new.env(parent=emptyenv())
+.dumpEnvirTxtools <- function() .dump_envir_txtools
+
+# Dump not assigned alignments to dump environment
+# reads <- dm3_PEreads
+# OUT <- reads_SE
+hlp_dump_notAssigned <- function(reads, OUT){
+    assign("notAssignedAlignments",
+           reads[!(names(reads) %in% unique(unlist(lapply(OUT, names))))],
+           envir = .dumpEnvirTxtools())
+}
+
 # tx_add_XXX() #################################################################
 
 # Mark motif location in tx_DT as TRUE, it can be set for specific nuc positions or all
@@ -662,9 +674,6 @@ hlp_add_siteAnnotation <- function (x, GRanges, colName){
 
 # Vectorized intersect
 vIntersect <- Vectorize(intersect, c("x", "y"), SIMPLIFY = F)
-
-# Pipe
-`%>%` <- magrittr::`%>%`
 
 # Object size
 oSize <- function(x){
