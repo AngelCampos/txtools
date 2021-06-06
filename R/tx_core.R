@@ -173,6 +173,7 @@ tx_load_genome <- function(fastaFile){
 #' capability not available in Windows OS.
 #'
 #' @aliases tx_reads_mc
+#' @aliases tx_flushUnassigned
 #'
 #' @return GRanges
 #' @export
@@ -256,7 +257,8 @@ tx_reads <- function(reads, geneAnnot, minReads = 50, withSeq = FALSE, verbose =
 
 # Retrieve dumped alignments
 tx_getUnassignedAlignments <- function(){
-    do.call(c, unname(mget("notAssignedAlignments", envir = .dumpEnvirTxtools())))
+    objnames <- ls(envir = .dumpEnvirTxtools())
+    do.call(c, unname(mget(objnames, envir = .dumpEnvirTxtools())))
 }
 
 # Manipulating GenomicRanges ###################################################

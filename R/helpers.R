@@ -59,7 +59,7 @@ hlpr_splitReadsByGenes <- function(reads, bedR, overlapType, minReads){
     split_2 <- split_2[inBoth]
     split_i <- vIntersect(split_1, split_2)
     names(split_i) <- names(split_1)
-    split_i <- split_i[sapply(split_i, length) %>%
+    split_i <- split_i[unlist(lapply(split_i, length)) %>%
                            magrittr::is_weakly_greater_than(minReads) %>% which]
     return(split_i)
 }
@@ -623,6 +623,12 @@ hlp_dump_notAssigned <- function(reads, OUT){
     assign("notAssignedAlignments",
            reads[!(names(reads) %in% unique(unlist(lapply(OUT, names))))],
            envir = .dumpEnvirTxtools())
+}
+
+# Flush unassigned
+tx_flushUnassigned <- function(){
+    objnames <- ls(envir = .dumpEnvirTxtools())
+    rm(list = objnames, envir = .dumpEnvirTxtools())
 }
 
 # tx_add_XXX() #################################################################

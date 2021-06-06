@@ -3,6 +3,7 @@
 \name{tx_reads}
 \alias{tx_reads}
 \alias{tx_reads_mc}
+\alias{tx_flushUnassigned}
 \title{Transcriptomic reads convertion}
 \usage{
 tx_reads(
@@ -26,7 +27,7 @@ object should contain sequences.}
 
 \item{verbose}{logical. Set to FALSE to show less information.}
 
-\item{nCores}{integer. Number of cores to use to run function. Multicore
+\item{nCores}{integer. Number of cores to use to run function. Multi-core
 capability not available in Windows OS.}
 }
 \value{
