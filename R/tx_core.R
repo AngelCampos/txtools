@@ -161,7 +161,7 @@ tx_load_genome <- function(fastaFile){
 #' It also stitches together paired-end aligned reads into a single sequence
 #' in which dots '.' separate Read1 and Read2 by their corresponding insert.
 #'
-#' To retieve unassigned alignments use the function tx_getUnassignedAlignments()
+#' To retrieve unassigned alignments use the function tx_getUnassignedAlignments()
 #'
 #' @param reads GAlignments or GAlignmentPairs. Genomic alignments to be processed
 #' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed()
@@ -180,6 +180,7 @@ tx_load_genome <- function(fastaFile){
 tx_reads <- function(reads, geneAnnot, minReads = 50, withSeq = FALSE, verbose = TRUE,
                      nCores = 1){
     # Checks
+    tx_flushUnassigned()
     check_mc_windows(nCores)
     check_integerGreaterThanZero_arg(minReads, "minReads")
     check_GA_reads_compatibility(reads, geneAnnot)
@@ -372,6 +373,7 @@ tx_sample_GRList <- function(x, p, nCores = 1){
 #' @examples
 tx_makeDT_coverage <- function(x, geneAnnot, genome = NULL, fullDT = FALSE,
                                nCores = 1){
+    tx_flushUnassigned()
     check_mc_windows(nCores)
     check_integerGreaterThanZero_arg(nCores, "nCores")
     OUT <- hlp_cbind2Tabs(hlp_genCoorTab_mc(x, geneAnnot, nCores),
@@ -437,6 +439,7 @@ tx_makeDT_coverage <- function(x, geneAnnot, genome = NULL, fullDT = FALSE,
 tx_makeDT_nucFreq <- function(x, geneAnnot, genome = NULL,
                               simplify_IUPAC = "splitForceInt", fullDT = FALSE,
                               nCores = 1){
+    tx_flushUnassigned()
     check_mc_windows(nCores)
     check_integerGreaterThanZero_arg(nCores, "nCores")
     check_GR_has_seq(x, "x")
@@ -506,6 +509,7 @@ tx_makeDT_nucFreq <- function(x, geneAnnot, genome = NULL,
 tx_makeDT_covNucFreq <- function(x, geneAnnot, genome = NULL,
                                  simplify_IUPAC = "splitForceInt", fullDT = FALSE,
                                  nCores = 1){
+    tx_flushUnassigned()
     check_GR_has_seq(x, "x")
     check_mc_windows(nCores)
     check_integerGreaterThanZero_arg(nCores, "nCores")
