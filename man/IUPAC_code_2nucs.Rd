@@ -11,7 +11,7 @@ Character vector
 IUPAC_code_2nucs
 }
 \description{
-IUPAC nucleotide ambiguity alphabet for 2 combinations of two nucleotides,
+IUPAC nucleotide ambiguity alphabet for combinations of two nucleotides,
 for use mostly by the txtools functions that generate datatables with
 nucleotide frequency
 }
