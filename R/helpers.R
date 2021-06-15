@@ -938,3 +938,29 @@ hid_aggregate_DTlist <- function (DTL1, DTL2, colsToAdd, keepAll = TRUE){
         tmpDTL
     }
 }
+
+indexAlignmentsByGenomicRegion <- function(GAlignments, geneAnnot, overlapType = "within"){
+    splitByChr <- split(geneAnnot, seqnames(geneAnnot))
+    chrLen <- lapply(splitByChr, function(x) max(end(x))) %>% unlist()
+    exonic <- unlist(exonGRanges(geneAnnot))
+    allChr_GR <- rbind(data.frame(seqnames = names(chrLen),
+                                  start = 1 ,
+                                  end = chrLen,
+                                  strand = "+"),
+                       data.frame(seqnames = names(chrLen),
+                                  start = 1 ,
+                                  end = chrLen,
+                                  strand = "-")) %>% plyranges::as_granges()
+    notExon <- plyranges::setdiff_ranges_directed(allChr_GR, exonic)
+    tmpGR <- GenomicRanges::findOverlaps(notExon, geneAnnot, type = overlapType)@from
+    intronic <- notExon[tmpGR]
+    intergen <- notExon[-tmpGR]
+    if(class(GAlignments) == "GAlignmentPairs"){
+        ovExonic <- union(GenomicRanges::findOverlaps(
+            GAlignments@first, exonic, type = overlapType)@from,
+                          GenomicRanges::findOverlaps(
+                              GAlignments@last, GenomicRanges::invertStrand(exonic), type = overlapType)@from)
+        ovIntron <- union(GenomicRanges::findOverlaps(
+            GAlignments@first, intronic, type = overlapType)@from,
+                          GenomicRanges::findOverlaps(
+                              GAlignments@last, GenomicRanges::invertStrand(intronic), type = ove
