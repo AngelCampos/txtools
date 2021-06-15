@@ -2,6 +2,7 @@
 library(testthat)
 library(txtools)
 library(GenomicAlignments)
+library(magrittr)
 
 # Loading demo data
 bamFile <- system.file("extdata", "example_hg19.bam", package = "txtools")
@@ -55,7 +56,6 @@ testthat::expect_equal(as.character(class(reads_PE[[1]])), "GRanges")
 # tx_plot_staEndCov(DT, gene = "NM_001258475", txRange = window_around(200, 10))
 
 # Test sk1 yeast data
-
 assigned_aligns <- tx_reads(bam_sk1, gA_sk1, minReads = 1, withSeq = TRUE, verbose = FALSE) %>%
     suppressWarnings()
 
@@ -86,14 +86,27 @@ anyRemain <- lapply(names(byGenes), function(iGene){
 }) %>% unlist()
 testthat::expect_equivalent(anyRemain, integer())
 
-# Would be useful to know which part of the read falls outside of the exon structure
+# Check that sequences from reads that traverse exons are correctly reconstructed.
+reads_sk1 <- tx_reads(bam_sk1, gA_sk1, minReads = 1, verbose = F) %>% suppressWarnings()
+exongGRList <- exonGRanges(gA_sk1)
+splicing_check <- lapply(1:length(gA_sk1), function(i){
+    iGene <- gA_sk1$name[i]
+    ovl <- findOverlaps(bam_sk1[names(reads_sk1[[iGene]])]@first, exongGRList[[iGene]], type = "any")
+    ovl <- split(ovl@to, ovl@from) %>% lapply(length)
+    ovIndex_1 <- names(ovl)[ovl %>% unlist() %>% is_greater_than(1)] %>% as.numeric
+    ovl <- findOverlaps(bam_sk1[names(reads_sk1[[iGene]])]@last, invertStrand(exongGRList[[iGene]]), type = "any")
+    ovl <- split(ovl@to, ovl@from) %>% lapply(length)
+    ovIndex_2 <- names(ovl)[ovl %>% unlist() %>% is_greater_than(1)] %>% as.numeric
+    bam_trExons <- bam_sk1[names(reads_sk1[[iGene]])][union(ovIndex_1, ovIndex_2)]
+    DT <- tx_reads(bam_trExons, gA_sk1, withSeq = T, minReads = 1, verbose = F) %>%
+        suppressWarnings() %>%
+        tx_makeDT_covNucFreq(geneAnnot = gA_sk1, genome = genome_sk1) %>%
+        tx_add_diffNucToRef()
+    sum(DT$diffToRef)
+}) %>% unlist
+expect_equivalent(splicing_check, c(13, 0)) # One of the genes has some mismatches, nothing to worry about.
 
-# # Flush unassigned
-#
-# tmpDT <- tx_makeDT_covNucFreq(assigned_aligns, gA_sk1, genome = genome)
-# tx_plot_nucFreq(tmpDT, "YDR424C", removeInsert = T, bar_border = F)
-# tx_plot_staEndCov(tmpDT, "YDR424C")
-# tx_plot_nucFreq(tmpDT, "YER074W-A", removeInsert = T, bar_border = F)
-# tx_plot_staEndCov(tmpDT, "YER074W-A")
-#
-#
+# # Would be useful to know which part of the read falls outside of the exon structure
+# GA_index <- indexAlignmentsByGenomicRegion(bam_sk1, tx_extend_UTR(gA_sk1, 20, 20))
+# GA_index %>% lapply(length) %>% unlist
+# GA_index <- indexAlignmentsByGenomicRegion(bam_sk1, gA_sk1)
