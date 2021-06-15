@@ -963,4 +963,20 @@ indexAlignmentsByGenomicRegion <- function(GAlignments, geneAnnot, overlapType =
         ovIntron <- union(GenomicRanges::findOverlaps(
             GAlignments@first, intronic, type = overlapType)@from,
                           GenomicRanges::findOverlaps(
-                              GAlignments@last, GenomicRanges::invertStrand(intronic), type = ove
+                              GAlignments@last, GenomicRanges::invertStrand(intronic), type = overlapType)@from)
+        ovInterg <- union(GenomicRanges::findOverlaps(
+            GAlignments@first, intergen, type = overlapType)@from,
+                          GenomicRanges::findOverlaps(
+                              GAlignments@last, GenomicRanges::invertStrand(intergen), type = overlapType)@from)
+        ovRest <- setdiff(1:length(GAlignments), union(union(ovExonic, ovIntron), ovInterg))
+    }else if(class(GAlignments) == "GAlignments"){
+        ovExonic <- GenomicRanges::findOverlaps(GAlignments, exonic, type = overlapType)@from
+        ovIntron <- GenomicRanges::findOverlaps(GAlignments, intronic, type = overlapType)@from
+        ovInterg <- GenomicRanges::findOverlaps(GAlignments, intergen, type = overlapType)@from
+        ovRest <- setdiff(1:length(GAlignments), union(union(ovExonic, ovIntron), ovInterg))
+    }
+    list(exonic = ovExonic,
+         intronic = ovIntron,
+         intergenic = ovInterg,
+         rest = ovRest) %>% return()
+}
