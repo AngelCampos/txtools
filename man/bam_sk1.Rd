@@ -11,6 +11,6 @@ GAlignmentPairs
 bam_sk1
 }
 \description{
-Alignment data extracted from the Schwartz Cell 2013 of the yeast strain Sk1.
+Paired-end alignment data extracted from the Schwartz et al., 2013, Cell Sk1 yeast strain dataset.
 }
 \keyword{datasets}

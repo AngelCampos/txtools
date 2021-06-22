@@ -31,7 +31,7 @@
 
 #' Genomic Alignments example - Sk1 yeast
 #'
-#' Paired-end alignment data extracted from the Schwartz et al., 2013, Cell Sk1 yeast strain dataset.
+#' Paired-end alignment data extracted from the Schwartz et al., 2013, Sk1 yeast strain dataset.
 #'
 #' @format GAlignmentPairs
 #'

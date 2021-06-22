@@ -226,9 +226,9 @@ hlpr_ReadsInGene_SingleEnd <- function(reads, iGene, geneAnnot, split_i,
     }else if(iStrand == "-"){
         tReads <- plyranges::as_granges(
             data.frame(start    = match(GenomicRanges::end(iReads_r1[pass]), iExon),
-                             end      = match(GenomicRanges::start(iReads_r1[pass]), iExon),
-                             strand   = GenomicRanges::strand(iReads_r1[pass]),
-                             seqnames = iGene))
+                       end      = match(GenomicRanges::start(iReads_r1[pass]), iExon),
+                       strand   = GenomicRanges::strand(iReads_r1[pass]),
+                       seqnames = iGene))
     }
     names(tReads) <- names(reads)[selReadsbyPair][pass]
     GenomeInfoDb::seqlengths(tReads) <- length(iExon)
@@ -889,7 +889,7 @@ check_BAM_has_seq <- function(x){
     pairedEnd <- switch(class(x), GAlignmentPairs = TRUE, GAlignments = FALSE)
     if(pairedEnd){
         if(!all(c("seq" %in% names(GenomicRanges::mcols(x@first)),
-              "seq" %in% names(GenomicRanges::mcols(x@last))))){
+                  "seq" %in% names(GenomicRanges::mcols(x@last))))){
             stop("Input GAlignmentPairs object has no 'seq' metacolumn for either
                  first or last reads")
         }
@@ -940,8 +940,8 @@ hid_aggregate_DTlist <- function (DTL1, DTL2, colsToAdd, keepAll = TRUE){
 }
 
 indexAlignmentsByGenomicRegion <- function(GAlignments, geneAnnot, overlapType = "within"){
-    splitByChr <- split(geneAnnot, seqnames(geneAnnot))
-    chrLen <- lapply(splitByChr, function(x) max(end(x))) %>% unlist()
+    splitByChr <- split(geneAnnot, GenomicRanges::seqnames(geneAnnot))
+    chrLen <- lapply(splitByChr, function(x) max(GenomicRanges::end(x))) %>% unlist()
     exonic <- unlist(exonGRanges(geneAnnot))
     allChr_GR <- rbind(data.frame(seqnames = names(chrLen),
                                   start = 1 ,
@@ -958,16 +958,16 @@ indexAlignmentsByGenomicRegion <- function(GAlignments, geneAnnot, overlapType =
     if(class(GAlignments) == "GAlignmentPairs"){
         ovExonic <- union(GenomicRanges::findOverlaps(
             GAlignments@first, exonic, type = overlapType)@from,
-                          GenomicRanges::findOverlaps(
-                              GAlignments@last, GenomicRanges::invertStrand(exonic), type = overlapType)@from)
+            GenomicRanges::findOverlaps(
+                GAlignments@last, GenomicRanges::invertStrand(exonic), type = overlapType)@from)
         ovIntron <- union(GenomicRanges::findOverlaps(
             GAlignments@first, intronic, type = overlapType)@from,
-                          GenomicRanges::findOverlaps(
-                              GAlignments@last, GenomicRanges::invertStrand(intronic), type = overlapType)@from)
+            GenomicRanges::findOverlaps(
+                GAlignments@last, GenomicRanges::invertStrand(intronic), type = overlapType)@from)
         ovInterg <- union(GenomicRanges::findOverlaps(
             GAlignments@first, intergen, type = overlapType)@from,
-                          GenomicRanges::findOverlaps(
-                              GAlignments@last, GenomicRanges::invertStrand(intergen), type = overlapType)@from)
+            GenomicRanges::findOverlaps(
+                GAlignments@last, GenomicRanges::invertStrand(intergen), type = overlapType)@from)
         ovRest <- setdiff(1:length(GAlignments), union(union(ovExonic, ovIntron), ovInterg))
     }else if(class(GAlignments) == "GAlignments"){
         ovExonic <- GenomicRanges::findOverlaps(GAlignments, exonic, type = overlapType)@from
