@@ -237,6 +237,7 @@ hlpr_ReadsInGene_SingleEnd <- function(reads, iGene, geneAnnot, split_i,
         GenomicAlignments::cigar(iReads_r1[pass]), N.regions.removed = T)
     tReads_c <- tReads[which(GenomicRanges::width(tReads) == R1_len)]
     pass <- pass[which(GenomicRanges::width(tReads) == R1_len)]
+    if(length(pass) < minReads){return(GenomicRanges::GRanges())} # No reads Return empty GA
     tReads <- tReads_c
     # Result if no sequence is input or required
     if(withSeq == F){
