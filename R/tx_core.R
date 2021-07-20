@@ -152,6 +152,19 @@ tx_load_genome <- function(fastaFile){
     Biostrings::readDNAStringSet(fastaFile)
 }
 
+#' Loading RDS files into data.tables
+#'
+#' @param file
+#'
+#' @return data.table
+#' @export
+#'
+#' @examples
+tx_load_rdsDT <- function(file){
+    require(data.table)
+    data.table(readRDS(file))
+}
+
 # Assignment of GenomicAlignments to genes #####################################
 
 #' Transcriptomic reads convertion
@@ -659,6 +672,7 @@ tx_complete_DT <- function(DT, geneAnnot, genome = NULL, nCores = 1){
 #'
 #' @examples
 tx_add_refSeqDT <- function(DT, genome, geneAnnot, nCores = 1){
+    DT <- check_DT(DT) %>% hlp_removeColumnIfPresent("refSeq")
     check_mc_windows(nCores)
     check_integerGreaterThanZero_arg(nCores, "nCores")
     DT <- check_DT(DT)
@@ -686,7 +700,7 @@ tx_add_refSeqDT <- function(DT, genome, geneAnnot, nCores = 1){
 #'
 #' @examples
 tx_add_diffNucToRef <- function(DT){
-    DT <- check_DT(DT)
+    DT <- check_DT(DT) %>% hlp_removeColumnIfPresent("diffToRef")
     selNucs <- setdiff(intersect(txtools::IUPAC_code_2nucs, names(DT)), c(".", "N"))
     tmp <- DT[, selNucs, with = FALSE]
     OUT <- rep(NA, nrow(DT))
@@ -711,7 +725,7 @@ tx_add_diffNucToRef <- function(DT){
 #'
 #' @examples
 tx_add_nucTotal <- function(DT){
-    DT <- check_DT(DT)
+    DT <- check_DT(DT) %>% hlp_removeColumnIfPresent("nucTotal")
     selNucs <- setdiff(intersect(txtools::IUPAC_code_2nucs, names(DT)), c(".", "N"))
     out <- rowSums(DT[, selNucs, with = FALSE])
     tibble::add_column(DT, nucTotal = out)
@@ -734,7 +748,7 @@ tx_add_nucTotal <- function(DT){
 #'
 #' @examples
 tx_add_diffNucToRefRatio <- function(DT, addDiffandTotalCols = FALSE){
-    DT <- check_DT(DT)
+    DT <- check_DT(DT) %>% hlp_removeColumnIfPresent("diffToRefRatio")
     tmpDT <- tx_add_diffNucToRef(DT) %>% tx_add_nucTotal()
     tmp <- round(tmpDT$diffToRef / tmpDT$nucTotal, 6)
     if(addDiffandTotalCols){DT <- tmpDT}
@@ -748,13 +762,45 @@ tx_add_diffNucToRefRatio <- function(DT, addDiffandTotalCols = FALSE){
 #' @param DT data.table. Output of txtools data.tables with coverage information
 #' as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT}}
 #' functions
+#' @param minCov numeric. Minimum coverage required to output ratio. If coverage
+#' is less then an NA is output in that position.
 #'
 #' @return data.table
 #' @export
 #'
-tx_add_startRatio <- function(DT){
-    DT <- check_DT(DT)
-    tibble::add_column(DT, startRatio = DT$start_5p / DT$cov, .after = "start_5p")
+tx_add_startRatio <- function(DT, minCov){
+    DT <- check_DT(DT) %>% hlp_removeColumnIfPresent("startRatio")
+    tmp <- (DT$start_5p) / (DT$cov)
+    tmp[DT$cov < minCov] <- NA
+    DTL <- tibble::add_column(DT, startRatio = tmp)
+}
+
+#' Add starts to coverage ratio 1 bp downstream
+#'
+#' Add a column to DT of the read-starts to coverage ratio 1 shifted 1 base-pair
+#' downstream. This means the last measurement is always an NA.
+#'
+#'
+#' @param DT data.table. Output of txtools data.tables with coverage information
+#' as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT}}
+#' functions
+#' @param minCov numeric. Minimum coverage required to output ratio. If coverage
+#' is less then an NA is output in that position.
+#'
+#' @return data.table
+#' @export
+#'
+#' @examples
+tx_add_startRatio1bpDS <- function(DT, minCov = 50){
+    DT <- check_DT(DT) %>% hlp_removeColumnIfPresent("startRatio1bpDS")
+    tmp <- (DT$start_5p) / (DT$cov)
+    tmp[DT$cov < minCov] <- NA
+    DTL <- tibble::add_column(DT, startRatio1bpDS = tmp) %>% txtools::tx_split_DT()
+    DT <- lapply(DTL, function(DT){
+        DT$startRatio1bpDS <- c(utils::tail(DT$startRatio1bpDS, -1), NA)
+        DT
+    }) %>% txtools::tx_merge_DT()
+    return(DT)
 }
 
 #' Add ends to coverage ratio
@@ -769,7 +815,7 @@ tx_add_startRatio <- function(DT){
 #' @export
 #'
 tx_add_endRatio <- function(DT){
-    DT <- check_DT(DT)
+    DT <- check_DT(DT) %>% hlp_removeColumnIfPresent("endRatio")
     tibble::add_column(DT, endRatio = DT$end_3p / DT$cov, .after = "end_3p")
 }
 
@@ -790,7 +836,7 @@ tx_add_endRatio <- function(DT){
 #' @author M.A. Garcia-Campos
 #' @examples
 tx_add_pos <- function(DT, sep = ":", check_uniq = T){
-    DT <- check_DT(DT)
+    DT <- check_DT(DT) %>% hlp_removeColumnIfPresent("pos")
     pos <- paste(DT$gene, DT$txcoor, sep = sep)
     if(check_uniq){
         if(!all(!duplicated(pos))){
@@ -822,7 +868,7 @@ tx_add_pos <- function(DT, sep = ":", check_uniq = T){
 tx_add_siteAnnotation <- function (DT, GRanges, colName, nCores = 1){
     check_mc_windows(nCores)
     check_integerGreaterThanZero_arg(nCores, "nCores")
-    DT <- check_DT(DT)
+    DT <- check_DT(DT) %>% hlp_removeColumnIfPresent(colName)
     if(!all(GenomicRanges::start(GRanges) == GenomicRanges::end(GRanges))){
         stop("start and ends are not the same in GRanges, only 1-nuc-long sites allowed")
     }
@@ -874,6 +920,7 @@ tx_add_motifPresence <- function (DT, motif, nucPositions = "all",
     if(motifColName == "auto"){
         motifColName <- paste(motif, "motif", paste(nucPositions, collapse = "_"), sep = "_")
     }
+    DT <- hlp_removeColumnIfPresent(DT, motifColName)
     if(nucPositions == "center"){
         if((nchar(motif) %% 2) == 0){
             stop("motif has even number of characters, center cannot be determined.")
@@ -893,7 +940,7 @@ tx_add_motifPresence <- function (DT, motif, nucPositions = "all",
         hlp_add_motifPresence(x, motif, nucPositions, midMot)
     })) %>% magrittr::set_names(c(oNames, motifColName))
 }
-# Other accesory functions #####################################################
+# Other accessory functions #####################################################
 
 #' Centered numeric sequence
 #'

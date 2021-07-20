@@ -753,6 +753,12 @@ hlp_remove_UTR <- function(x, cut_5p, cut_3p){
     return(tmp)
 }
 
+# Removing column if present
+hlp_removeColumnIfPresent <- function(DT, colName){
+    if(colName %in% colnames(DT)){
+        DT[, colnames(DT) != colName, with = FALSE]
+    }else{DT}
+}
 
 # Plotting helper funs #########################################################
 txBrowser_colors <- list(
