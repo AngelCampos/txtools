@@ -565,9 +565,10 @@ tx_merge_DT <- function(DTL){
 #'
 tx_split_DT <- function(DT, dropEmpty = TRUE){
     tmp <- split(DT, f = DT$gene, drop = dropEmpty)
-    lapply(tmp, function(y) {
-        y[order(y$txcoor), ]
-    })
+    # lapply(tmp, function(y) {
+    #     y[order(y$txcoor), ]
+    # })
+    tmp
 }
 
 #' Cutting 5' and 3' ends of data.table using txcoors
@@ -772,7 +773,7 @@ tx_add_startRatio <- function(DT, minCov){
     DT <- check_DT(DT) %>% hlp_removeColumnIfPresent("startRatio")
     tmp <- (DT$start_5p) / (DT$cov)
     tmp[DT$cov < minCov] <- NA
-    DTL <- tibble::add_column(DT, startRatio = tmp)
+    tibble::add_column(DT, startRatio = tmp, .after = "start_5p")
 }
 
 #' Add starts to coverage ratio 1 bp downstream
@@ -814,9 +815,11 @@ tx_add_startRatio1bpDS <- function(DT, minCov = 50){
 #' @return data.table
 #' @export
 #'
-tx_add_endRatio <- function(DT){
+tx_add_endRatio <- function(DT, minCov){
     DT <- check_DT(DT) %>% hlp_removeColumnIfPresent("endRatio")
-    tibble::add_column(DT, endRatio = DT$end_3p / DT$cov, .after = "end_3p")
+    tmp <- (DT$end_3p) / (DT$cov)
+    tmp[DT$cov < minCov] <- NA
+    tibble::add_column(DT, endRatio = tmp, .after = "end_3p")
 }
 
 #' Add position unique names
