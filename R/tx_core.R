@@ -154,15 +154,14 @@ tx_load_genome <- function(fastaFile){
 
 #' Loading RDS files into data.tables
 #'
-#' @param file
+#' @param file File name or path to .rds file to be loaded
 #'
 #' @return data.table
 #' @export
 #'
 #' @examples
 tx_load_rdsDT <- function(file){
-    require(data.table)
-    data.table(readRDS(file))
+    data.table::data.table(readRDS(file))
 }
 
 # Assignment of GenomicAlignments to genes #####################################
@@ -778,8 +777,9 @@ tx_add_startRatio <- function(DT, minCov){
 
 #' Add starts to coverage ratio 1 bp downstream
 #'
-#' Add a column to DT of the read-starts to coverage ratio 1 shifted 1 base-pair
-#' downstream. This means the last measurement is always an NA.
+#' Add a column to DT of the read-starts to coverage ratio, shifted 1 base-pair
+#' downstream. This means that the last measurement in any gene is always an NA
+#' to account that there was no measurement to be shifted.
 #'
 #'
 #' @param DT data.table. Output of txtools data.tables with coverage information
@@ -804,13 +804,15 @@ tx_add_startRatio1bpDS <- function(DT, minCov = 50){
     return(DT)
 }
 
-#' Add ends to coverage ratio
+#' Add ends to coverage ratio 1 bp downstream
 #'
 #' Adds a column to DT of the read-ends to coverage ratio.
 #'
 #' @param DT data.table. Output of txtools data.tables with coverage information
 #' as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT}}
 #' functions
+#' @param minCov numeric. Minimum coverage required to output ratio. If coverage
+#' is less then an NA is output in that position.
 #'
 #' @return data.table
 #' @export
@@ -820,6 +822,56 @@ tx_add_endRatio <- function(DT, minCov){
     tmp <- (DT$end_3p) / (DT$cov)
     tmp[DT$cov < minCov] <- NA
     tibble::add_column(DT, endRatio = tmp, .after = "end_3p")
+}
+
+#' Add ends to coverage ratio 1bp down-stream
+#'
+#' Add a column to DT of the read-ends to coverage ratio, shifted 1 base-pair
+#' downstream. This means that the last measurement in any gene is always an NA
+#' to account that there was no measurement to be shifted.
+#'
+#' @param DT data.table. Output of txtools data.tables with coverage information
+#' as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT}}
+#' functions
+#' @param minCov numeric. Minimum coverage required to output ratio. If coverage
+#' is less then an NA is output in that position.
+#'
+#' @return data.table
+#' @export
+#'
+tx_add_endRatio1bpDS <- function(DT, minCov){
+    DT <- check_DT(DT) %>% hlp_removeColumnIfPresent("endRatio1bpDS")
+    tmp <- (DT$end_3p) / (DT$cov)
+    tmp[DT$cov < minCov] <- NA
+    DTL <- tibble::add_column(DT, endRatio1bpDS = tmp) %>% txtools::tx_split_DT()
+    DT <- lapply(DTL, function(DT){
+        DT$endRatio1bpDS <- c(utils::tail(DT$endRatio1bpDS, -1), NA)
+        DT
+    }) %>% txtools::tx_merge_DT()
+}
+
+
+#' Add ends to coverage ratio 1bp up-stream
+#'
+#' @param DT data.table. Output of txtools data.tables with coverage information
+#' as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT}}
+#' functions
+#' @param minCov numeric. Minimum coverage required to output ratio. If coverage
+#' is less then an NA is output in that position.
+#'
+#' @return data.table
+#' @export
+#'
+#' @examples
+tx_add_endRatio1bpUS <- function(DT, minCov){
+    DT <- check_DT(DT) %>% hlp_removeColumnIfPresent("endRatio1bpDS")
+    tmp <- (DT$end_3p) / (DT$cov)
+    tmp[DT$cov < minCov] <- NA
+    DTL <- tibble::add_column(DT, endRatio1bpDS = tmp) %>% txtools::tx_split_DT()
+    DT <- lapply(DTL, function(DT){
+        DT$endRatio1bpUS <- c(NA, utils::head(DT$endRatio1bpDS, -1))
+        DT
+    }) %>% txtools::tx_merge_DT()
 }
 
 #' Add position unique names

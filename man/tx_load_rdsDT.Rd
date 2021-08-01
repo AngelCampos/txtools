@@ -7,7 +7,7 @@
 tx_load_rdsDT(file)
 }
 \arguments{
-\item{file}{}
+\item{file}{File name or path to .rds file to be loaded}
 }
 \value{
 data.table

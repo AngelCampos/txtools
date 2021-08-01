@@ -2,14 +2,17 @@
 % Please edit documentation in R/tx_core.R
 \name{tx_add_endRatio}
 \alias{tx_add_endRatio}
-\title{Add ends to coverage ratio}
+\title{Add ends to coverage ratio 1 bp downstream}
 \usage{
-tx_add_endRatio(DT)
+tx_add_endRatio(DT, minCov)
 }
 \arguments{
 \item{DT}{data.table. Output of txtools data.tables with coverage information
 as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT}}
 functions}
+
+\item{minCov}{numeric. Minimum coverage required to output ratio. If coverage
+is less then an NA is output in that position.}
 }
 \value{
 data.table
