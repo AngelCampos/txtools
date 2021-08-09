@@ -995,6 +995,66 @@ tx_add_motifPresence <- function (DT, motif, nucPositions = "all",
         hlp_add_motifPresence(x, motif, nucPositions, midMot)
     })) %>% magrittr::set_names(c(oNames, motifColName))
 }
+
+# Get functions ################################################################
+
+#' Get data from a position and their neighboring positions
+#'
+#' Get the data from positions marked with TRUE in a logical variable as the
+#' center and the values in its vicinity, delimited by a flank size.
+#' Useful to aggregate data surrounding specific sites as motif locations.
+#'
+#' @param DT data.table. Output of txtools data.tables with coverage information
+#' as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT}}
+#' functions.
+#' @param annotCol character. Name of column from which to retrieve centers
+#' @param valuesCol character. Name of column from which to get values
+#' @param flankSize numeric. The size of flanks for both left and right side.
+#' @param minCov numeric. Minimum coverage required to output results of center
+#' position.
+#' @param nCores integer. Number of cores to use to run function. Multi-core
+#' capability not available in Windows OS.
+#'
+#' @return matrix
+#' @export
+#'
+#' @examples
+tx_get_flanksFromLogicAnnot <- function(DT, annotCol, valuesCol, flankSize,
+                                        minCov, nCores){
+    tickNames <- paste((-flankSize):(flankSize), "bp")
+    tickNames[flankSize + 1] <- annotCol
+    DT$txcoorDiff <- c(1, diff(DT$txcoor, 1))
+    tmpSites <- which(DT[[annotCol]] & DT$cov >= minCov)
+    passInWind <- parallel::mclapply(mc.cores = nCores, seq(tmpSites), function(i){
+        mean(DT[(tmpSites[i] - flankSize + 1):(tmpSites[i] + flankSize),]$txcoorDiff) == 1
+    }) %>% unlist()
+    DT$passInWind <- FALSE
+    DT$passInWind[tmpSites] <- passInWind
+    tmpSites <- which(DT$passInWind)
+    parallel::mclapply(mc.cores = nCores, seq(tmpSites), function(i){
+        DT[(tmpSites[i] - flankSize):(tmpSites[i] + flankSize),][[valuesCol]]
+    }) %>% do.call(what = rbind) %>%
+        magrittr::set_rownames(DT[tmpSites,]$pos) %>% magrittr::set_colnames(tickNames)
+}
+
+
+#' Get length of genes
+#'
+#' Outputs the length of the transcripts in the DT
+#'
+#' @param DT data.table. Output of txtools data.tables with coverage information
+#' as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT}}
+#' functions.
+#'
+#' @return numeric
+#' @export
+#'
+#' @examples
+tx_get_geneLengths <- function(DT){
+    tmpTb <- DT$gene %>% as.character() %>% table()
+    tmpTb %>% as.numeric() %>% magrittr::set_names(names(tmpTb))
+}
+
 # Other accessory functions #####################################################
 
 #' Centered numeric sequence
