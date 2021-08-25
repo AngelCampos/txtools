@@ -78,9 +78,6 @@ tx_load_bam <- function(file, pairedEnd, yieldSize = 100000,
     BAMFILE <- Rsamtools::BamFile(file, yieldSize = yieldSize)
     readCycles <- 1:ceiling(bC$records/(yieldSize * ifelse(pairedEnd, 2, 1)))
     pbJumps <- seq(0, 1, by = min(1/(length(readCycles)-1), 1))
-    if(length(readCycles) > 200){
-        warning("If taking too much time, try to subset your BAM file. \n")
-    }
     #  Opens and reads BAM files in chunks of length = yieldSize
     open(BAMFILE)
     reads <- lapply(pbJumps, function(i){
