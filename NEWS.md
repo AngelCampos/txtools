@@ -4,6 +4,8 @@
 
 * Fixed a bug detected when loading BAM files with mappings with empty 
 sequence field
+* 0.0.6.2 patch: Fixed bug related with spurious paired-end alignments, R1 and
+R2 order is wrong.
 
 ## v0.0.5
 
@@ -13,8 +15,8 @@ sequence field
 
 ## v0.0.4
 
-* Uni and Multi-core functions merged into unique functions 
-capable of using multi-cores with the parallel package.
+* Uni and Multi-core functions merged into one function
+capable of running in one or multi-cores with the parallel package.
 
 ## v0.0.3
 

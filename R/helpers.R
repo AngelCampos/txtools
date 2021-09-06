@@ -108,13 +108,16 @@ hlpr_ReadsInGene <- function(reads, iGene, geneAnnot, split_i, allExons, minRead
         tReads <- data.frame(start = match(GenomicRanges::start(iReads_r1[pass]), iExon),
                              end      = match(GenomicRanges::end(iReads_r2[pass]), iExon),
                              strand   = GenomicRanges::strand(iReads_r1[pass]),
-                             seqnames = iGene) %>% plyranges::as_granges()
+                             seqnames = iGene)
     }else if(iStrand == "-"){
         tReads <- data.frame(start = match(GenomicRanges::end(iReads_r1[pass]), iExon),
                              end      = match(GenomicRanges::start(iReads_r2[pass]), iExon),
                              strand   = GenomicRanges::strand(iReads_r1[pass]),
-                             seqnames = iGene) %>% plyranges::as_granges()
+                             seqnames = iGene)
     }
+    pass <- pass[tReads$end > tReads$start - 1] # Filter corrupt pairedEndMappings (end before start)
+    if(length(pass) < minReads){return(GenomicRanges::GRanges())} # No reads pass filter, return empty GA
+    tReads <- plyranges::as_granges(tReads[tReads$end > tReads$start -1,])
     names(tReads) <- names(reads)[selReadsbyPair][pass]
     GenomeInfoDb::seqlengths(tReads) <- length(iExon)
     # Result if no sequence is input or required
