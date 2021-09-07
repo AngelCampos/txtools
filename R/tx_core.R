@@ -945,13 +945,16 @@ tx_add_siteAnnotation <- function (DT, GRanges, colName, nCores = 1){
 #' \itemize{
 #' \item "all": Will mark all the positions of the motif
 #' \item "center": Will mark the center of the motif
-#' \item "i": A number can be passed in which the **i**th position will be
+#' \item "i": A number can be passed in which the \strong{i}th position will be
 #' marked. For example, for the 'CAC' motif a value of '2' will mark all 'A's
-#' surrounded by 'C's
+#' surrounded by a 'C'.
 #' }
 #' @param motifColName character. Name of the new column to be added for
 #' annotating motif presence. Automatically is set to be a combination of the
 #' input motif and nucPositions arguments.
+#' @param mask_N logical. If set to FALSE, 'N' nucleotides are left as is,
+#' therefore matching motifs. i.e. A consecutive sequence of NNNNN will match
+#' any 5 letter motif as 'DRACH'; generally not desired.
 #' @param nCores integer. Number of cores to use to run function. Multicore
 #' capability is not available in Windows OS.
 #'
@@ -960,12 +963,16 @@ tx_add_siteAnnotation <- function (DT, GRanges, colName, nCores = 1){
 #'
 #' @examples
 tx_add_motifPresence <- function (DT, motif, nucPositions = "all",
-                                  motifColName = "auto", nCores = 1){
+                                  motifColName = "auto", mask_N = TRUE, nCores = 1){
     check_mc_windows(nCores)
     check_integerGreaterThanZero_arg(nCores, "nCores")
     DT <- check_DT(DT)
     if(!("refSeq" %in% names(DT))){
         stop("DT must contain the refSeq column, as added by tx_add_refSeqDT() function.")
+    }
+    if(mask_N){
+        oriSeq <- DT$refSeq
+        DT$refSeq[DT$refSeq == "N"] <- "."
     }
     # Process motif
     midMot <- NULL
@@ -987,10 +994,13 @@ tx_add_motifPresence <- function (DT, motif, nucPositions = "all",
                  with positions in motif to be marked.")
     }
     oNames <- names(DT)
-    DTL <- tx_split_DT(DT)
-    tx_merge_DT(parallel::mclapply(mc.cores = nCores, DTL, function(x){
+    DT <- tx_merge_DT(parallel::mclapply(mc.cores = nCores, tx_split_DT(DT), function(x){
         hlp_add_motifPresence(x, motif, nucPositions, midMot)
     })) %>% magrittr::set_names(c(oNames, motifColName))
+    if(mask_N){
+        DT[, "refSeq"] <- oriSeq
+    }
+    DT
 }
 
 # Get functions ################################################################
@@ -1121,7 +1131,7 @@ tx_dm3_geneAnnot <- function(){
 #     tapply(X = DT[[col]], INDEX = cut_interval(1:nrow(DT), bins), FUN = fun) %>% set_names(c())
 # }
 #
-# # Apply a function in a binned mmaner to a vector
+# # Apply a function in a binned manner to a vector
 # tx_bin_function <- function(x, bins = 100, fun = mean){
 #     tapply(X = x, INDEX = cut_interval(1:length(x), bins), FUN = fun) %>% set_names(c())
 # }
