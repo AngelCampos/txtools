@@ -1014,11 +1014,12 @@ tx_add_motifPresence <- function (DT, motif, nucPositions = "all",
 #' @param DT data.table. Output of txtools data.tables with coverage information
 #' as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT}}
 #' functions.
-#' @param annotCol character. Name of column from which to retrieve centers
+#' @param annotCol character. Name of column from which to retrieve centers,
+#' should be a logical annotation.
 #' @param valuesCol character. Name of column from which to get values
 #' @param flankSize numeric. The size of flanks for both left and right side.
-#' @param minCov numeric. Minimum coverage required to output results of center
-#' position.
+#' @param minCov numeric. Minimum coverage required at center of position to
+#' output results. Not filtered by default.
 #' @param nCores integer. Number of cores to use to run function. Multi-core
 #' capability not available in Windows OS.
 #'
@@ -1027,23 +1028,32 @@ tx_add_motifPresence <- function (DT, motif, nucPositions = "all",
 #'
 #' @examples
 tx_get_flanksFromLogicAnnot <- function(DT, annotCol, valuesCol, flankSize,
-                                        minCov, nCores){
+                                        minCov = NA, nCores = 1){
+    if(!("pos" %in% names(DT))){
+        DT <- tx_add_pos(DT)
+    }
     tickNames <- paste((-flankSize):(flankSize), "bp")
     tickNames[flankSize + 1] <- annotCol
     DT$txcoorDiff <- c(1, diff(DT$txcoor, 1))
-    tmpSites <- which(DT[[annotCol]] & DT$cov >= minCov)
+    if(!is.na(minCov)){
+        tmpSites <- which(DT[[annotCol]] & DT$cov >= minCov)
+    }else{
+        tmpSites <- which(DT[[annotCol]])
+    }
     passInWind <- parallel::mclapply(mc.cores = nCores, seq(tmpSites), function(i){
         mean(DT[(tmpSites[i] - flankSize + 1):(tmpSites[i] + flankSize),]$txcoorDiff) == 1
-    }) %>% unlist()
+    }) %>% unlist() # This will leave out sites too close to starts and ends of transcript
+                    # May be more desirable to keep them and place NAs where there is no data
     DT$passInWind <- FALSE
     DT$passInWind[tmpSites] <- passInWind
     tmpSites <- which(DT$passInWind)
     parallel::mclapply(mc.cores = nCores, seq(tmpSites), function(i){
         DT[(tmpSites[i] - flankSize):(tmpSites[i] + flankSize),][[valuesCol]]
-    }) %>% do.call(what = rbind) %>%
-        magrittr::set_rownames(DT[tmpSites,]$pos) %>% magrittr::set_colnames(tickNames)
+    }) %>%
+        do.call(what = rbind) %>%
+        magrittr::set_rownames(DT[tmpSites,]$pos) %>%
+        magrittr::set_colnames(tickNames)
 }
-
 
 #' Get length of genes
 #'
@@ -1058,7 +1068,7 @@ tx_get_flanksFromLogicAnnot <- function(DT, annotCol, valuesCol, flankSize,
 #'
 #' @examples
 tx_get_geneLengths <- function(DT){
-    tmpTb <- DT$gene %>% as.character() %>% table()
+    tmpTb <- table(as.character(DT$gene))
     tmpTb %>% as.numeric() %>% magrittr::set_names(names(tmpTb))
 }
 
