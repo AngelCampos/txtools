@@ -173,3 +173,39 @@ tx_plot_staEndCov <- function(
         tmpGG
     }
 }
+
+
+tx_plot_metaGeneByBins <- function(DT, colName, nBins = 100, FUN = "mean", minTxLength = 300,
+                                   minReadsPerGene = 100, smooth = TRUE, na.rm = TRUE){
+    if(nBins >= minTxLength){stop("Number of bins most be smaller than minimum",
+                                  "transcript length.")}
+    if(!(colName %in% colnames(DT))){stop("colName is not a column in DT.")}
+    nStarts <- DT[, sum(start_5p), by = gene][order(V1, decreasing = T),]
+    DT <- DT[gene %in% nStarts$gene[nStarts$V1 >= minReadsPerGene]]
+    geneLens <- tx_get_geneLengths(DT)
+    DT <- DT[gene %in% names(geneLens)[geneLens > minTxLength]]
+    GENES <- as.character(unique(DT$gene))
+    if(length(GENES) < 1){stop("No genes after filtering parameters")}
+    meanCovBinned <- mclapply(seq(GENES), function(i){
+        iGene <- GENES[i]
+        tmpDT <- DT[gene == iGene,]
+        tmpDT$group <- tmpDT$txcoor %>% cut_number(n = nBins)
+        out <- tapply(tmpDT[[colName]], tmpDT$group, FUN, na.rm = na.rm)
+        out[is.nan(out)] <- NA
+        out
+    }) %>% do.call(what = rbind) %>% apply(MARGIN = 2, FUN = FUN, na.rm = na.rm) %>% set_names(NULL)
+    DF <- data.frame(bins = seq(meanCovBinned) %>% as.numeric,
+                     score = meanCovBinned)
+    plotTitle <- paste("METAGENE BY BINS -", FUN, colName) %>% toupper()
+    plotSub <- paste0("n(genes) =", length(GENES), ", minTxLen =", minTxLength,
+                      ", minReadsPerGene =", minReadsPerGene, ", smooth.sp =", smooth)
+    Y_axis <- paste(FUN, colName)
+    if(smooth){
+        DF$smooth <- smooth.spline(DF$score)$y
+        ggplot(DF, aes(x = bins, y = smooth)) + geom_line() + theme_classic() +
+            ggtitle(plotTitle, plotSub) + ylab(Y_axis)
+    }else{
+        ggplot(DF, aes(x = bins, y = score)) + geom_line() + theme_classic() +
+            ggtitle(plotTitle, plotSub) + ylab(Y_axis)
+    }
+}
