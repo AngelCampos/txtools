@@ -416,12 +416,12 @@ hlp_nucFreqTab_mc <- function(x, simplify_IUPAC = "not", nCores){
         y <- Biostrings::consensusMatrix(x = x[[iGene]]$seq,
                                          shift = GenomicRanges::start(x[[iGene]]) -1,
                                          width = GenomeInfoDb::seqlengths(x[[iGene]])[iGene])
-        if(simplify_IUPAC == "not"){
-            hlp_addMissingNucs(y) %>% t %>% data.table::data.table()
+        if(simplify_IUPAC == "splitForceInt"){
+            hlp_splitNucsForceInt(y) %>% t %>% apply(MARGIN = 2, FUN = "as.integer") %>% data.table::data.table()
         }else if(simplify_IUPAC == "splitHalf"){
             hlp_splitNucsHalf(y) %>% t %>% data.table::data.table()
-        }else if(simplify_IUPAC == "splitForceInt"){
-            hlp_splitNucsForceInt(y) %>% t %>% data.table::data.table()
+        }else if(simplify_IUPAC == "not"){
+            hlp_addMissingNucs(y) %>% t %>% data.table::data.table()
         }
     }) %>% magrittr::set_names(names(x))
 }

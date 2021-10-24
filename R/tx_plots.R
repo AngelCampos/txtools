@@ -56,7 +56,7 @@ tx_plot_nucFreq <- function(DT,
             ggplot2::theme_minimal() + scale_fill_txBrowser_2() +
             ggplot2::ylab("Frequency") + ggplot2::xlab("Transcriptome coordinate") +
             ggplot2::theme(legend.position="bottom") +
-            ggplot2::guides(fill= ggplot2::guide_legend(nrow=1, byrow=TRUE, title = "")) +
+            ggplot2::guides(fill= ggplot2::guide_legend(nrow = 1, byrow=TRUE, title = "")) +
             ggplot2::ggtitle(gene)
     }else{
         tmpData$nuc <- factor(tmpData$nuc, levels = c(".", "REF", "A", "C", "G", "T", "-", "N"))
