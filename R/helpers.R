@@ -710,6 +710,7 @@ stretchBlocks_3p <- function(blocks, extend, strand){
     IRanges::end(collapsed[ind_3p_neg]) <- IRanges::end(collapsed[ind_3p_neg]) + extend
     return(IRanges::relist(collapsed, part))
 }
+
 # Generating DTs ###############################################################
 # Generates trasncriptomic coordinates table from a list of genes
 hlpr_genCoorTabGenes <- function(genes, geneAnnot, fastaGenome = NULL, nCores = 1){

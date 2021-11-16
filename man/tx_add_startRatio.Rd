@@ -4,7 +4,7 @@
 \alias{tx_add_startRatio}
 \title{Add starts to coverage ratio}
 \usage{
-tx_add_startRatio(DT, minCov)
+tx_add_startRatio(DT, minCov = 50)
 }
 \arguments{
 \item{DT}{data.table. Output of txtools data.tables with coverage information

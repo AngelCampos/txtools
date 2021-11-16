@@ -4,7 +4,7 @@
 \alias{tx_add_endRatio1bpDS}
 \title{Add ends to coverage ratio 1bp down-stream}
 \usage{
-tx_add_endRatio1bpDS(DT, minCov)
+tx_add_endRatio1bpDS(DT, minCov = 50)
 }
 \arguments{
 \item{DT}{data.table. Output of txtools data.tables with coverage information

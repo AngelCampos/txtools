@@ -391,7 +391,7 @@ tx_makeDT_coverage <- function(x, geneAnnot, genome = NULL, fullDT = FALSE,
         OUT <- tx_complete_DT(DT = OUT, geneAnnot = geneAnnot, genome = genome, nCores = nCores)
     }
     if(!is.null(genome)){
-        OUT <- tx_add_refSeqDT(OUT, genome = genome, geneAnnot = geneAnnot, nCores = nCores)
+        tx_add_refSeqDT(OUT, genome = genome, geneAnnot = geneAnnot, nCores = nCores)
     }else{return(OUT)}
 }
 
@@ -765,7 +765,7 @@ tx_add_diffNucToRefRatio <- function(DT, addDiffandTotalCols = FALSE){
 #' @return data.table
 #' @export
 #'
-tx_add_startRatio <- function(DT, minCov){
+tx_add_startRatio <- function(DT, minCov = 50){
     DT <- check_DT(DT) %>% hlp_removeColumnIfPresent("startRatio")
     tmp <- (DT$start_5p) / (DT$cov)
     tmp[DT$cov < minCov] <- NA
@@ -801,6 +801,32 @@ tx_add_startRatio1bpDS <- function(DT, minCov = 50){
     return(DT)
 }
 
+#' Add starts to coverage ratio 1 bp upstream
+#'
+#' @param DT data.table. Output of txtools data.tables with coverage information
+#' as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT}}
+#' functions
+#' @param minCov numeric. Minimum coverage required to output ratio. If coverage
+#' is less then an NA is output in that position.
+#'
+#' @return data.table
+#' @export
+#'
+#' @examples
+tx_add_startRatio1bpUS <- function(DT, minCov = 50){
+    DT <- check_DT(DT) %>% hlp_removeColumnIfPresent("startRatio1bpUS")
+    tmp <- (DT$start_5p) / (DT$cov)
+    tmp[DT$cov < minCov] <- NA
+    DTL <- tibble::add_column(DT, startRatio1bpUS = tmp) %>% txtools::tx_split_DT()
+    DT <- lapply(DTL, function(DT){
+        DT$startRatio1bpUS <- c(NA, utils::head(DT$startRatio1bpUS, -1))
+        DT
+    }) %>% txtools::tx_merge_DT()
+    return(DT)
+}
+
+
+
 #' Add ends to coverage ratio 1 bp downstream
 #'
 #' Adds a column to DT of the read-ends to coverage ratio.
@@ -814,7 +840,7 @@ tx_add_startRatio1bpDS <- function(DT, minCov = 50){
 #' @return data.table
 #' @export
 #'
-tx_add_endRatio <- function(DT, minCov){
+tx_add_endRatio <- function(DT, minCov = 50){
     DT <- check_DT(DT) %>% hlp_removeColumnIfPresent("endRatio")
     tmp <- (DT$end_3p) / (DT$cov)
     tmp[DT$cov < minCov] <- NA
@@ -836,7 +862,7 @@ tx_add_endRatio <- function(DT, minCov){
 #' @return data.table
 #' @export
 #'
-tx_add_endRatio1bpDS <- function(DT, minCov){
+tx_add_endRatio1bpDS <- function(DT, minCov = 50){
     DT <- check_DT(DT) %>% hlp_removeColumnIfPresent("endRatio1bpDS")
     tmp <- (DT$end_3p) / (DT$cov)
     tmp[DT$cov < minCov] <- NA
@@ -860,13 +886,13 @@ tx_add_endRatio1bpDS <- function(DT, minCov){
 #' @export
 #'
 #' @examples
-tx_add_endRatio1bpUS <- function(DT, minCov){
-    DT <- check_DT(DT) %>% hlp_removeColumnIfPresent("endRatio1bpDS")
+tx_add_endRatio1bpUS <- function(DT, minCov = 50){
+    DT <- check_DT(DT) %>% hlp_removeColumnIfPresent("endRatio1bpUS")
     tmp <- (DT$end_3p) / (DT$cov)
     tmp[DT$cov < minCov] <- NA
-    DTL <- tibble::add_column(DT, endRatio1bpDS = tmp) %>% txtools::tx_split_DT()
+    DTL <- tibble::add_column(DT, endRatio1bpUS = tmp) %>% txtools::tx_split_DT()
     DT <- lapply(DTL, function(DT){
-        DT$endRatio1bpUS <- c(NA, utils::head(DT$endRatio1bpDS, -1))
+        DT$endRatio1bpUS <- c(NA, utils::head(DT$endRatio1bpUS, -1))
         DT
     }) %>% txtools::tx_merge_DT()
 }
