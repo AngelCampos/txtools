@@ -25,14 +25,15 @@ data in a quick and simple manner.
 To acomplish this we propose the processing of data in two stages, and the 
 use of two data structures which is the output at each step:
 
-1. Transfer read-alignments from a *genomic* to  a ***transcriptomic*** 
+1. Transfer read-alignments from a **genomic** to  a **transcriptomic**
 coordinates space.
 2. Summarize transcriptomic-alignments into table structures.
 
 ## Loading the data
 
-The first step of the txtools framework is to transfer read-alignments from a
-genomic coordinate system to a transcriptomic coordinate system. 
+The first step of the txtools processing pipeline is to transfer read-alignments
+from a genomic coordinate system to a transcriptomic coordinate system. This 
+step can be skipped if the reads where aligned to a transcriptomic reference.
 
 Note: *This step can be circumvented by aligning to the transcriptome, but in most* 
 *cases it is necessary and desirable to keep track of both the genomic location*

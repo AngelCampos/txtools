@@ -3,8 +3,10 @@ title: "txtools_tutorial"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{txtools_tutorial}
-  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r, include = FALSE}
@@ -19,12 +21,115 @@ This will be a more in depth tutorial showing all of the main functions.
 We will check how to:
 
 1. Load your data RNA-seq data and genomic reference files to R.
-2. Process the data into transcriptomic space and filter 
-3. Summarize reads into data.tables
+2. Process the data into transcriptomic space and filter by mapped-read length.
+3. Summarize mapped-reads into data.tables
 4. Use tx_add_* functions to calculate metrics into data.tables
-5. Plot interesting regions using the tx_plot_* functions
+5. Do some quick analyses with additional function
+6. Plot interesting regions using the tx_plot_* functions
 
 ```{r}
 
+```
+
+```{r}
+library(GenomicRanges)
+```
+
+
+List of functions
+
+```{r}
+# Getting paths to files
+BED_file <- tx_dm3_geneAnnot()
+FASTA_file <- pasillaBamSubset::dm3_chr4()
+PE_BAM_file <- pasillaBamSubset::untreated3_chr4()
+load_all()
+bam_dm3 <- tx_load_bam(pasillaBamSubset::untreated3_chr4(), pairedEnd = TRUE, loadSeq = TRUE, verbose = T)
+geneAnnot_dm3 <- tx_load_bed(tx_dm3_geneAnnot())
+genome_dm3 <- tx_load_genome(pasillaBamSubset::dm3_chr4())
+```
+
+```{r}
+widerGeneAnnot <- tx_extend_UTR(geneAnnot_dm3, ext_3p = -100, ext_5p = -50)
+width(widerGeneAnnot) - width(geneAnnot_dm3)
+stretchBlocks_3p
+```
+
+```{r}
+# To transcriptomic Genomic Ranges
+txReads <- tx_reads(bam_dm3, geneAnnot = geneAnnot_dm3, minReads = 1, withSeq = 1)
+tx_getUnassignedAlignments()
+```
+
+```{r}
+txReads <- tx_filter_maxWidth(txReads, thr = 1000)
+```
+
+```{r}
+DT_cov <- tx_makeDT_coverage(txReads, geneAnnot = geneAnnot_dm3, genome = genome_dm3)
+DT_nuFreq <- tx_makeDT_nucFreq(txReads, geneAnnot = geneAnnot_dm3, genome = genome_dm3)
+DT_covNuqFreq <- tx_makeDT_covNucFreq(txReads, geneAnnot = geneAnnot_dm3, genome = genome_dm3)
+```
+
+```{r}
+splitDT <- tx_split_DT(DT_cov)
+summary(splitDT)
+mergedDT <- tx_merge_DT(splitDT[-1])
+mergedDT$gene %>% unique %>% length()
+completeDT <- tx_complete_DT(mergedDT, geneAnnot = geneAnnot_dm3, genome = genome_dm3)
+completeDT$gene %>% unique %>% length
+```
+
+```{r}
+txDT <- DT_covNuqFreq
+# tx_add_xxx
+txDT <- tx_add_endRatio(txDT) %>% tx_add_endRatio1bpDS() %>% tx_add_endRatio1bpUS()
+View(txDT)
+txDT <- tx_add_startRatio(txDT) %>% tx_add_startRatio1bpDS() %>% tx_add_startRatio1bpUS()
+
+tx_add_diffNucToRef()
+tx_add_diffNucToRefRatio()
+tx_add_nucTotal()
+
+geneAnnot_hg19 <- tx_load_bed("~/BIGDATA/gene_annotations/hg19/geneAnnot_hg19_canonical.bed")
+
+tx_add_siteAnnotation()
+tx_add_refSeqDT()
+tx_add_motifPresence()
+tx_add_pos()
+
+```
+
+```{r}
+tx_plot_metaGeneByBins(DT = txDT, colName = "cov", minReadsPerGene = 5)
+```
+
+
+```{r}
+# Plotting
+tx_plot_metaGeneByBins()
+tx_plot_nucFreq()
+tx_plot_staEndCov()
+```
+
+
+```{r}
+tx_get_flanksFromLogicAnnot()
+tx_get_geneLengths()
+```
+
+
+```{r}
+window_around()
+tx_counts()
+```
+
+
+
+# Decide if trash
+
+```{r}
+tx_cutEnds_DT() # needed?
+tx_sample_GRList()
 ```
 
