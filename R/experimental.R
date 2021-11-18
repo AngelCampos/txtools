@@ -43,8 +43,9 @@ tx_add_CtoTMR <- function(DT, minCov = 50, onNucs = c("C")){
     tibble::add_column(DT, MR_CtoT = tmp)
 }
 
-# Adding rolling function to DT
-tx_add_rollingMean <- function(DT, colName, winSize, newColName, fill = NA, align = "center", minCov = 21, nCores = 1){
+# # Adding rolling function to DT
+tx_add_rollingMean <- function(DT, colName, winSize, newColName = NULL, fill = NA, align = "center", minCov = 21, nCores = 1){
+    if(is.null(newColName)){newColName <- paste(colName , "rollMean", sep = "_" )}
     oNames <- colnames(DT)
     tmp <- mclapply(mc.cores = nCores, tx_split_DT(DT), function(x){
         RcppRoll::roll_mean(x[[colName]], n = winSize, fill = fill, align = align)
