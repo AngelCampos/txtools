@@ -76,10 +76,8 @@ tx_shift_geneWise <- function(DT, colToShift, direction, bp, nCores){
 }
 
 # ggseqlogo
-tx_plot_ggseqlogo <- function(DT, annotCol, flankSize = 6, method = "bits", nCores = 1){
-    ggOUT <- tx_get_flanksFromLogicAnnot(DT, annotCol = annotCol, valuesCol = "refSeq",
-                                         flankSize = flankSize, nCores = nCores, minCov = 0) %>%
-        apply(MARGIN =  1, function(x) paste(x, collapse = "")) %>%
+tx_plot_ggseqlogo <- function(DT, logi_col, upFlank, doFlank, method = "bits"){
+    ggOUT <- tx_get_flankSequence(DT = DT, logi_col = logi_col, upFlank = upFlank, doFlank = doFlank) %>%
         ggseqlogo::ggseqlogo(method = method)
     if(method == "bits"){
         ggOUT + ggplot2::ylim(0,2) + ggplot2::theme_minimal()
@@ -87,8 +85,6 @@ tx_plot_ggseqlogo <- function(DT, annotCol, flankSize = 6, method = "bits", nCor
         ggOUT + ggplot2::theme_minimal()
     }
 }
-
-tx_ggseqlogo <- tx_plot_ggseqlogo
 
 # Combine lists of transcript reads processed by tx_reads
 tx_combineTxReadsList <- function(txReadsList){
@@ -98,13 +94,29 @@ tx_combineTxReadsList <- function(txReadsList){
     split(tmp, seqnames(tmp))
 }
 
-# Linearized version
-# Problem: will merge sequences between genes that are too close to each other.
-tx_extractNeighSeq <- function(DT, var, upFlank, doFlank){
-    Igenes <- unique(DT[DT[[var]],][["gene"]]) %>% as.character()
+# Linearized version tx_get_neigh...
+tx_get_flankSequence <- function(DT, logi_col, upFlank, doFlank, addNames = FALSE){
+    if(!is.logical(DT[[logi_col]])){stop("column ", logi_col, " must be of class 'logical'.")}
+    if(!"refSeq" %in% colnames(DT)){stop("refSeq must be in DT. You can add it with tx_add_refSeq().")}
+    if(!"gene" %in% colnames(DT)){stop("gene column must be in DT.")}
+    Igenes <- as.character(unique(DT[DT[[logi_col]],][["gene"]]))
     DT <- DT[DT$gene %in% Igenes,]
-    fullSeq <- paste0(DT$refSeq, collapse = "")
-    str_sub(fullSeq, which(DT[[var]]) - upFlank, which(DT[[var]]) + doFlank)
+    tmpSeq <- split(DT$refSeq, forcats::fct_drop(DT$gene))
+    tmpVar <- split(DT[[logi_col]], forcats::fct_drop(DT$gene))
+    spacer <- rep(".", max(upFlank, doFlank))
+    spacerVar <- rep(NA, max(upFlank, doFlank))
+    fullSeq <- c(spacer, lapply(tmpSeq, function(x) (c(x, spacer))) %>%
+                     do.call(what = "c")) %>% paste(collapse = "")
+    fullVar <- c(spacerVar, lapply(tmpVar, function(x) (c(x, spacerVar))) %>% do.call(what = "c"))
+    tmpSeq <- stringr::str_sub(fullSeq, which(fullVar) - upFlank, which(fullVar) + doFlank)
+    if(any(grepl(tmpSeq, pattern = "\\."))){
+        warning("Some sequences reached the end of transcript, a '.'",
+                "was added in place, which may affect downstream results.")
+    }
+    if(addNames){
+        names(tmpSeq) <- paste(DT$gene[DT[[logi_col]]], DT$txcoor[DT[[logi_col]]], sep = ":")
+    }
+    return(tmpSeq)
 }
 
 # Function for cytidine persistence to Bisulphite treatment
