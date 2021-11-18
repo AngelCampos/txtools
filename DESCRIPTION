@@ -52,7 +52,9 @@ Imports:
     plotly,
     tidyr,
     methods,
-    BiocGenerics
+    BiocGenerics,
+    forcats,
+    ggseqlogo
 VignetteBuilder: knitr
 biocViews: DataImport, DataRepresentation, Coverage, 
     Epitranscriptomics, RNASeq, Transcription, SNP
