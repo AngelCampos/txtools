@@ -6,30 +6,18 @@
 \usage{
 tx_get_flanksFromLogicAnnot(
   DT,
-  annotCol,
-  valuesCol,
-  flankSize,
-  minCov = NA,
-  nCores = 1
+  logi_col,
+  values_col,
+  upFlank,
+  doFlank,
+  addRowNames = FALSE
 )
 }
 \arguments{
 \item{DT}{data.table. Output of txtools data.tables with coverage information
-as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT}}
-functions.}
+as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT}}}
 
-\item{annotCol}{character. Name of column from which to retrieve centers,
-should be a logical annotation.}
-
-\item{valuesCol}{character. Name of column from which to get values}
-
-\item{flankSize}{numeric. The size of flanks for both left and right side.}
-
-\item{minCov}{numeric. Minimum coverage required at center of position to
-output results. Not filtered by default.}
-
-\item{nCores}{integer. Number of cores to use to run function. Multi-core
-capability not available in Windows OS.}
+\item{addRowNames}{functions.}
 }
 \value{
 matrix

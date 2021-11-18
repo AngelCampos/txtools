@@ -1039,47 +1039,39 @@ tx_add_motifPresence <- function (DT, motif, nucPositions = "all",
 #'
 #' @param DT data.table. Output of txtools data.tables with coverage information
 #' as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT}}
+#' @param logi_col
+#' @param values_col
+#' @param upFlank
+#' @param doFlank
+#' @param addRowNames
 #' functions.
-#' @param annotCol character. Name of column from which to retrieve centers,
-#' should be a logical annotation.
-#' @param valuesCol character. Name of column from which to get values
-#' @param flankSize numeric. The size of flanks for both left and right side.
-#' @param minCov numeric. Minimum coverage required at center of position to
-#' output results. Not filtered by default.
-#' @param nCores integer. Number of cores to use to run function. Multi-core
-#' capability not available in Windows OS.
-#'
 #' @return matrix
 #' @export
 #'
 #' @examples
-tx_get_flanksFromLogicAnnot <- function(DT, annotCol, valuesCol, flankSize,
-                                        minCov = NA, nCores = 1){
-    if(!("pos" %in% names(DT))){
-        DT <- tx_add_pos(DT)
+tx_get_flanksFromLogicAnnot <- function(DT, logi_col, values_col, upFlank, doFlank, addRowNames = FALSE){
+    if(!is.logical(DT[[logi_col]])){stop("column ", logi_col, " must be of class 'logical'.")}
+    if(!values_col %in% colnames(DT)){stop(values_col, " column must be in DT")}
+    if(!"gene" %in% colnames(DT)){stop("gene column must be in DT.")}
+    Igenes <- as.character(unique(DT[DT[[logi_col]],][["gene"]]))
+    DT <- DT[DT$gene %in% Igenes,]
+    tmpVal <- split(DT[[values_col]], forcats::fct_drop(DT$gene))
+    tmpVar <- split(DT[[logi_col]], forcats::fct_drop(DT$gene))
+    spacer <- rep(".", max(upFlank, doFlank))
+    spacerVar <- rep(NA, max(upFlank, doFlank))
+    fullVal <- c(spacerVar, lapply(tmpVal, function(x) (c(x, spacerVar))) %>% do.call(what = "c"))
+    fullVar <- c(spacerVar, lapply(tmpVar, function(x) (c(x, spacerVar))) %>% do.call(what = "c"))
+    tmpO <- get_VectorElements(fullVal, which(fullVar) - upFlank, which(fullVar) + doFlank) %>%
+        do.call(what = "rbind")
+    tickNames <- paste((-upFlank):(doFlank), "bp")
+    tickNames[flankSize + 1] <- logi_col
+    colnames(tmpO) <- tickNames
+    if(addRowNames){
+        rownames(tmpO) <- paste(DT$gene[DT[[logi_col]]], DT$txcoor[DT[[logi_col]]], sep = ":")
     }
-    tickNames <- paste((-flankSize):(flankSize), "bp")
-    tickNames[flankSize + 1] <- annotCol
-    DT$txcoorDiff <- c(1, diff(DT$txcoor, 1))
-    if(!is.na(minCov)){
-        tmpSites <- which(DT[[annotCol]] & DT$cov >= minCov)
-    }else{
-        tmpSites <- which(DT[[annotCol]])
-    }
-    passInWind <- parallel::mclapply(mc.cores = nCores, seq(tmpSites), function(i){
-        mean(DT[(tmpSites[i] - flankSize + 1):(tmpSites[i] + flankSize),]$txcoorDiff) == 1
-    }) %>% unlist() # This will leave out sites too close to starts and ends of transcript
-                    # May be more desirable to keep them and place NAs where there is no data
-    DT$passInWind <- FALSE
-    DT$passInWind[tmpSites] <- passInWind
-    tmpSites <- which(DT$passInWind)
-    parallel::mclapply(mc.cores = nCores, seq(tmpSites), function(i){
-        DT[(tmpSites[i] - flankSize):(tmpSites[i] + flankSize),][[valuesCol]]
-    }) %>%
-        do.call(what = rbind) %>%
-        magrittr::set_rownames(DT[tmpSites,]$pos) %>%
-        magrittr::set_colnames(tickNames)
+    return(tmpO)
 }
+
 
 #' Get length of genes
 #'

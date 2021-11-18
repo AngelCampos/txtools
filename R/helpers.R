@@ -632,6 +632,13 @@ tx_flushUnassigned <- function(){
     rm(list = objnames, envir = .dumpEnvirTxtools())
 }
 
+# Get vector elements from start to end
+hlp_getVectorElements <- function(x, start, end){
+    x[start:end]
+}
+get_VectorElements <- Vectorize(hlp_getVectorElements, c("start", "end"), SIMPLIFY = FALSE)
+
+
 # tx_add_XXX() #################################################################
 
 # Mark motif location in tx_DT as TRUE, it can be set for specific nuc positions or all
