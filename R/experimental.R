@@ -76,17 +76,6 @@ tx_shift_geneWise <- function(DT, colToShift, direction, bp, nCores){
     return(OUT)
 }
 
-# ggseqlogo
-tx_plot_ggseqlogo <- function(DT, logi_col, upFlank, doFlank, method = "bits"){
-    ggOUT <- tx_get_flankSequence(DT = DT, logi_col = logi_col, upFlank = upFlank, doFlank = doFlank) %>%
-        ggseqlogo::ggseqlogo(method = method)
-    if(method == "bits"){
-        ggOUT + ggplot2::ylim(0,2) + ggplot2::theme_minimal()
-    }else{
-        ggOUT + ggplot2::theme_minimal()
-    }
-}
-
 # Combine lists of transcript reads processed by tx_reads
 tx_combineTxReadsList <- function(txReadsList){
     tmp <- lapply(txReadsList, function(x) unlist(x)) %>%

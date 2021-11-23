@@ -1072,7 +1072,6 @@ tx_get_flanksFromLogicAnnot <- function(DT, logi_col, values_col, upFlank, doFla
     return(tmpO)
 }
 
-
 #' Get length of genes
 #'
 #' Outputs the length of the transcripts in the DT
@@ -1081,7 +1080,7 @@ tx_get_flanksFromLogicAnnot <- function(DT, logi_col, values_col, upFlank, doFla
 #' as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT}}
 #' functions.
 #'
-#' @return numeric
+#' @return named numeric. Length of genes as per times they appear in DT
 #' @export
 #'
 #' @examples
