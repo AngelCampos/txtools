@@ -1064,7 +1064,7 @@ tx_get_flanksFromLogicAnnot <- function(DT, logi_col, values_col, upFlank, doFla
     tmpO <- get_VectorElements(fullVal, which(fullVar) - upFlank, which(fullVar) + doFlank) %>%
         do.call(what = "rbind")
     tickNames <- paste((-upFlank):(doFlank), "bp")
-    tickNames[flankSize + 1] <- logi_col
+    tickNames[upFlank + 1] <- logi_col
     colnames(tmpO) <- tickNames
     if(addRowNames){
         rownames(tmpO) <- paste(DT$gene[DT[[logi_col]]], DT$txcoor[DT[[logi_col]]], sep = ":")
