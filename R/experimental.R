@@ -223,3 +223,139 @@ tx_shift_geneWise <- function(DT, colToShift, direction, bp, nCores){
 # set dividend and divisor nucleotides as well as a shift (1 downstream, 1 upstream, or 0)
 # From brainSTORM
 
+
+check_sameGenesInDTL <- function(DTL){
+    tmpL <- lapply(DTL, function(x) base::unique(x$gene))
+    tmpA <- base::Reduce(x = tmpL, union)
+    tmpB <- base::Reduce(x = tmpL, intersect)
+    all(tmpA %in% tmpB)
+}
+
+check_DThasCol <- function(DT, colName){
+    DT <- check_DT(DT)
+    if(!colName %in% colnames(DT)){stop("DT does not contain '", colName, "' column.")}
+}
+
+tx_test_ttest <- function(DTL, cont_var, test_groups, test_na.rm = FALSE, ...){
+    sapply(DTL, function(x) check_DThasCol(x, cont_var))
+    #check if needed to unify
+    if(!check_sameGenesInDTL(DTL)){
+        DTL <- tx_unifyTxDTL(DTL, type = "intersection")
+    }
+    test_mat <- do.call(what = "cbind", lapply(DTL, function(x) x[[cont_var]]))
+    rowTtests <- genefilter::rowttests(x = test_mat, fac = test_groups, na.rm = test_na.rm, ...)
+    if("refSeq" %in% colnames(DTL[[1]])){
+        txRES <- DTL[[1]][, c("chr", "gencoor", "strand", "gene", "txcoor", "refSeq")]
+    }else{
+        txRES <- DTL[[1]][,c("chr", "gencoor", "strand", "gene", "txcoor")]
+    }
+    txRES <- cbind(txRES, rowTtests)
+}
+
+annot_CDSsta_DTL <- Vectorize(FUN = function(DT){
+        DT$CDS_start[DT$gencoor == CDS_start[CDS_start$gene == DT$gene[1],]$gencoor] <- TRUE
+        DT}, vectorize.args = "DT", SIMPLIFY = FALSE)
+
+annot_CDSend_DTL <- Vectorize(FUN = function(DT){
+    DT$CDS_end[DT$gencoor == CDS_end[CDS_end$gene == DT$gene[1],]$gencoor] <- TRUE
+    DT}, vectorize.args = "DT", SIMPLIFY = FALSE)
+
+check_GA_txDT_compat <- function(DT, geneAnnot){
+    check_DThasCol(DT, "gene")
+    if(!all(as.character(unique(DT$gene)) %in% geneAnnot$name)){
+        stop("Not all genes in DT are contained in geneAnnot")
+    }
+}
+
+tx_get_metageneAtCDS <- function(txDT, geneAnnotation, colVars, CDS_align, upFlank, doFlank){
+    check_GA_txDT_compat(txDT, geneAnnotation)
+    invisible(sapply(c("gencoor", "strand", "gene"), function(x) check_DThasCol(txDT, x)))
+    geneAnnotation <- geneAnnotation[geneAnnotation$name %in% unique(txDT$gene)]
+    NCG <- geneAnnotation[GenomicRanges::width(geneAnnotation$thick) == 0]
+    CG <- geneAnnotation[GenomicRanges::width(geneAnnotation$thick) > 0]
+    if(length(NCG)>0){warning(length(NCG), " non-coding genes where ommitted from analysis.")}
+    if(sum(GenomicRanges::strand(CG) == "*") > 0){
+        stop("Genes with no set strand (*) are not allowed in geneAnnot.")
+    }
+    pos_CG <- as.factor(GenomicRanges::strand(CG)) == "+"
+    neg_CG <- as.factor(GenomicRanges::strand(CG)) == "-"
+    if(CDS_align == "start"){
+        CDS_start <- rbind(data.frame(gene = CG[pos_CG]$name,
+                                      gencoor = IRanges::start(CG[pos_CG]$thick)),
+                           data.frame(gene = CG[neg_CG]$name,
+                                      gencoor = IRanges::end(CG[neg_CG]$thick)))
+        txDT$CDS_start <- FALSE
+        txDT <- tx_split_DT(txDT) %>% annot_CDSsta_DTL() %>% tx_merge_DT()
+        tmpFlanks <- lapply(colVars, function(colVar){
+            tx_get_flanksFromLogicAnnot(DT = txDT,
+                                        logi_col = "CDS_start",
+                                        upFlank = upFlank,
+                                        doFlank = doFlank,
+                                        values_col = colVar,
+                                        addRowNames = TRUE)})
+    }else if(CDS_align == "end"){
+        CDS_end <- rbind(data.frame(gene = CG[pos_CG]$name,
+                                    gencoor = IRanges::end(CG[pos_CG]$thick)),
+                         data.frame(gene = CG[neg_CG]$name,
+                                    gencoor = IRanges::start(CG[neg_CG]$thick)))
+        
+        txDT$CDS_end <- FALSE
+        txDT <- tx_split_DT(txDT) %>% annot_CDSend_DTL() %>% tx_merge_DT()
+        tmpFlanks <- lapply(colVars, function(colVar){
+            tx_get_flanksFromLogicAnnot(DT = txDT,
+                                        logi_col = "CDS_end",
+                                        upFlank = upFlank,
+                                        doFlank = doFlank,
+                                        values_col = colVar,
+                                        addRowNames = TRUE)
+        }) 
+    }else{stop("CDS_align should be either 'start' or 'end'.")}
+    return(tmpFlanks %>% magrittr::set_names(colVars))
+}
+
+tx_plot_metageneAtCDS <- function(txDT, geneAnnotation, colVars, CDS_align, upFlank,
+                                  doFlank, summ_fun = "sum", roll_fun = "sum", roll_n = 100,
+                                  roll_align = "center", roll_fill = NA, smooth = TRUE, spar  = 0.3,
+                                  na.rm = TRUE, normalize = TRUE, tick_by = NULL){
+    tmpO <- tx_get_metageneAtCDS(txDT = txDT, geneAnnotation = geneAnnotation, colVars = colVars,
+                                 CDS_align = CDS_align, upFlank = upFlank, doFlank = doFlank)
+    tmpDF <- lapply(names(tmpO), function(x){
+        if(summ_fun == "sum"){
+            tmp2 <- colSums(tmpO[[x]], na.rm = na.rm)
+        }else if(summ_fun == "mean"){
+            tmp2 <- colMeans(tmpO[[x]], na.rm = na.rm)
+        }else{stop("Argument 'summ_fun' has to be either sum or mean")}
+        if(is.null(roll_fun)){
+            tmp3 <- tmp2
+        }else if(roll_fun == "sum"){
+            tmp3 <- RcppRoll::roll_sum(tmp2, n = roll_n, align = roll_align, fill = roll_fill, na.rm = na.rm)
+        }else if(roll_fun == "mean"){
+            tmp3 <- RcppRoll::roll_mean(tmp2, n = roll_n, align = roll_align, fill = roll_fill, na.rm = na.rm)
+        }else{stop("Argument 'roll_fun' has to be either sum or mean")}
+        tmpDF <- data.frame(value = tmp3, position = factor(names(tmp2), levels = names(tmp2)), group = x)
+        if(smooth){
+            tmpDF[!is.na(tmpDF$value), ]$value <- stats::smooth.spline(tmpDF[!is.na(tmpDF$value), ]$value, spar = spar)$y
+        }
+        if(normalize){
+            tmpDF$value <- (tmpDF$value / sum(tmpDF$value, na.rm = TRUE)) * 100
+        }
+        tmpDF
+    }) %>% do.call(what = "rbind") %>% data.table::data.table()
+    if(is.null(tick_by)){
+        tick_by <- upFlank / 2
+    }
+    tmpGG <- ggplot(tmpDF, aes(x = position, y = value, group = group, colour = group)) +
+        geom_line() + 
+        scale_x_discrete(limits = unique(tmpDF$position),
+                         breaks = unique(tmpDF$position)[seq(1, length(unique(tmpDF$position)), by = tick_by)]) +
+        theme_minimal() + theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
+    if(CDS_align == "end"){
+        tmpGG <- tmpGG + ggplot2::geom_vline(xintercept = "CDS_end" , col = "black", linetype="dashed") + 
+            ggtitle("Metagene aligned at CDS_end")
+    }else if(CDS_align == "start"){
+        tmpGG <- tmpGG + ggplot2::geom_vline(xintercept = "CDS_start" , col = "black", linetype="dashed") + 
+            ggtitle("Metagene aligned at CDS_start")
+    }
+    tmpGG
+}
+
