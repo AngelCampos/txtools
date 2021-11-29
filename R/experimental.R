@@ -172,15 +172,15 @@ tx_generateSingleEndFASTQ <- function(genome, geneAnnot, readLen, libSize, fileN
 
 
 # Homogenize genes in txDTs in a list
-tx_unifyTxDTL <- function(txDTL, geneAnnot = NULL, genome = NULL, type = "intersect", nCores = 1){
+tx_unifyTxDTL <- function(txDTL, geneAnnot = NULL, genome = NULL, type = "intersection", nCores = 1){
     if(!all(Reduce(intersect, lapply(txDTL, colnames)) == Reduce(union, lapply(txDTL, colnames)))){
         stop("Column names of the elements of txDTL must be the same")
     }
     if(type == "intersection"){
         selGenes <- Reduce(intersect, lapply(txDTL, function(x) unique(x$gene)))
-        new_txDTL <- mclapply(mc.cores = nCores, txDTL, function(x){
-            x <- x[x$gene %in% selGenes]
-            x[order(x$gene, x$txcoor)]
+        new_txDTL <- parallel::mclapply(mc.cores = nCores, txDTL, function(x){
+            x <- x[x$gene %in% selGenes,]
+            x[order(x$gene, x$txcoor),]
         })
         return(new_txDTL)
     }else if(type == "union"){
@@ -197,7 +197,7 @@ tx_unifyTxDTL <- function(txDTL, geneAnnot = NULL, genome = NULL, type = "inters
 }
 
 # shift column
-tx_shift_geneWise <- function(DT, colToShift, direction, bp, nCores){
+tx_shift_geneWise <- function(DT, colToShift, direction, bp, nCores = 1){
     if(!colToShift %in% colnames(DT)){
         stop("colToShift is not a column of DT")
     }

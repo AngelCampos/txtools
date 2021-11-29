@@ -228,7 +228,7 @@ tx_plot_metaGeneByBins <- function(DT, colName, nBins = 100, FUN = "mean", minTx
 tx_plot_ggseqlogo <- function(DT, logi_col, upFlank, doFlank, method = "bits"){
     tmpO <- tx_get_flankSequence(DT = DT, logi_col = logi_col, upFlank = upFlank, doFlank = doFlank)
     ggOUT <- ggseqlogo::ggseqlogo(tmpO, method = method) + ggplot2::theme_minimal() + 
-    ggplot2::ggtitle(paste0("SegLogo at '", logi_col, "'' sites"), paste("n =", length(seqs_m6A)))
+    ggplot2::ggtitle(paste0("SegLogo at '", logi_col, "' sites"), paste("n =", length(tmpO)))
     if(method == "bits"){
         ggOUT + ggplot2::ylim(0,2) 
     }else{
