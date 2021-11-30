@@ -44,7 +44,8 @@ tx_add_CtoTMR <- function(DT, minCov = 50, onNucs = c("C")){
 }
 
 # # Adding rolling function to DT
-tx_add_rollingMean <- function(DT, colName, winSize, newColName = NULL, fill = NA, align = "center", minCov = 21, nCores = 1){
+tx_add_rollingMean <- function(DT, colName, winSize, newColName = NULL,
+                               fill = NA, align = "center", minCov = 21, nCores = 1){
     if(is.null(newColName)){newColName <- paste(colName , "rollMean", sep = "_" )}
     oNames <- colnames(DT)
     tmp <- mclapply(mc.cores = nCores, tx_split_DT(DT), function(x){
@@ -298,7 +299,7 @@ tx_get_metageneAtCDS <- function(txDT, geneAnnotation, colVars, CDS_align, upFla
                                     gencoor = IRanges::end(CG[pos_CG]$thick)),
                          data.frame(gene = CG[neg_CG]$name,
                                     gencoor = IRanges::start(CG[neg_CG]$thick)))
-        
+
         txDT$CDS_end <- FALSE
         txDT <- tx_split_DT(txDT) %>% annot_CDSend_DTL() %>% tx_merge_DT()
         tmpFlanks <- lapply(colVars, function(colVar){
@@ -308,54 +309,8 @@ tx_get_metageneAtCDS <- function(txDT, geneAnnotation, colVars, CDS_align, upFla
                                         doFlank = doFlank,
                                         values_col = colVar,
                                         addRowNames = TRUE)
-        }) 
+        })
     }else{stop("CDS_align should be either 'start' or 'end'.")}
     return(tmpFlanks %>% magrittr::set_names(colVars))
-}
-
-tx_plot_metageneAtCDS <- function(txDT, geneAnnotation, colVars, CDS_align, upFlank,
-                                  doFlank, summ_fun = "sum", roll_fun = "sum", roll_n = 100,
-                                  roll_align = "center", roll_fill = NA, smooth = TRUE, spar  = 0.3,
-                                  na.rm = TRUE, normalize = TRUE, tick_by = NULL){
-    tmpO <- tx_get_metageneAtCDS(txDT = txDT, geneAnnotation = geneAnnotation, colVars = colVars,
-                                 CDS_align = CDS_align, upFlank = upFlank, doFlank = doFlank)
-    tmpDF <- lapply(names(tmpO), function(x){
-        if(summ_fun == "sum"){
-            tmp2 <- colSums(tmpO[[x]], na.rm = na.rm)
-        }else if(summ_fun == "mean"){
-            tmp2 <- colMeans(tmpO[[x]], na.rm = na.rm)
-        }else{stop("Argument 'summ_fun' has to be either sum or mean")}
-        if(is.null(roll_fun)){
-            tmp3 <- tmp2
-        }else if(roll_fun == "sum"){
-            tmp3 <- RcppRoll::roll_sum(tmp2, n = roll_n, align = roll_align, fill = roll_fill, na.rm = na.rm)
-        }else if(roll_fun == "mean"){
-            tmp3 <- RcppRoll::roll_mean(tmp2, n = roll_n, align = roll_align, fill = roll_fill, na.rm = na.rm)
-        }else{stop("Argument 'roll_fun' has to be either sum or mean")}
-        tmpDF <- data.frame(value = tmp3, position = factor(names(tmp2), levels = names(tmp2)), group = x)
-        if(smooth){
-            tmpDF[!is.na(tmpDF$value), ]$value <- stats::smooth.spline(tmpDF[!is.na(tmpDF$value), ]$value, spar = spar)$y
-        }
-        if(normalize){
-            tmpDF$value <- (tmpDF$value / sum(tmpDF$value, na.rm = TRUE)) * 100
-        }
-        tmpDF
-    }) %>% do.call(what = "rbind") %>% data.table::data.table()
-    if(is.null(tick_by)){
-        tick_by <- upFlank / 2
-    }
-    tmpGG <- ggplot(tmpDF, aes(x = position, y = value, group = group, colour = group)) +
-        geom_line() + 
-        scale_x_discrete(limits = unique(tmpDF$position),
-                         breaks = unique(tmpDF$position)[seq(1, length(unique(tmpDF$position)), by = tick_by)]) +
-        theme_minimal() + theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
-    if(CDS_align == "end"){
-        tmpGG <- tmpGG + ggplot2::geom_vline(xintercept = "CDS_end" , col = "black", linetype="dashed") + 
-            ggtitle("Metagene aligned at CDS_end")
-    }else if(CDS_align == "start"){
-        tmpGG <- tmpGG + ggplot2::geom_vline(xintercept = "CDS_start" , col = "black", linetype="dashed") + 
-            ggtitle("Metagene aligned at CDS_start")
-    }
-    tmpGG
 }
 

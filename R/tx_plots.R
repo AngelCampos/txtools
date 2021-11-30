@@ -227,11 +227,58 @@ tx_plot_metaGeneByBins <- function(DT, colName, nBins = 100, FUN = "mean", minTx
 #' @examples
 tx_plot_ggseqlogo <- function(DT, logi_col, upFlank, doFlank, method = "bits"){
     tmpO <- tx_get_flankSequence(DT = DT, logi_col = logi_col, upFlank = upFlank, doFlank = doFlank)
-    ggOUT <- ggseqlogo::ggseqlogo(tmpO, method = method) + ggplot2::theme_minimal() + 
+    ggOUT <- ggseqlogo::ggseqlogo(tmpO, method = method) + ggplot2::theme_minimal() +
     ggplot2::ggtitle(paste0("SegLogo at '", logi_col, "' sites"), paste("n =", length(tmpO)))
     if(method == "bits"){
-        ggOUT + ggplot2::ylim(0,2) 
+        ggOUT + ggplot2::ylim(0,2)
     }else{
         ggOUT
     }
+}
+
+
+tx_plot_metageneAtCDS <- function(txDT, geneAnnotation, colVars, CDS_align, upFlank,
+                                  doFlank, summ_fun = "sum", roll_fun = "sum", roll_n = 100,
+                                  roll_align = "center", roll_fill = NA, smooth = TRUE, spar  = 0.3,
+                                  na.rm = TRUE, normalize = TRUE, tick_by = NULL){
+    tmpO <- tx_get_metageneAtCDS(txDT = txDT, geneAnnotation = geneAnnotation, colVars = colVars,
+                                 CDS_align = CDS_align, upFlank = upFlank, doFlank = doFlank)
+    tmpDF <- lapply(names(tmpO), function(x){
+        if(summ_fun == "sum"){
+            tmp2 <- colSums(tmpO[[x]], na.rm = na.rm)
+        }else if(summ_fun == "mean"){
+            tmp2 <- colMeans(tmpO[[x]], na.rm = na.rm)
+        }else{stop("Argument 'summ_fun' has to be either sum or mean")}
+        if(is.null(roll_fun)){
+            tmp3 <- tmp2
+        }else if(roll_fun == "sum"){
+            tmp3 <- RcppRoll::roll_sum(tmp2, n = roll_n, align = roll_align, fill = roll_fill, na.rm = na.rm)
+        }else if(roll_fun == "mean"){
+            tmp3 <- RcppRoll::roll_mean(tmp2, n = roll_n, align = roll_align, fill = roll_fill, na.rm = na.rm)
+        }else{stop("Argument 'roll_fun' has to be either sum or mean")}
+        tmpDF <- data.frame(value = tmp3, position = factor(names(tmp2), levels = names(tmp2)), group = x)
+        if(smooth){
+            tmpDF[!is.na(tmpDF$value), ]$value <- stats::smooth.spline(tmpDF[!is.na(tmpDF$value), ]$value, spar = spar)$y
+        }
+        if(normalize){
+            tmpDF$value <- (tmpDF$value / sum(tmpDF$value, na.rm = TRUE)) * 100
+        }
+        tmpDF
+    }) %>% do.call(what = "rbind") %>% data.table::data.table()
+    if(is.null(tick_by)){
+        tick_by <- upFlank / 2
+    }
+    tmpGG <- ggplot(tmpDF, aes(x = position, y = value, group = group, colour = group)) +
+        geom_line() +
+        scale_x_discrete(limits = unique(tmpDF$position),
+                         breaks = unique(tmpDF$position)[seq(1, length(unique(tmpDF$position)), by = tick_by)]) +
+        theme_minimal() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    if(CDS_align == "end"){
+        tmpGG <- tmpGG + ggplot2::geom_vline(xintercept = "CDS_end" , col = "black", linetype="dashed") +
+            ggtitle("Metagene aligned at CDS_end")
+    }else if(CDS_align == "start"){
+        tmpGG <- tmpGG + ggplot2::geom_vline(xintercept = "CDS_start" , col = "black", linetype="dashed") +
+            ggtitle("Metagene aligned at CDS_start")
+    }
+    tmpGG
 }
