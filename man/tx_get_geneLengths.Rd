@@ -12,7 +12,7 @@ as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT}}
 functions.}
 }
 \value{
-numeric
+named numeric. Length of genes as per times they appear in DT
 }
 \description{
 Outputs the length of the transcripts in the DT
