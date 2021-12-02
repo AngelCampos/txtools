@@ -236,6 +236,77 @@ check_DThasCol <- function(DT, colName){
     if(!colName %in% colnames(DT)){stop("DT does not contain '", colName, "' column.")}
 }
 
+# Statistical Tests functions ##################################################
+
+tx_test_LRTedgeR <- function(DTL, tVar, sVar, test_groups, minTrials = 50){
+    DTL <- tx_unifyTxDTL(DTL)
+    cMat_cov <- lapply(DTL, function(DT){
+        DT[[tVar]]
+    }) %>% do.call(what = cbind) %>% 
+        set_colnames(paste0(names(DTL), "-cov")) %>%
+        set_rownames(1:nrow(DTL[[1]]))
+    cMat_sta <- lapply(DTL, function(DT){
+        DT[[sVar]]
+    }) %>% do.call(what = cbind) %>% 
+        set_colnames(paste0(names(DTL), "-sta")) %>% set_rownames(1:nrow(DTL[[1]]))
+    cMat_cov <- cMat_cov - cMat_sta # Difference to make starts + cov = total cov (needed by edgeR)
+    # DGE object creation
+    Treat <- factor(lapply(test_groups, function(x) rep(x, 2)) %>% unlist)
+    smpNames <- paste(lapply(names(DTL), function(x) rep(x, 2)) %>% unlist(),
+                      c("-sta", "-cov"), sep = "")
+    countTable <- cbind(cMat_sta, cMat_cov)[,smpNames]
+    hasNo_NAs <- !rowSums(is.na(countTable)) > 0
+    Coverage <- cMat_sta + cMat_cov
+    HasCoverage <- rowSums(Coverage >= minTrials) == ncol(Coverage)
+    HasBoth <- rowSums(cMat_sta) > 0 & rowSums(cMat_cov) > 0
+    cat("Attempting to run in", sum(hasNo_NAs & HasCoverage & HasBoth), "sites\n")
+    yall <- edgeR::DGEList(counts = countTable[hasNo_NAs & HasCoverage & HasBoth,], group = Treat)
+    yall$genes <- data.frame(DTL[[1]][hasNo_NAs & HasCoverage & HasBoth,c("gene", "txcoor")])
+    # Filter by coverage and change in start and coverage (not always being 0)
+    RTstoppage <- gl(n = 2, k = 1, length = ncol(yall), labels=c("sta","cov"))
+    y <- yall
+    # library size
+    TotalLibSize <- y$samples$lib.size[RTstoppage=="sta"] + y$samples$lib.size[RTstoppage=="cov"]
+    y$samples$lib.size <- rep(TotalLibSize, each=2)
+    META <- data.table(names(DTL), group = test_groups)
+    # design matrix
+    designSL <- model.matrix(~0+group, data = META)
+    design <- edgeR::modelMatrixMeth(designSL)
+    # Estimate dispersion
+    cat("Estimating data dispersion and fitting GNB model\n")
+    y1 <- edgeR::estimateDisp(y, design=design, trend = "none", )
+    # Fitting Negative Binomial Generalized Linear Models
+    fit <- edgeR::glmFit(y1, design)
+    #Contrast
+    contr <- limma::makeContrasts(onlyIP = (groupWT-groupKO), levels = design)
+    #Likelihood ratio test
+    lrt <- edgeR::glmLRT(fit, contrast = contr[, "onlyIP"])
+    #Results table
+    RES_sta <- cbind(lrt$table, y$genes)
+    RES_sta$FDR <- p.adjust(RES_sta$PValue, method = "fdr")
+    test_mat <- do.call(what = "cbind", lapply(DTL, function(DT) DT[[sVar]] / DT[[tVar]]))
+    rownames(test_mat) <- paste(DTL[[1]][["gene"]], DTL[[1]][["txcoor"]], sep = ":")
+    test_mat <- test_mat[paste(y$genes$gene, y$genes$txcoor, sep = ":"),] %>%
+        rowMeansColG(test_groups)
+    test_mat <- test_mat[,1] - test_mat[,2]
+    RES_sta <- data.table(RES_sta, RD = test_mat)
+    RES_sta <- RES_sta[order(RES_sta$FDR, decreasing = FALSE),]
+    if("refSeq" %in% colnames(DTL[[1]])){
+        RES_sta <- dplyr::right_join(RES_sta,
+                                     select(DTL[[1]],
+                                            c("chr", "gencoor", "strand",
+                                              "gene", "txcoor", "refSeq")),
+                                     by = c("gene", "txcoor"))
+    }else{
+        RES_sta <- dplyr::right_join(RES_sta,
+                                     select(DTL[[1]],
+                                            c("chr", "gencoor", "strand",
+                                              "gene", "txcoor")))
+    }
+    return(RES_sta)
+}
+
+
 tx_test_ttest <- function(DTL, cont_var, test_groups, test_na.rm = FALSE, ...){
     sapply(DTL, function(x) check_DThasCol(x, cont_var))
     #check if needed to unify
