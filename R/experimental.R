@@ -219,7 +219,6 @@ tx_shift_geneWise <- function(DT, colToShift, direction, bp, nCores = 1){
     return(OUT)
 }
 
-# TODO ####
 # Make generic function to calculate the rate of nucleotide misincorporation
 # set dividend and divisor nucleotides as well as a shift (1 downstream, 1 upstream, or 0)
 # From brainSTORM
@@ -253,11 +252,11 @@ tx_test_ttest <- function(DTL, cont_var, test_groups, test_na.rm = FALSE, ...){
     txRES <- cbind(txRES, rowTtests)
 }
 
-annot_CDSsta_DTL <- Vectorize(FUN = function(DT){
+annot_CDSsta_DTL <- Vectorize(FUN = function(DT, CDS_start){
         DT$CDS_start[DT$gencoor == CDS_start[CDS_start$gene == DT$gene[1],]$gencoor] <- TRUE
         DT}, vectorize.args = "DT", SIMPLIFY = FALSE)
 
-annot_CDSend_DTL <- Vectorize(FUN = function(DT){
+annot_CDSend_DTL <- Vectorize(FUN = function(DT, CDS_end){
     DT$CDS_end[DT$gencoor == CDS_end[CDS_end$gene == DT$gene[1],]$gencoor] <- TRUE
     DT}, vectorize.args = "DT", SIMPLIFY = FALSE)
 
@@ -286,7 +285,7 @@ tx_get_metageneAtCDS <- function(txDT, geneAnnotation, colVars, CDS_align, upFla
                            data.frame(gene = CG[neg_CG]$name,
                                       gencoor = IRanges::end(CG[neg_CG]$thick)))
         txDT$CDS_start <- FALSE
-        txDT <- tx_split_DT(txDT) %>% annot_CDSsta_DTL() %>% tx_merge_DT()
+        txDT <- tx_split_DT(txDT) %>% annot_CDSsta_DTL(CDS_start = CDS_start) %>% tx_merge_DT()
         tmpFlanks <- lapply(colVars, function(colVar){
             tx_get_flanksFromLogicAnnot(DT = txDT,
                                         logi_col = "CDS_start",
@@ -301,7 +300,7 @@ tx_get_metageneAtCDS <- function(txDT, geneAnnotation, colVars, CDS_align, upFla
                                     gencoor = IRanges::start(CG[neg_CG]$thick)))
 
         txDT$CDS_end <- FALSE
-        txDT <- tx_split_DT(txDT) %>% annot_CDSend_DTL() %>% tx_merge_DT()
+        txDT <- tx_split_DT(txDT) %>% annot_CDSend_DTL(CDS_end = CDS_end) %>% tx_merge_DT()
         tmpFlanks <- lapply(colVars, function(colVar){
             tx_get_flanksFromLogicAnnot(DT = txDT,
                                         logi_col = "CDS_end",

@@ -31,7 +31,7 @@ tx_plot_nucFreq <- function(DT,
     allCols <- all(c("refSeq", "A", "C", "G", "T", "-", "N") %in% names(DT))
     if(!allCols){
         stop("DT must containg the reference sequence column 'refSeq' along ",
-        "nucleotide frequency columns 'A', 'C', 'G', 'T', 'N', and '-'")
+             "nucleotide frequency columns 'A', 'C', 'G', 'T', 'N', and '-'")
     }
     if(!(gene %in% DT$gene)){stop("gene not found in DT object")}
     DT <- DT[DT$gene == gene,]
@@ -128,7 +128,7 @@ tx_plot_staEndCov <- function(
     DT$cov <- DT$cov - DT$start_5p - DT$end_3p
     if(removeCov){DT$cov <- 0}
     tmpData <- tidyr::pivot_longer(DT, cols = c("start_5p", "end_3p", "cov"),
-                            values_to = "counts", names_to = "coverage") %>%
+                                   values_to = "counts", names_to = "coverage") %>%
         data.table::data.table()
     tmpData$coverage <- factor(tmpData$coverage, levels = c("cov",
                                                             "start_5p",
@@ -228,7 +228,7 @@ tx_plot_metaGeneByBins <- function(DT, colName, nBins = 100, FUN = "mean", minTx
 tx_plot_ggseqlogo <- function(DT, logi_col, upFlank, doFlank, method = "bits"){
     tmpO <- tx_get_flankSequence(DT = DT, logi_col = logi_col, upFlank = upFlank, doFlank = doFlank)
     ggOUT <- ggseqlogo::ggseqlogo(tmpO, method = method) + ggplot2::theme_minimal() +
-    ggplot2::ggtitle(paste0("SegLogo at '", logi_col, "' sites"), paste("n =", length(tmpO)))
+        ggplot2::ggtitle(paste0("SegLogo at '", logi_col, "' sites"), paste("n =", length(tmpO)))
     if(method == "bits"){
         ggOUT + ggplot2::ylim(0,2)
     }else{

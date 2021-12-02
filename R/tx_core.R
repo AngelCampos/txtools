@@ -643,6 +643,11 @@ tx_complete_DT <- function(DT, geneAnnot, genome = NULL, nCores = 1){
     tx_merge_DT(completeDTL)
 }
 
+tx_orderDT <- function(DT){
+    DT[order(DT$gene, DT$txcoor),]
+}
+
+
 # data.table functions #########################################################
 
 #' Add reference sequence to a data.table
@@ -1089,7 +1094,7 @@ tx_get_geneLengths <- function(DT){
     tmpTb %>% as.numeric() %>% magrittr::set_names(names(tmpTb))
 }
 
-# Other accessory functions #####################################################
+# Other accessory functions ####################################################
 
 #' Centered numeric sequence
 #'
