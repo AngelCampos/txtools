@@ -63,12 +63,12 @@ tx_shift_geneWise <- function(DT, colToShift, direction, bp, nCores){
     DTL <- tx_split_DT(DT)
     if(direction == "upstream"){
         OUT <- mclapply(mc.cores = nCores, DTL, function(x){
-            x[[colToShift]] <- c(tail(x[[colToShift]], -bp), rep(NA, bp))
+            x[[colToShift]] <- c(utils::tail(x[[colToShift]], -bp), rep(NA, bp))
             return(x)
         }) %>% tx_merge_DT()
     }else if(direction == "downstream"){
         OUT <- mclapply(mc.cores = nCores, DTL, function(x){
-            x[[colToShift]] <- c(rep(NA, bp), head(x[[colToShift]], -bp))
+            x[[colToShift]] <- c(rep(NA, bp), utils::head(x[[colToShift]], -bp))
             return(x)
         }) %>% tx_merge_DT()
     }else{
@@ -204,13 +204,13 @@ tx_shift_geneWise <- function(DT, colToShift, direction, bp, nCores = 1){
     }
     DTL <- tx_split_DT(DT)
     if(direction == "upstream"){
-        OUT <- mclapply(mc.cores = nCores, DTL, function(x){
-            x[[colToShift]] <- c(tail(x[[colToShift]], -bp), rep(NA, bp))
+        OUT <- parallel::mclapply(mc.cores = nCores, DTL, function(x){
+            x[[colToShift]] <- c(utils::tail(x[[colToShift]], -bp), rep(NA, bp))
             return(x)
         }) %>% tx_merge_DT()
     }else if(direction == "downstream"){
-        OUT <- mclapply(mc.cores = nCores, DTL, function(x){
-            x[[colToShift]] <- c(rep(NA, bp), head(x[[colToShift]], -bp))
+        OUT <- parallel::mclapply(mc.cores = nCores, DTL, function(x){
+            x[[colToShift]] <- c(rep(NA, bp), utils::head(x[[colToShift]], -bp))
             return(x)
         }) %>% tx_merge_DT()
     }else{
