@@ -172,7 +172,7 @@ tx_generateSingleEndFASTQ <- function(genome, geneAnnot, readLen, libSize, fileN
 }
 
 
-# Homogenize genes in txDTs in a list
+# Even genes of a list of txDTs
 tx_unifyTxDTL <- function(txDTL, geneAnnot = NULL, genome = NULL, type = "intersection", nCores = 1){
     if(!all(Reduce(intersect, lapply(txDTL, colnames)) == Reduce(union, lapply(txDTL, colnames)))){
         stop("Column names of the elements of txDTL must be the same")
