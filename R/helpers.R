@@ -105,16 +105,18 @@ hlpr_ReadsInGene <- function(reads, iGene, geneAnnot, split_i, allExons, minRead
     if(length(pass) < minReads){return(GenomicRanges::GRanges())} # No reads Return empty GA
     # Boundaries of merged reads
     if(iStrand == "+"){
-        tReads <- data.frame(start = match(GenomicRanges::start(iReads_r1[pass]), iExon),
+        tReads <- data.frame(start    = match(GenomicRanges::start(iReads_r1[pass]), iExon),
                              end      = match(GenomicRanges::end(iReads_r2[pass]), iExon),
                              strand   = GenomicRanges::strand(iReads_r1[pass]),
-                             seqnames = iGene) %>% plyranges::as_granges()
+                             seqnames = iGene)
     }else if(iStrand == "-"){
-        tReads <- data.frame(start = match(GenomicRanges::end(iReads_r1[pass]), iExon),
+        tReads <- data.frame(start    = match(GenomicRanges::end(iReads_r1[pass]), iExon),
                              end      = match(GenomicRanges::start(iReads_r2[pass]), iExon),
                              strand   = GenomicRanges::strand(iReads_r1[pass]),
-                             seqnames = iGene) %>% plyranges::as_granges()
+                             seqnames = iGene)
     }
+    pass <- pass[tReads$end >= (tReads$start -1)]
+    tReads <- check_DFforGRanges(tReads) %>% plyranges::as_granges()
     names(tReads) <- names(reads)[selReadsbyPair][pass]
     GenomeInfoDb::seqlengths(tReads) <- length(iExon)
     # Result if no sequence is input or required
@@ -915,6 +917,12 @@ check_BAM_has_seq <- function(x){
                  "setting the 'loadSeq' argument to TRUE.")
         }
     }
+}
+
+#TODO: manage omitted ranges, print a warning if possible
+# Check that end is >= to start -1, to make GenomicRanges out of dataframes
+check_DFforGRanges <- function(x){
+    x[x$end >= (x$start -1),]
 }
 
 # Hidden functions (to decide if they'll be incorporated) ###################
