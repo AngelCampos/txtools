@@ -34,89 +34,12 @@ tx_plot_metaGeneByBins <- function(DT, colName, nBins = 100, FUN = "mean", minTx
     }
 }
 
-
-tx_add_CtoTMR <- function(DT, minCov = 50, onNucs = c("C")){
-    DT <- data.table::data.table(DT)
-    tmp <- round(DT$`T` / (DT$`T` + DT$`C`), 6)
-    tmp[DT$cov < minCov] <- NA
-    tmp[!(DT$refSeq %in% onNucs)] <- NA
-    tibble::add_column(DT, MR_CtoT = tmp)
-}
-
-# # Adding rolling function to DT
-tx_add_rollingMean <- function(DT, colName, winSize, newColName = NULL,
-                               fill = NA, align = "center", minCov = 21, nCores = 1){
-    if(is.null(newColName)){newColName <- paste(colName , "rollMean", sep = "_" )}
-    oNames <- colnames(DT)
-    tmp <- mclapply(mc.cores = nCores, tx_split_DT(DT), function(x){
-        RcppRoll::roll_mean(x[[colName]], n = winSize, fill = fill, align = align)
-    }) %>% unlist() %>% unname()
-    tmp[DT$cov < minCov] <- NA
-    tibble::add_column(DT, tmp) %>% magrittr::set_names(c(oNames, newColName))
-}
-
-# shift column
-tx_shift_geneWise <- function(DT, colToShift, direction, bp, nCores){
-    if(!colToShift %in% colnames(DT)){
-        stop("colToShift is not a column of DT")
-    }
-    DTL <- tx_split_DT(DT)
-    if(direction == "upstream"){
-        OUT <- mclapply(mc.cores = nCores, DTL, function(x){
-            x[[colToShift]] <- c(utils::tail(x[[colToShift]], -bp), rep(NA, bp))
-            return(x)
-        }) %>% tx_merge_DT()
-    }else if(direction == "downstream"){
-        OUT <- mclapply(mc.cores = nCores, DTL, function(x){
-            x[[colToShift]] <- c(rep(NA, bp), utils::head(x[[colToShift]], -bp))
-            return(x)
-        }) %>% tx_merge_DT()
-    }else{
-        stop("Input to argument 'direction' is not either 'downstream' or 'upstream'.")
-    }
-    return(OUT)
-}
-
 # Combine lists of transcript reads processed by tx_reads
 tx_combineTxReadsList <- function(txReadsList){
     tmp <- lapply(txReadsList, function(x) unlist(x)) %>%
         GenomicRanges::GRangesList() %>%
         unlist()
     split(tmp, seqnames(tmp))
-}
-
-# Linearized version tx_get_neigh...
-tx_get_flankSequence <- function(DT, logi_col, upFlank, doFlank, addNames = FALSE){
-    if(!is.logical(DT[[logi_col]])){stop("column ", logi_col, " must be of class 'logical'.")}
-    if(!"refSeq" %in% colnames(DT)){stop("refSeq must be in DT. You can add it with tx_add_refSeq().")}
-    if(!"gene" %in% colnames(DT)){stop("gene column must be in DT.")}
-    Igenes <- as.character(unique(DT[DT[[logi_col]],][["gene"]]))
-    DT <- DT[DT$gene %in% Igenes,]
-    tmpSeq <- split(DT$refSeq, forcats::fct_drop(DT$gene))
-    tmpVar <- split(DT[[logi_col]], forcats::fct_drop(DT$gene))
-    spacer <- rep(".", max(upFlank, doFlank))
-    spacerVar <- rep(NA, max(upFlank, doFlank))
-    fullSeq <- c(spacer, lapply(tmpSeq, function(x) (c(x, spacer))) %>%
-                     do.call(what = "c")) %>% paste(collapse = "")
-    fullVar <- c(spacerVar, lapply(tmpVar, function(x) (c(x, spacerVar))) %>% do.call(what = "c"))
-    tmpSeq <- stringr::str_sub(fullSeq, which(fullVar) - upFlank, which(fullVar) + doFlank)
-    if(any(grepl(tmpSeq, pattern = "\\."))){
-        warning("Some sequences reached the end of transcript, a '.'",
-                "was added in place, which may affect downstream results.")
-    }
-    if(addNames){
-        names(tmpSeq) <- paste(DT$gene[DT[[logi_col]]], DT$txcoor[DT[[logi_col]]], sep = ":")
-    }
-    return(tmpSeq)
-}
-
-# Function for cytidine persistence to Bisulphite treatment
-tx_add_CtoTMR <- function(DT, minCov = 50, onNucs = c("C")){
-    DT <- data.table::data.table(DT)
-    tmp <- round(DT$`T` / (DT$`T` + DT$`C`), 6)
-    tmp[DT$cov < minCov] <- NA
-    tmp[!(DT$refSeq %in% onNucs)] <- NA
-    tibble::add_column(DT, MR_CtoT = tmp)
 }
 
 # Function to extract the sequences of a transcriptome from a genome
@@ -171,54 +94,6 @@ tx_generateSingleEndFASTQ <- function(genome, geneAnnot, readLen, libSize, fileN
                                 filepath = fileName, format = "fastq", compress = TRUE)
 }
 
-
-# Even genes of a list of txDTs
-tx_unifyTxDTL <- function(txDTL, geneAnnot = NULL, genome = NULL, type = "intersection", nCores = 1){
-    if(!all(Reduce(intersect, lapply(txDTL, colnames)) == Reduce(union, lapply(txDTL, colnames)))){
-        stop("Column names of the elements of txDTL must be the same")
-    }
-    if(type == "intersection"){
-        selGenes <- Reduce(intersect, lapply(txDTL, function(x) unique(x$gene)))
-        new_txDTL <- parallel::mclapply(mc.cores = nCores, txDTL, function(x){
-            x <- x[x$gene %in% selGenes,]
-            x[order(x$gene, x$txcoor),]
-        })
-        return(new_txDTL)
-    }else if(type == "union"){
-        if(is.null(geneAnnot)){stop("geneAnnot must be provided, as loaded with tx_load_bed()")}
-        if(is.null(genome)){stop("geneAnnot must be provided, as loaded with tx_load_genome()")}
-        selGenes <- Reduce(union, mclapply(mc.cores = nCores, txDTL, function(x) unique(x$gene)))
-        selGA <- geneAnnot[geneAnnot$name %in% selGenes]
-        new_txDTL <- mclapply(mc.cores = nCores, txDTL, function(x){
-            x <- x[x$gene %in% selGenes]
-            x <- x[order(x$gene, x$txcoor)]
-            tx_complete_DT(DT = x, geneAnnot = selGA, nCores = nCores, genome = genome)
-        })
-    }else{stop("Argument 'type' must be either 'intersection' or 'union'")}
-}
-
-# shift column
-tx_shift_geneWise <- function(DT, colToShift, direction, bp, nCores = 1){
-    if(!colToShift %in% colnames(DT)){
-        stop("colToShift is not a column of DT")
-    }
-    DTL <- tx_split_DT(DT)
-    if(direction == "upstream"){
-        OUT <- parallel::mclapply(mc.cores = nCores, DTL, function(x){
-            x[[colToShift]] <- c(utils::tail(x[[colToShift]], -bp), rep(NA, bp))
-            return(x)
-        }) %>% tx_merge_DT()
-    }else if(direction == "downstream"){
-        OUT <- parallel::mclapply(mc.cores = nCores, DTL, function(x){
-            x[[colToShift]] <- c(rep(NA, bp), utils::head(x[[colToShift]], -bp))
-            return(x)
-        }) %>% tx_merge_DT()
-    }else{
-        stop("Input to argument 'direction' is not either 'downstream' or 'upstream'.")
-    }
-    return(OUT)
-}
-
 # Make generic function to calculate the rate of nucleotide misincorporation
 # set dividend and divisor nucleotides as well as a shift (1 downstream, 1 upstream, or 0)
 # From brainSTORM
@@ -236,92 +111,7 @@ check_DThasCol <- function(DT, colName){
     if(!colName %in% colnames(DT)){stop("DT does not contain '", colName, "' column.")}
 }
 
-# Statistical Tests functions ##################################################
-
-tx_test_LRTedgeR <- function(DTL, tVar, sVar, test_groups, minTrials = 50){
-    DTL <- tx_unifyTxDTL(DTL)
-    cMat_cov <- lapply(DTL, function(DT){
-        DT[[tVar]]
-    }) %>% do.call(what = cbind) %>% 
-        set_colnames(paste0(names(DTL), "-cov")) %>%
-        set_rownames(1:nrow(DTL[[1]]))
-    cMat_sta <- lapply(DTL, function(DT){
-        DT[[sVar]]
-    }) %>% do.call(what = cbind) %>% 
-        set_colnames(paste0(names(DTL), "-sta")) %>% set_rownames(1:nrow(DTL[[1]]))
-    cMat_cov <- cMat_cov - cMat_sta # Difference to make starts + cov = total cov (needed by edgeR)
-    # DGE object creation
-    Treat <- factor(lapply(test_groups, function(x) rep(x, 2)) %>% unlist)
-    smpNames <- paste(lapply(names(DTL), function(x) rep(x, 2)) %>% unlist(),
-                      c("-sta", "-cov"), sep = "")
-    countTable <- cbind(cMat_sta, cMat_cov)[,smpNames]
-    hasNo_NAs <- !rowSums(is.na(countTable)) > 0
-    Coverage <- cMat_sta + cMat_cov
-    HasCoverage <- rowSums(Coverage >= minTrials) == ncol(Coverage)
-    HasBoth <- rowSums(cMat_sta) > 0 & rowSums(cMat_cov) > 0
-    cat("Attempting to run in", sum(hasNo_NAs & HasCoverage & HasBoth), "sites\n")
-    yall <- edgeR::DGEList(counts = countTable[hasNo_NAs & HasCoverage & HasBoth,], group = Treat)
-    yall$genes <- data.frame(DTL[[1]][hasNo_NAs & HasCoverage & HasBoth,c("gene", "txcoor")])
-    # Filter by coverage and change in start and coverage (not always being 0)
-    RTstoppage <- gl(n = 2, k = 1, length = ncol(yall), labels=c("sta","cov"))
-    y <- yall
-    # library size
-    TotalLibSize <- y$samples$lib.size[RTstoppage=="sta"] + y$samples$lib.size[RTstoppage=="cov"]
-    y$samples$lib.size <- rep(TotalLibSize, each=2)
-    META <- data.table(names(DTL), group = test_groups)
-    # design matrix
-    designSL <- model.matrix(~0+group, data = META)
-    design <- edgeR::modelMatrixMeth(designSL)
-    # Estimate dispersion
-    cat("Estimating data dispersion and fitting GNB model\n")
-    y1 <- edgeR::estimateDisp(y, design=design, trend = "none", )
-    # Fitting Negative Binomial Generalized Linear Models
-    fit <- edgeR::glmFit(y1, design)
-    #Contrast
-    contr <- limma::makeContrasts(onlyIP = (groupWT-groupKO), levels = design)
-    #Likelihood ratio test
-    lrt <- edgeR::glmLRT(fit, contrast = contr[, "onlyIP"])
-    #Results table
-    RES_sta <- cbind(lrt$table, y$genes)
-    RES_sta$FDR <- p.adjust(RES_sta$PValue, method = "fdr")
-    test_mat <- do.call(what = "cbind", lapply(DTL, function(DT) DT[[sVar]] / DT[[tVar]]))
-    rownames(test_mat) <- paste(DTL[[1]][["gene"]], DTL[[1]][["txcoor"]], sep = ":")
-    test_mat <- test_mat[paste(y$genes$gene, y$genes$txcoor, sep = ":"),] %>%
-        rowMeansColG(test_groups)
-    test_mat <- test_mat[,1] - test_mat[,2]
-    RES_sta <- data.table(RES_sta, RD = test_mat)
-    RES_sta <- RES_sta[order(RES_sta$FDR, decreasing = FALSE),]
-    if("refSeq" %in% colnames(DTL[[1]])){
-        RES_sta <- dplyr::right_join(RES_sta,
-                                     select(DTL[[1]],
-                                            c("chr", "gencoor", "strand",
-                                              "gene", "txcoor", "refSeq")),
-                                     by = c("gene", "txcoor"))
-    }else{
-        RES_sta <- dplyr::right_join(RES_sta,
-                                     select(DTL[[1]],
-                                            c("chr", "gencoor", "strand",
-                                              "gene", "txcoor")))
-    }
-    return(RES_sta)
-}
-
-
-tx_test_ttest <- function(DTL, cont_var, test_groups, test_na.rm = FALSE, ...){
-    sapply(DTL, function(x) check_DThasCol(x, cont_var))
-    #check if needed to unify
-    if(!check_sameGenesInDTL(DTL)){
-        DTL <- tx_unifyTxDTL(DTL, type = "intersection")
-    }
-    test_mat <- do.call(what = "cbind", lapply(DTL, function(x) x[[cont_var]]))
-    rowTtests <- genefilter::rowttests(x = test_mat, fac = test_groups, na.rm = test_na.rm, ...)
-    if("refSeq" %in% colnames(DTL[[1]])){
-        txRES <- DTL[[1]][, c("chr", "gencoor", "strand", "gene", "txcoor", "refSeq")]
-    }else{
-        txRES <- DTL[[1]][,c("chr", "gencoor", "strand", "gene", "txcoor")]
-    }
-    txRES <- cbind(txRES, rowTtests)
-}
+# Meta gene #####
 
 annot_CDSsta_DTL <- Vectorize(FUN = function(DT, CDS_start){
         DT$CDS_start[DT$gencoor == CDS_start[CDS_start$gene == DT$gene[1],]$gencoor] <- TRUE
@@ -338,49 +128,14 @@ check_GA_txDT_compat <- function(DT, geneAnnot){
     }
 }
 
-tx_get_metageneAtCDS <- function(txDT, geneAnnotation, colVars, CDS_align, upFlank, doFlank){
-    check_GA_txDT_compat(txDT, geneAnnotation)
-    invisible(sapply(c("gencoor", "strand", "gene"), function(x) check_DThasCol(txDT, x)))
-    geneAnnotation <- geneAnnotation[geneAnnotation$name %in% unique(txDT$gene)]
-    NCG <- geneAnnotation[GenomicRanges::width(geneAnnotation$thick) == 0]
-    CG <- geneAnnotation[GenomicRanges::width(geneAnnotation$thick) > 0]
-    if(length(NCG)>0){warning(length(NCG), " non-coding genes where ommitted from analysis.")}
-    if(sum(GenomicRanges::strand(CG) == "*") > 0){
-        stop("Genes with no set strand (*) are not allowed in geneAnnot.")
-    }
-    pos_CG <- as.factor(GenomicRanges::strand(CG)) == "+"
-    neg_CG <- as.factor(GenomicRanges::strand(CG)) == "-"
-    if(CDS_align == "start"){
-        CDS_start <- rbind(data.frame(gene = CG[pos_CG]$name,
-                                      gencoor = IRanges::start(CG[pos_CG]$thick)),
-                           data.frame(gene = CG[neg_CG]$name,
-                                      gencoor = IRanges::end(CG[neg_CG]$thick)))
-        txDT$CDS_start <- FALSE
-        txDT <- tx_split_DT(txDT) %>% annot_CDSsta_DTL(CDS_start = CDS_start) %>% tx_merge_DT()
-        tmpFlanks <- lapply(colVars, function(colVar){
-            tx_get_flanksFromLogicAnnot(DT = txDT,
-                                        logi_col = "CDS_start",
-                                        upFlank = upFlank,
-                                        doFlank = doFlank,
-                                        values_col = colVar,
-                                        addRowNames = TRUE)})
-    }else if(CDS_align == "end"){
-        CDS_end <- rbind(data.frame(gene = CG[pos_CG]$name,
-                                    gencoor = IRanges::end(CG[pos_CG]$thick)),
-                         data.frame(gene = CG[neg_CG]$name,
-                                    gencoor = IRanges::start(CG[neg_CG]$thick)))
+# Potential functions ##########################################################
 
-        txDT$CDS_end <- FALSE
-        txDT <- tx_split_DT(txDT) %>% annot_CDSend_DTL(CDS_end = CDS_end) %>% tx_merge_DT()
-        tmpFlanks <- lapply(colVars, function(colVar){
-            tx_get_flanksFromLogicAnnot(DT = txDT,
-                                        logi_col = "CDS_end",
-                                        upFlank = upFlank,
-                                        doFlank = doFlank,
-                                        values_col = colVar,
-                                        addRowNames = TRUE)
-        })
-    }else{stop("CDS_align should be either 'start' or 'end'.")}
-    return(tmpFlanks %>% magrittr::set_names(colVars))
-}
-
+# # Apply a function in a binned manner to a data.table column
+# tx_DT_bin_function <- function(DT, col, bins = 100, fun = mean){
+#     tapply(X = DT[[col]], INDEX = cut_interval(1:nrow(DT), bins), FUN = fun) %>% set_names(c())
+# }
+#
+# # Apply a function in a binned manner to a vector
+# tx_bin_function <- function(x, bins = 100, fun = mean){
+#     tapply(X = x, INDEX = cut_interval(1:length(x), bins), FUN = fun) %>% set_names(c())
+# }
