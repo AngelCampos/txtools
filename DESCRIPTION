@@ -54,7 +54,10 @@ Imports:
     methods,
     BiocGenerics,
     forcats,
-    ggseqlogo
+    ggseqlogo,
+    RcppRoll,
+    lifecycle
 VignetteBuilder: knitr
 biocViews: DataImport, DataRepresentation, Coverage, 
     Epitranscriptomics, RNASeq, Transcription, SNP
+Roxygen: list(markdown = TRUE)
