@@ -220,18 +220,18 @@ hlpr_ReadsInGene_SingleEnd <- function(reads, iGene, geneAnnot, split_i,
     if(length(pass) < minReads){return(GenomicRanges::GRanges())} # No reads Return empty GA
     # Boundaries of merged reads
     if(iStrand == "+"){
-        tReads <- plyranges::as_granges(
-            data.frame(start    = match(GenomicRanges::start(iReads_r1[pass]), iExon),
-                       end      = match(GenomicRanges::end(iReads_r1[pass]), iExon),
-                       strand   = GenomicRanges::strand(iReads_r1[pass]),
-                       seqnames = iGene))
+        tReads <- data.frame(start  = match(GenomicRanges::start(iReads_r1[pass]), iExon),
+                             end      = match(GenomicRanges::end(iReads_r1[pass]), iExon),
+                             strand   = GenomicRanges::strand(iReads_r1[pass]),
+                             seqnames = iGene)
     }else if(iStrand == "-"){
-        tReads <- plyranges::as_granges(
-            data.frame(start    = match(GenomicRanges::end(iReads_r1[pass]), iExon),
-                       end      = match(GenomicRanges::start(iReads_r1[pass]), iExon),
-                       strand   = GenomicRanges::strand(iReads_r1[pass]),
-                       seqnames = iGene))
+        tReads <- data.frame(start    = match(GenomicRanges::end(iReads_r1[pass]), iExon),
+                             end      = match(GenomicRanges::start(iReads_r1[pass]), iExon),
+                             strand   = GenomicRanges::strand(iReads_r1[pass]),
+                             seqnames = iGene)
     }
+    pass <- pass[tReads$end >= (tReads$start -1)]
+    tReads <- check_DFforGRanges(tReads) %>% plyranges::as_granges()
     names(tReads) <- names(reads)[selReadsbyPair][pass]
     GenomeInfoDb::seqlengths(tReads) <- length(iExon)
     # Removing reads that don't match in length when passed to transcriptomic space
@@ -753,7 +753,7 @@ hlpr_genCoorTabGenes <- function(genes, geneAnnot, fastaGenome = NULL, nCores = 
 # Manipulating DTs #############################################################
 
 # Removing UTR portions of DT, assuming first bases are
-hlp_remove_UTR <- function(x, cut_5p, cut_3p){
+hlp_remove_UTR <- function(x, cut_5p = 0, cut_3p = 0){
     if(!all(diff(x$txcoor) == 1)){
         stop("Transcript coordinates 'txcoors' column is not continuous or has ",
              "gaps for gene: ", unique(x$gene))
@@ -920,7 +920,7 @@ check_BAM_has_seq <- function(x){
 }
 
 #TODO: manage omitted ranges, print a warning if possible
-# Check that end is >= to start -1, to make GenomicRanges out of dataframes
+# Check that end of range is >= to start -1, to make GenomicRanges from dataframes
 check_DFforGRanges <- function(x){
     x[x$end >= (x$start -1),]
 }
@@ -1002,3 +1002,16 @@ indexAlignmentsByGenomicRegion <- function(GAlignments, geneAnnot, overlapType =
          intergenic = ovInterg,
          rest = ovRest) %>% return()
 }
+
+# RowMeans by column groups
+rowMeansColG <- function(DF, colGroups, na.rm = T){
+    cG <- unique(colGroups)
+    out <- sapply(cG, function(x){
+        rowMeans(DF[,colGroups == x], na.rm = na.rm)
+    }) %>% as.data.frame()
+    colnames(out) <- cG
+    rownames(out) <- rownames(DF)
+    return(out)
+}
+
+
