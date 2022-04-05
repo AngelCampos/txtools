@@ -104,7 +104,7 @@ splicing_check <- lapply(1:length(gA_sk1), function(i){
         tx_add_diffNucToRef()
     sum(DT$diffToRef)
 }) %>% unlist
-expect_equivalent(splicing_check, c(13, 0)) # One of the genes has some mismatches, nothing to worry about.
+testthat::expect_equivalent(splicing_check, c(13, 0)) # One of the genes has some mismatches, nothing to worry about.
 
 # # Would be useful to know which part of the read falls outside of the exon structure
 # GA_index <- indexAlignmentsByGenomicRegion(bam_sk1, tx_extend_UTR(gA_sk1, 20, 20))

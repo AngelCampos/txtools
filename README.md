@@ -50,10 +50,10 @@ BED_file <- tx_dm3_geneAnnot()
 FASTA_file <- dm3_chr4()
 PE_BAM_file <- untreated3_chr4()
 
-# Loading D. melanogaster gene annotation, genome, and alignments into R.
+# Loading D. melanogaster gene annotation, genome, and paired-end bam alignments
 dm3_geneAnnot <- tx_load_bed(BED_file)
 dm3_genome <- tx_load_genome(FASTA_file)
-dm3_PEreads <- tx_load_bam(file = PE_BAM_file, pairedEnd = T, loadSeq = T)
+dm3_PEreads <- tx_load_bam(file = PE_BAM_file, pairedEnd = TRUE, loadSeq = TRUE)
 ```
 
 First, we process the alignments to their transcriptomic versions using
@@ -66,10 +66,13 @@ reads_SE <- tx_reads(reads = dm3_PEreads,
                      nCores = 1, 
                      minReads = 1)
 #> Processing 75409 reads, using 10 gene models. 
-#> 12563 reads overlap 10 gene models 
-#> Filtering reads by gene model... 
+#> 12563 alignments overlap 10 gene models 
+#> Assigning alignments to gene model... 
 #> Processing sequences. This may take several minutes depending on geneAnnot size ... 
 #> Output contains: 12252 unique reads in 10 gene models
+#> Warning in tx_reads(reads = dm3_PEreads, geneAnnot = dm3_geneAnnot, withSeq =
+#> TRUE, : Some alignments were not assigned to any gene, you can retrieve them
+#> using the tx_getUnassignedAlignments() function.
 ```
 
 Then we just need to summarize the alignments into a DT. In this case
@@ -130,9 +133,9 @@ tx_plot_nucFreq(DT, gene = "NM_079901", txRange = window_around(3803, 15))
     commonly requires a lot of time, having this in mind txtools
     provides a progress bar to keep users informed about the loading
     status. Most importantly, depending on the ammount of both loaded
-    reads and the size of the *Gene Annotation* tx\_reads() processing
+    reads and the size of the *Gene Annotation* tx_reads() processing
     time can take several minutes. A solution to this issue is the use
-    of multi-threadding which has been incorporated into tx\_reads() and
+    of multi-threadding which has been incorporated into tx_reads() and
     other functions, but such functionality is only available for UNIX
     and MAC OS.
 
