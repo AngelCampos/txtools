@@ -53,3 +53,12 @@
 #' @format DNAStringSet
 #'
 "genome_sk1"
+
+#' RRACH sites annotation D. melanogaster
+#'
+#' RRACH sites annotation for User's guide toy example for D. melanogaster
+#' selected genes
+#'
+#' @format GRanges
+#'
+"annotSites_RRACH"
