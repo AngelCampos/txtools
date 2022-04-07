@@ -48,7 +48,7 @@ reads_PE <- tx_reads(reads = dm3_PEreads,
                      verbose = FALSE) %>% suppressWarnings()
 
 DT <- tx_makeDT_covNucFreq(reads_PE, geneAnnot = dm3_geneAnnot, genome = dm3_genome)
-DT <- tx_add_diffNucToRefRatio(DT, addDiffandTotalCols = TRUE)
+DT <- tx_add_misincRate(DT, addMisinandTotalCols = TRUE)
 
 # Tests
 testthat::expect_equal(as.character(class(reads_PE[[1]])), "GRanges")
@@ -101,8 +101,8 @@ splicing_check <- lapply(1:length(gA_sk1), function(i){
     DT <- tx_reads(bam_trExons, gA_sk1, withSeq = T, minReads = 1, verbose = F) %>%
         suppressWarnings() %>%
         tx_makeDT_covNucFreq(geneAnnot = gA_sk1, genome = genome_sk1) %>%
-        tx_add_diffNucToRef()
-    sum(DT$diffToRef)
+        tx_add_misincCount()
+    sum(DT$misincCount)
 }) %>% unlist
 testthat::expect_equivalent(splicing_check, c(13, 0)) # One of the genes has some mismatches, nothing to worry about.
 
