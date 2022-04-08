@@ -925,7 +925,41 @@ check_DFforGRanges <- function(x){
     x[x$end >= (x$start -1),]
 }
 
-# Hidden functions (to decide if they'll be incorporated) ###################
+# Check that txDTs have same genes
+check_sameGenesInDTL <- function(DTL){
+    tmpL <- lapply(DTL, function(x) base::unique(x$gene))
+    tmpA <- base::Reduce(x = tmpL, union)
+    tmpB <- base::Reduce(x = tmpL, intersect)
+    all(tmpA %in% tmpB)
+}
+
+# Annotate CDS start in tx_get_metageneAtCDS()
+annot_CDSsta_DTL <- Vectorize(function(DT, CDS_start){
+    DT$CDS_start[DT$gencoor == CDS_start[CDS_start$gene == DT$gene[1],]$gencoor] <- TRUE
+    DT}, vectorize.args = "DT", SIMPLIFY = FALSE)
+
+# Annotate CDS end. tx_get_metageneAtCDS()
+annot_CDSend_DTL <- Vectorize(function(DT, CDS_end){
+    DT$CDS_end[DT$gencoor == CDS_end[CDS_end$gene == DT$gene[1],]$gencoor] <- TRUE
+    DT
+    }, vectorize.args = "DT", SIMPLIFY = FALSE)
+
+
+# Check that all genes in DT are in geneAnnot
+check_GA_txDT_compat <- function(DT, geneAnnot){
+    check_DThasCol(DT, "gene")
+    if(!all(as.character(unique(DT$gene)) %in% geneAnnot$name)){
+        stop("Not all genes in DT are contained in geneAnnot")
+    }
+}
+
+# Check DT has a column with nam 'colName'
+check_DThasCol <- function(DT, colName){
+    DT <- check_DT(DT)
+    if(!colName %in% colnames(DT)){stop("DT does not contain '", colName, "' column.")}
+}
+
+# "Hidden" functions (to decide if they'll be incorporated) ###################
 #' Merge lists of data.tables
 #'
 #' @param DTL1 list List of data.table with gene names. As output of the
@@ -1014,4 +1048,30 @@ rowMeansColG <- function(DF, colGroups, na.rm = T){
     return(out)
 }
 
+# Generate single-end FASTQ file
+tx_generateSingleEndFASTQ <- function(genome, geneAnnot, readLen, libSize, fileName, NB_r = 5, NB_mu = 500, nCores){
+    # filter transcripts by size
+    txOME_seqs <- tx_get_transcriptSeqs(genome = genome, geneAnnot = geneAnnot, nCores = nCores)
+    txOME_seqs <- txOME_seqs[BiocGenerics::width(txOME_seqs) >= readLen]
+    # Random starts
+    metaTX <- list(seqs = txOME_seqs, width = BiocGenerics::width(txOME_seqs))
+    metaTX$TPM <- stats::rnbinom(n = length(txOME_seqs), size = NB_r, mu = NB_mu)
+    metaTX$TPM <- round(metaTX$TPM * (libSize / sum(metaTX$TPM)))
+    metaTX$range1 <- metaTX$width - readLen + 1
+    metaTX$starts_1 <- lapply(seq_along(metaTX$TPM), function(i){
+        sample(seq(1, metaTX$range1[i]), size = metaTX$TPM[i], replace = TRUE)
+    })
+    #Extract sequences
+    metaTX$reads1 <- lapply(seq_along(metaTX$seqs), function(i){
+        stringr::str_sub(metaTX$seqs[i], metaTX$starts_1[[i]],
+                         metaTX$starts_1[[i]] + readLen - 1) %>%
+            DNAStringSet()
+    }) %>% do.call(what = "c")
+    names(metaTX$reads1) <- paste0("R1_", 1:length(metaTX$reads1))
+    qualStr <- paste(rep("H", readLen), collapse = "")
+    # Writing FASTQ
+    Biostrings::writeXStringSet(x = metaTX$reads1,
+                                quali = BStringSet(rep(qualStr, each = length(metaTX$reads1))),
+                                filepath = fileName, format = "fastq", compress = TRUE)
+}
 

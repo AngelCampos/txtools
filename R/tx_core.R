@@ -1094,6 +1094,67 @@ tx_get_geneLengths <- function(DT){
     tmpTb %>% as.numeric() %>% magrittr::set_names(names(tmpTb))
 }
 
+#' Get metagene at CDS
+#'
+#' @param txDT
+#' @param geneAnnotation
+#' @param colVars
+#' @param CDS_align
+#' @param upFlank
+#' @param doFlank
+#'
+#' @return
+#' @export
+#'
+#' @examples
+tx_get_metageneAtCDS <- function(txDT, geneAnnotation, colVars, CDS_align, upFlank, doFlank){
+    check_GA_txDT_compat(txDT, geneAnnotation)
+    invisible(sapply(c("gencoor", "strand", "gene"), function(x) check_DThasCol(txDT, x)))
+    geneAnnotation <- geneAnnotation[geneAnnotation$name %in% unique(txDT$gene)]
+    NCG <- geneAnnotation[GenomicRanges::width(geneAnnotation$thick) == 0]
+    CG <- geneAnnotation[GenomicRanges::width(geneAnnotation$thick) > 0]
+    if(length(NCG)>0){warning(length(NCG), " non-coding genes where ommitted from analysis.")}
+    if(sum(GenomicRanges::strand(CG) == "*") > 0){
+        stop("Genes with no set strand (*) are not allowed in geneAnnot.")
+    }
+    pos_CG <- as.factor(GenomicRanges::strand(CG)) == "+"
+    neg_CG <- as.factor(GenomicRanges::strand(CG)) == "-"
+    if(CDS_align == "start"){
+        CDS_start <- rbind(data.frame(gene = CG[pos_CG]$name,
+                                      gencoor = IRanges::start(CG[pos_CG]$thick)),
+                           data.frame(gene = CG[neg_CG]$name,
+                                      gencoor = IRanges::end(CG[neg_CG]$thick)))
+        txDT$CDS_start <- FALSE
+        txDT <- tx_split_DT(txDT) %>% annot_CDSsta_DTL(CDS_start = CDS_start) %>% tx_merge_DT()
+        tmpFlanks <- lapply(colVars, function(colVar){
+            tx_get_flanksFromLogicAnnot(DT = txDT,
+                                        logi_col = "CDS_start",
+                                        upFlank = upFlank,
+                                        doFlank = doFlank,
+                                        values_col = colVar,
+                                        addRowNames = TRUE)})
+    }else if(CDS_align == "end"){
+        CDS_end <- rbind(data.frame(gene = CG[pos_CG]$name,
+                                    gencoor = IRanges::end(CG[pos_CG]$thick)),
+                         data.frame(gene = CG[neg_CG]$name,
+                                    gencoor = IRanges::start(CG[neg_CG]$thick)))
+
+        txDT$CDS_end <- FALSE
+        txDT <- tx_split_DT(txDT) %>% annot_CDSend_DTL(CDS_end = CDS_end) %>% tx_merge_DT()
+        tmpFlanks <- lapply(colVars, function(colVar){
+            tx_get_flanksFromLogicAnnot(DT = txDT,
+                                        logi_col = "CDS_end",
+                                        upFlank = upFlank,
+                                        doFlank = doFlank,
+                                        values_col = colVar,
+                                        addRowNames = TRUE)
+        })
+    }else{stop("CDS_align should be either 'start' or 'end'.")}
+    return(tmpFlanks %>% magrittr::set_names(colVars))
+}
+
+
+
 # Other accessory functions ####################################################
 
 #' Centered numeric sequence
