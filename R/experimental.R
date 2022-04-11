@@ -75,22 +75,7 @@ tx_plot_oneNumeric <- function(DTL, gene, txRange = 1:nrow(DTL[[1]]), columnName
                                makePlotly = FALSE, show_yLabels = TRUE,
                                bar_border = TRUE, showLegend = TRUE,
                                col = "#c2c2c2"){
-    if(all(is(DTL) %in% is(data.table::data.table()))){
-        DT <- DTL
-        DT <- check_refSeq(DT)
-        DT <- check_DT(DT)
-        DT <- as.data.frame(DT)
-        if(!(gene %in% DT$gene)){stop("gene not found in DT object")}
-        DT <- DT[DT$gene == gene, ]
-        DT <- DT[DT$txcoor %in% txRange,]
-        DT$pos <- paste(DT$txcoor, DT$refSeq, sep = "-")
-        DT$pos <- factor(DT$pos, levels = DT$pos)
-        tmpData <- tidyr::pivot_longer(DT, cols = all_of(columnName),
-                                       values_to = "counts",
-                                       names_to = "coverage") %>%
-            data.table::data.table()
-        tmpData$coverage <- factor(tmpData$coverage, levels = columnName)
-    }else if(is.list(DTL)){
+    if(all(is(DTL) %in% is(list()))){
         lapply(DTL, function(x) check_refSeq(x))
         DTL <- lapply(DTL, function(x) check_DT(x))
         if(!all(unlist(lapply(DTL, function(x) gene %in% x$gene)))){stop("gene not found in DT object")}
@@ -109,6 +94,21 @@ tx_plot_oneNumeric <- function(DTL, gene, txRange = 1:nrow(DTL[[1]]), columnName
             tmpData$sample <- names(DTL)[i]
             tmpData
         }) %>% do.call(what = rbind)
+    }else{
+        DT <- DTL
+        DT <- check_refSeq(DT)
+        DT <- check_DT(DT)
+        DT <- as.data.frame(DT)
+        if(!(gene %in% DT$gene)){stop("gene not found in DT object")}
+        DT <- DT[DT$gene == gene, ]
+        DT <- DT[DT$txcoor %in% txRange,]
+        DT$pos <- paste(DT$txcoor, DT$refSeq, sep = "-")
+        DT$pos <- factor(DT$pos, levels = DT$pos)
+        tmpData <- tidyr::pivot_longer(DT, cols = all_of(columnName),
+                                       values_to = "counts",
+                                       names_to = "coverage") %>%
+            data.table::data.table()
+        tmpData$coverage <- factor(tmpData$coverage, levels = columnName)
     }
     tmpGG <- ggplot2::ggplot(tmpData,
                              ggplot2::aes(x = tmpData$pos,
