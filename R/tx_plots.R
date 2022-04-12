@@ -16,8 +16,6 @@
 #' @param showLegend logical. If set to FALSE does not renger a legend.
 #'
 #' @return ggplot
-#' @export
-#'
 tx_plot_nucFreq <- function(DT,
                             gene,
                             txRange = 1:nrow(DT),
@@ -113,8 +111,6 @@ tx_plot_nucFreq <- function(DT,
 #'
 #' @return ggplot
 #' @export
-#'
-#' @examples
 tx_plot_staEndCov <- function(
     DT, gene, txRange = 1:nrow(DT), makePlotly = FALSE, removeCov = FALSE,
     show_yLabels = TRUE, bar_border = TRUE, showLegend = TRUE){
@@ -173,43 +169,6 @@ tx_plot_staEndCov <- function(
     }
 }
 
-
-tx_plot_metaGeneByBins <- function(DT, colName, nBins = 100, FUN = "mean", minTxLength = 300,
-                                   minReadsPerGene = 100, smooth = TRUE, na.rm = TRUE){
-    if(nBins >= minTxLength){stop("Number of bins most be smaller than minimum",
-                                  "transcript length.")}
-    if(!(colName %in% colnames(DT))){stop("colName is not a column in DT.")}
-    nStarts <- DT[, sum(start_5p), by = gene][order(V1, decreasing = T),]
-    DT <- DT[gene %in% nStarts$gene[nStarts$V1 >= minReadsPerGene]]
-    geneLens <- tx_get_geneLengths(DT)
-    DT <- DT[gene %in% names(geneLens)[geneLens > minTxLength]]
-    GENES <- as.character(unique(DT$gene))
-    if(length(GENES) < 1){stop("No genes after filtering parameters")}
-    meanCovBinned <- mclapply(seq(GENES), function(i){
-        iGene <- GENES[i]
-        tmpDT <- DT[gene == iGene,]
-        tmpDT$group <- tmpDT$txcoor %>% cut_number(n = nBins)
-        out <- tapply(tmpDT[[colName]], tmpDT$group, FUN, na.rm = na.rm)
-        out[is.nan(out)] <- NA
-        out
-    }) %>% do.call(what = rbind) %>% apply(MARGIN = 2, FUN = FUN, na.rm = na.rm) %>% set_names(NULL)
-    DF <- data.frame(bins = seq(meanCovBinned) %>% as.numeric,
-                     score = meanCovBinned)
-    plotTitle <- paste("METAGENE BY BINS -", FUN, colName) %>% toupper()
-    plotSub <- paste0("n(genes) =", length(GENES), ", minTxLen =", minTxLength,
-                      ", minReadsPerGene =", minReadsPerGene, ", smooth.sp =", smooth)
-    Y_axis <- paste(FUN, colName)
-    if(smooth){
-        DF$smooth <- smooth.spline(DF$score)$y
-        ggplot(DF, aes(x = bins, y = smooth)) + geom_line() + theme_classic() +
-            ggtitle(plotTitle, plotSub) + ylab(Y_axis)
-    }else{
-        ggplot(DF, aes(x = bins, y = score)) + geom_line() + theme_classic() +
-            ggtitle(plotTitle, plotSub) + ylab(Y_axis)
-    }
-}
-
-
 #' Plot motif centered in logical annotation
 #'
 #' Plots a motif of the sequence surrounding sites marked as TRUE in a logical
@@ -223,8 +182,6 @@ tx_plot_metaGeneByBins <- function(DT, colName, nBins = 100, FUN = "mean", minTx
 #'
 #' @return
 #' @export
-#'
-#' @examples
 tx_plot_ggseqlogo <- function(DT, logi_col, upFlank, doFlank, method = "bits"){
     tmpO <- tx_get_flankSequence(DT = DT, logi_col = logi_col, upFlank = upFlank, doFlank = doFlank)
     ggOUT <- ggseqlogo::ggseqlogo(tmpO, method = method) + ggplot2::theme_minimal() +
@@ -237,6 +194,27 @@ tx_plot_ggseqlogo <- function(DT, logi_col, upFlank, doFlank, method = "bits"){
 }
 
 
+#' Plot metagene at CDS
+#'
+#' @param txDT
+#' @param geneAnnotation
+#' @param colVars
+#' @param CDS_align
+#' @param upFlank
+#' @param doFlank
+#' @param summ_fun
+#' @param roll_fun
+#' @param roll_n
+#' @param roll_align
+#' @param roll_fill
+#' @param smooth
+#' @param spar
+#' @param na.rm
+#' @param normalize
+#' @param tick_by
+#'
+#' @return
+#' @export
 tx_plot_metageneAtCDS <- function(txDT, geneAnnotation, colVars, CDS_align, upFlank,
                                   doFlank, summ_fun = "sum", roll_fun = "sum", roll_n = 100,
                                   roll_align = "center", roll_fill = NA, smooth = TRUE, spar  = 0.3,
@@ -268,17 +246,17 @@ tx_plot_metageneAtCDS <- function(txDT, geneAnnotation, colVars, CDS_align, upFl
     if(is.null(tick_by)){
         tick_by <- upFlank / 2
     }
-    tmpGG <- ggplot(tmpDF, aes(x = position, y = value, group = group, colour = group)) +
-        geom_line() +
-        scale_x_discrete(limits = unique(tmpDF$position),
-                         breaks = unique(tmpDF$position)[seq(1, length(unique(tmpDF$position)), by = tick_by)]) +
-        theme_minimal() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    tmpGG <- ggplot2::ggplot(tmpDF, ggplot2::aes(x = position, y = value, group = group, colour = group)) +
+        ggplot2::geom_line() +
+        ggplot2::scale_x_discrete(limits = unique(tmpDF$position),
+                                  breaks = unique(tmpDF$position)[seq(1, length(unique(tmpDF$position)), by = tick_by)]) +
+        ggplot2::theme_minimal() + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
     if(CDS_align == "end"){
         tmpGG <- tmpGG + ggplot2::geom_vline(xintercept = "CDS_end" , col = "black", linetype="dashed") +
-            ggtitle("Metagene aligned at CDS_end")
+            ggplot2::ggtitle("Metagene aligned at CDS_end")
     }else if(CDS_align == "start"){
         tmpGG <- tmpGG + ggplot2::geom_vline(xintercept = "CDS_start" , col = "black", linetype="dashed") +
-            ggtitle("Metagene aligned at CDS_start")
+            ggplot2::ggtitle("Metagene aligned at CDS_start")
     }
     tmpGG
 }

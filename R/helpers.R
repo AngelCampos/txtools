@@ -585,16 +585,18 @@ if_IRangesList_Unlist <- function(x){
 }
 
 # Helper add reference sequence to DT
-hlp_add_refSeqDT <- function (DT, fastaGenome, geneAnnot){
+hlp_add_refSeqDT <- function (DT, genome, geneAnnot){
     iGene <- as.character(DT$gene[1])
     iChr <- as.character(DT$chr[1])
     iStr <- as.character(DT$strand[1])
     iGA <- geneAnnot[geneAnnot$name == iGene]
     iBlocks <- S4Vectors::mcols(iGA)$blocks %>% if_IRangesList_Unlist() %>%
         IRanges::shift(IRanges::start(iGA) - 1)
-    tmp <- stringr::str_sub(fastaGenome[[iChr]], start = IRanges::start(iBlocks),
-                            end = IRanges::end(iBlocks)) %>% paste(collapse = "") %>%
-        Biostrings::DNAString()
+    tmp <- Biostrings::DNAString(
+        paste(collapse = "",
+              stringr::str_sub(string = genome[[iChr]],
+                               start = IRanges::start(iBlocks),
+                               end = IRanges::end(iBlocks))))
     if (iStr == "-") {
         tmp <- Biostrings::reverseComplement(tmp)
     }
@@ -721,8 +723,8 @@ stretchBlocks_3p <- function(blocks, extend, strand){
 }
 
 # Generating DTs ###############################################################
-# Generates trasncriptomic coordinates table from a list of genes
-hlpr_genCoorTabGenes <- function(genes, geneAnnot, fastaGenome = NULL, nCores = 1){
+# Generates transcriptomic coordinates table from a list of genes
+hlpr_genCoorTabGenes <- function(genes, geneAnnot, genome = NULL, nCores = 1){
     if(all(genes %in% geneAnnot$name)){
         parallel::mclapply(mc.cores = nCores, genes, function(iGene){
             tmp2 <- geneAnnot[which(geneAnnot$name == iGene)]
@@ -740,8 +742,8 @@ hlpr_genCoorTabGenes <- function(genes, geneAnnot, fastaGenome = NULL, nCores = 
             tmpDT$strand <- as.factor(tmpDT$strand)
             tmpDT$gene <- as.factor(tmpDT$gene)
             tmpDT$txcoor <- as.integer(tmpDT$txcoor)
-            if(!is.null(fastaGenome)){
-                tmpDT <- tx_add_refSeqDT(tmpDT, fastaGenome, geneAnnot)
+            if(!is.null(genome)){
+                tmpDT <- tx_add_refSeqDT(tmpDT, genome, geneAnnot)
             }
             return(tmpDT)
         }) %>% magrittr::set_names(genes)
