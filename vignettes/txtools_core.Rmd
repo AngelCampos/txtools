@@ -1,10 +1,21 @@
 ---
-title: "txtools_core"
-output: rmarkdown::html_vignette
+title: "txtools User Guide"
+author: "Miguel Garcia"
+package: txtools
+abstract: |
+  txtools is an R package for processing and analysis of
+  transcriptomic data. 
 vignette: >
-  %\VignetteIndexEntry{txtools_core}
+  %\VignetteIndexEntry{txtools User Guide}
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+  %\VignetteEncoding{UTF-8} 
+output:
+  BiocStyle::html_document:
+    number_sections: yes
+    toc_float: TRUE
+    toc_depth: 1
+editor_options: 
+  chunk_output_type: inline
 ---
 
 ```{r, include = FALSE}
@@ -16,154 +27,499 @@ knitr::opts_chunk$set(
 )
 ```
 
-# txtools. The full tour.
-
+# Introduction
 
 The aim of txtools is to provide a versatile framework to analyze transcriptomic
-data in a quick and simple manner. 
+data in a quick and simple manner. To acomplish this we propose the processing 
+of data in two stages:
 
-To acomplish this we propose the processing of data in two stages, and the 
-use of two data structures which is the output at each step:
-
-1. Transfer read-alignments from a **genomic** to  a **transcriptomic**
+1. Transfer read-alignments from a **genomic** to a **transcriptomic**
 coordinates space.
 2. Summarize transcriptomic-alignments into table structures.
 
-## Loading the data
+![Fig 1. txtools main processing workflow](../man/figures/readme_1.png)
 
-The first step of the txtools processing pipeline is to transfer read-alignments
-from a genomic coordinate system to a transcriptomic coordinate system. This 
-step can be skipped if the reads where aligned to a transcriptomic reference.
+The intermediate output in Step 1 is of class `GRanges` from the 
+`r BiocStyle::Biocpkg("GenomicRanges")` package, while the second and final 
+output is a table structure.
 
-Note: *This step can be circumvented by aligning to the transcriptome, but in most* 
-*cases it is necessary and desirable to keep track of both the genomic location*
-*of transcripts and the read-alignments data.*
+**txtool's current development has focused on the more common table structure.**
 
-To use txtools it is REQUIRED to have a **Gene Annotation** file in the
-form of a BED-6/12 file. Importantly, a BED-12 file contains the information 
-to construct the exon structure, while using a BED6 assumes that the gene
-consists of a single exon block.
+The following is a quick but in-depth tutorial showing all of txtools 'core' functions.
 
-Additionally it is recommended to have a **Reference Genome** sequence file
-in the form of a FASTA file, in which each entry corresponds to each chromosome.
+We will show how to:
 
-Using txtools we can seamlessly load RNA-seq data into the R environment
-with the `tx_load_bam()` function. For this example we will use a paired-end
-BAM file and we will require the function to load the sequence data.
+1. Load read-alignments data, and the genomic and transcriptomic reference files into R.
+2. Assign alginments to genes.
+3. Summarize mapped-reads into different kinds of tables.
+4. Use tx_add_* functions to add useful data and calculated metrics to the summarized tables.
+5. Plot regions and analyses results using the tx_plot_* functions family.
+6. Show some general analyses using additional txtools functions.
+
+*For this example we will use the data of the `r BiocStyle::Biocpkg("pasillaBamSubset")`
+package. A subset of reads aligned to the chromosome 4 of D. melanogaster.*
 
 ```{r}
+# devtools::load_all()
 library(txtools)
 library(pasillaBamSubset)
-
-# Loading gene-annotation in BED-12 format.
-pathToBED <- tx_dm3_geneAnnot()
-dm3_geneAnnot <- tx_load_bed(pathToBED)
-
-# Loading genome
-fastaFile <- pasillaBamSubset::dm3_chr4()
-dm3_genome <- tx_load_genome(fastaFile)
-
-# Loading RNA-seq data (paired-end)
-pathToBAM <- pasillaBamSubset::untreated3_chr4()
-bam_PE <- tx_load_bam(file = pathToBAM, pairedEnd = TRUE, loadSeq = TRUE)
-summary(bam_PE)
 ```
 
-## From Genomic to Transcriptomic
+# Loading data `tx_load_*()`
 
-### tx_reads()
+To work with the reads in the transcriptomic space, txtools requires a 
+**Gene Annotation** file in the form of a BED-12 or BED-6 file, loaded with
+`tx_load_bed()`. 
 
-Now to convert the genomic-alignments into their transcriptomic versions we
-use the `tx_reads()` function, and require it to keep the sequence data 
-setting the `withSeq` argument to 'TRUE', this will allow us to later summarize
-nucleotide frequency. If nucleotide frequency is not required in downstream 
-analysis setting `withSeq` to 'FALSE' will expedite the processing. 
-
-Importantly, `tx_reads()` can use multiple cores to accelerate processing,
-just set the `nCores` argument to the ammount of cores you want to use.
-In practice a number of cores between 6-8 is enough, but this may depend on 
-your infrastructure.
+*Importantly, a BED-12 file contains the information*
+*to construct the exon structure, when using a BED-6 file, txtools will assume*
+*that the genes in the annotation consist of a single exon block.*
 
 ```{r}
-txreads_PE <- tx_reads(reads = bam_PE, geneAnnot = dm3_geneAnnot, 
-                       withSeq = TRUE, minReads = 1, nCores = 1)
+# BED_path <- tx_dm3_geneAnnot() # geneAnnotation built-in txtools
+BED_path <- system.file("extdata", "toyGeneAnnot_Dmelan_chr4.bed", package = "txtools")
+geneAnnot <- tx_load_bed(BED_path)
 ```
 
-The resulting object is a `CompressedGRangesList`, a list of GRanges,
-grouped by their corresponding gene. `GRanges` is a class from the
-`GenomicRanges` package. Therefore they can be manipulated using this 
-package. At the time of writing, txtools does not focus on the use of `GRanges`.
-nevertheless provides some functions to manipulate them before summarizing them
-into data.tables.
-
-### txtools function for GRangesLists
-
-**tx_counts**
-
-A function that simply counts the num
+Additionally, it is recommended to have a **Reference Genome** sequence file
+in the form of a FASTA file, in which each entry corresponds to a chromosome,
+loaded with `tx_load_genome()`.
 
 ```{r}
-tx_counts(txreads_PE)
+FASTA_path <- dm3_chr4() # D. melanogaster chr4 built-in pasillaBamSubset
+genome <- tx_load_genome(fastaFile = FASTA_path)
 ```
 
-
-**tx_sample_GRList()**
-
-A function that samples GRanges from a GRangesList, useful for simulation 
-of lower coverages in samples.
+The main data that we will work with and process using txtools are read mappings,
+or read alignments, in the form of **BAM files**. These files can be loaded into 
+R using `tx_load_bam()`. In this case we will set the `pairedEnd` argument to 
+TRUE, to specify that the library is paired-end; as we will use the sequence
+information from the alignments we need to set the `loadSeq` argument also to TRUE.
 
 ```{r}
-txreads_PE_half <- tx_sample_GRList(txreads_PE, 0.5)
-tx_counts(txreads_PE_half)
+BAM_path <- untreated3_chr4() # Paired-end BAM file built-in pasillaBamSubset
+genAligns <- tx_load_bam(file = BAM_path, pairedEnd = TRUE, loadSeq = TRUE)
 ```
 
-**tx_filter_maxWidth()**
+These three functions make loading the necessary input data a painless process.
 
-A function that filters out Granges longer than a certain width. Useful to
-filter spurious alignments that are not possible due to RNA insert length
-selection.
+# Assigning alignments to genes `tx_reads()`
 
-```{r, fig.height = 2, fig.width= 6, fig.show="hold"}
-txreads_PE_filtered <- tx_filter_maxWidth(txreads_PE, 600)
+Reads mapped to a reference genome have to be assigned and processed to their 
+genes. This is done using `tx_reads()`.
 
-boxplot(unlist(GenomicRanges::width(txreads_PE)), xlab = "Insert Width",
-        horizontal = T, main = "Not filtered alignments") 
-boxplot(unlist(GenomicRanges::width(txreads_PE_filtered)), xlab = "Insert Width",
-        horizontal = T, main = "Filtered alignments") 
-```
-
-## Summarizing transcriptomic GRanges
-
-### tx_makeDT_* functions
-
-Due to GRanges contrains it is not possible to keep summarized metrics into the 
-same structure as GRanges or GRangesList objects. For example, the coverage
-of a certain gene pertains to an specific range of coordinates and cannot be 
-assigned to an element in particular. This is the reason we opt to create
-a summarized table that holds the relevant information from the reads in a way
-that is easier to interpret and further analyze.
-
-To summarize GRangesList txtools contains three functions which do the job:
-
-* **tx_makeDT_coverage()**
-* **tx_makeDT_nucFreq()**
-* **tx_makeDT_covNucFreq()**
-
+`tx_reads()` accepts bam files loaded with `tx_load_bam()` recognizing if they
+are paired-end or single-end libraries. Additionally it is required to provide
+a gene-annotation as loaded with `tx_load_bed()`. 
 
 ```{r}
-DT_cov <- tx_makeDT_covNucFreq(txreads_PE_filtered, geneAnnot = dm3_geneAnnot,
-                     dm3_genome, nCores = 1)
-unique(DT_cov$gene)
-barplot(DT_cov[gene == "NM_079879",]$cov)
+txReads <- tx_reads(genAligns, geneAnnot = geneAnnot, minReads = 1, withSeq = TRUE)
 ```
 
-2. Summarize the read-alignments corresponding to each gene model into 
-a table structure, that keeps per nucleotide information. 
+*By default `tx_reads()` will only process genes with 50 or more reads,*
+*will not output the processed sequence for each read, and will use only* 
+*one core; all these options can be changed in its arguments.*
 
-The two main functions to process *genomic alignments* data
-into **transcriptomic** data are `tx_reads()` and `tx_makeDT_*()` family 
+To retrieve the genomic reads that where not assigned to any gene, due to being
+outside of the gene annotation, you can use `tx_getUnassignedAlignments()`. 
+*Knowledge on the `GenomicRanges` package is necessary for further examination of not assigned reads*
+
+```{r}
+tx_getUnassignedAlignments()
+```
+In this toy example most reads are not mapped as we only used a gene annotation
+with ten genes for assigning reads.
+
+The resulting object `txReads` comprises a list of GRanges, genomic ranges by 
+name, but which consist of the ranges of the mapped reads in the transcriptomic
+space, not in genomic space.
+
+# Summarizing reads into a txDT `tx_makeDT_*()`
+
+After consolidating the paired-end reads, assigning them to their respective
+genes and converting their ranges into transcriptomic space, we can summarize 
+their data into table format. These tables contain data such as the coverage, 
+and nucleotide frequency counts; each of the rows in the table corresponds
+to a nucleotide position unique in the transcriptome, but could have duplicated
+genomic coordinate, as is the case for overlapping genes.
+
+By default R base uses the class object `data.frame` to accomodate table data
+structures which contain different classes of data per column. For the case 
+of txtools we have opted to use the class object 
+[`data.table`](https://cran.r-project.org/web/packages/data.table/index.html) from the
+eponymous package, as the data.table object operates very similar to
+base-R's data.frames yet are optimized for speedier calculations and assignment.
+
+There are three functions to generate summarized txDTs, each containing 
+summarized data per nucleotide position in the transcriptome:
+
+- `tx_makeDT_coverage()`: Generates a table with coverage, read-starts, and
+read-ends counts data.
+
+```{r}
+DT_cov <- tx_makeDT_coverage(txReads, geneAnnot = geneAnnot)
+DT_cov
+```
+
+- `tx_makeDT_nucFreq()`: Generates a table with nucleotide frequencies for each of 
+the four main aminoacids, unidentified nucleotide (N), deletions (-), and 
+insert counts (.). The latter are generated when using paired-end reads that 
+didn't overlap with each other, and have an unidentified sequence between Read1 
+and Read2.
+
+```{r}
+DT_nucFreq <- tx_makeDT_nucFreq(txReads, geneAnnot = geneAnnot)
+DT_nucFreq
+```
+
+- `tx_makeDT_covNucFreq()`: Generates a table with all columns from the two previous 
 functions.
 
-To fully understand what happens under the hood using txtools to process your 
-data we will use toy examples of **genomic alignments** and **gene annotation**,
-the main inputs to process the data into transcriptomic data.
+```{r}
+DT_covNucFreq <- tx_makeDT_covNucFreq(txReads, geneAnnot = geneAnnot) 
+```
+
+The three of these tables contain 5 columns that identify each
+transcriptomic position and link it to their respective genomic position as well:
+
+- chr: Chromosome 
+- gencoor: Genomic coordinate
+- strand: Genomic strand
+- gene: Gene name
+- txcoor: Transcriptomic coordinate, or relative coordinate in the transcript.
+
+*`txcoor` includes UTR regions if present, i.e. the first nucleotide of the 5'UTR is *
+*considered to be position "1".*
+
+Additionally, in each of the functions when the `genome` argument is input with 
+its corresponding reference genome sequence, the nucleotide identity per position
+is added in the column **`refSeq`**.
+
+```{r}
+DT_covNucFreq <- tx_makeDT_covNucFreq(txReads, geneAnnot = geneAnnot, genome = genome) 
+DT_covNucFreq
+```
+
+* **Note:** The reason for which summarized tables shouldn't be generated in genomic*
+*space is that complex genes, as those from human, have very long introns that *
+*would generate too long and sparse tables, yet too heavy in terms of memory allocation.*
+
+---
+
+# Adding useful data and metrics to txDTs `tx_add_*()`
+
+After generating a txDT we already have all the information we need to do 
+most of our count data analysis. Yet, sometimes we need this data as other
+metrics or ratios, consider for example the ratio of read-starts compared to
+coverage, which we call the read-start ratio or more simply startRatio. 
+
+We could manually calculate the startRatio by dividing the `start_5p` column 
+over the `cov` column of our txDT. Yet other metrics in which the limits of the
+genes are important would be off calculated, e.g. startRatio 1bp upstream. 
+To easily calculate different metrics and add additional information
+to a txDT we provide a set of functions that start with the `tx_add_` prefix.
+
+## Adding metrics related to read-starts, -ends, coverage, and nucleotide frequency.
+
+Additional to the counts of coverage (cov), read-starts
+(start_5p), read-ends (end_3p), and nucleotide frequencies 
+(A, T, C, G) for each nucleotide in the transcriptome, it can be 
+useful to add certain related metrics. 
+For example the rate at which reads start compared to coverage,
+which we call startRatio. To create such common metrics we
+provide several functions under the `tx_add_*()` functions family.
+Bellow a list of them and a brief descritpion of what they add.
+
+- `tx_add_startRatio()`: Start to coverage rate
+- `tx_add_startRatio1bpDS()`: Start to coverage rate 1 bp down-stream
+- `tx_add_startRatio1bpUS()`: Start to coverage rate 1 bp up-stream
+- `tx_add_endRatio()`: End to coverage rate
+- `tx_add_endRatio1bpDS()`: End to coverage rate 1 bp down-stream
+- `tx_add_endRatio1bpUS()`: End to coverage rate 1 bp up-stream
+- `tx_add_nucTotal()`: Sum of nucleotide frequencies, not counting undetermined  'N' and inserts '.'.
+- `tx_add_misincCount()`: Sum of nucleotide reads different to the 
+reference sequence.
+- `tx_add_misincRate()`: Rate of nucleotide reads different to the 
+reference sequence.
+- `tx_add_misincorpRateNucSpec()`: Rate of misincorporation of an
+specific nucleotide with respect to a reference nucleotide. e.g. the
+rate at which 'T' was incorporated (or misread) in the RNA instead
+of a 'C'.
+
+*The result of using a `tx_add_()` function is the same txDT input with the*
+*difference of a new column of the desired metric, hence it is possible to*
+*chain tx_add functions in succession with the pipe operator `%>%` from the*
+*`r CRANpkg("magrittr")` package.*
+
+```{r}
+DT_covNucFreq <- DT_covNucFreq %>% 
+    tx_add_startRatio() %>% 
+    tx_add_startRatio1bpDS() %>% 
+    tx_add_startRatio1bpUS() %>% 
+    tx_add_endRatio() %>% 
+    tx_add_endRatio1bpDS() %>% 
+    tx_add_endRatio1bpUS() %>% 
+    tx_add_nucTotal() %>% 
+    tx_add_misincCount() %>% 
+    tx_add_misincRate() %>% 
+    tx_add_misincorpRateNucSpec(refNuc = "C", misNuc = "T")
+```
+
+## Adding unique position identifier
+
+If needed, by combining the gene and relative coordinate we can create
+a single unique identifier for each position in the transcriptome. We
+can add this with `tx_add_pos()`.
+
+```{r}
+DT_covNucFreq <- tx_add_pos(DT_covNucFreq)
+```
+
+*IMPORTANT NOTE: Due to being unique identifiers the `pos` column is of*
+*character class and it requires a big ammount of memory to be allocated. If not *
+*needed is recommended to omit the `pos` column or delete it after no longer is*
+*needed.*
+
+## Adding reference sequence
+
+If the genome sequence was not specified in the tx_makeDT_*()
+function call, adding the transcriptomic reference sequence 
+after generating a txDT is possible with `tx_add_refSeqDT()`.
+
+Importantly, the sequence in refSeq has already been processed
+to represent the transcriptomic sequence considering the strand
+of the gene. 
+
+*Note: The nucleotide uracil is represented with the letter "T" *
+*instead of with the letter "U". This might change in future versions if *
+*poses a conflict or confussion to the users.*
+
+```{r}
+DT_covNucFreq <- tx_add_refSeqDT(DT_covNucFreq, genome = genome, geneAnnot = geneAnnot)
+```
+
+## Adding sites annotation 
+
+Sometimes we want to identify previously annotated positions of a 
+transcriptome in our data. For this, we can use
+`tx_add_siteAnnotation()` to add a logical vector that indicates the
+sites of interest to perform further analysis and plotting. 
+
+To add a sites annotation we only need to input a GRanges object that
+consists of ranges of length 1, which can also be loaded with
+`tx_load_bed()`.
+
+*Here we use the in-built site annotation object `annotSites_RRACH` which*
+*contains 636 sites that fall in the arbitrarily selected RRACH motif.*
+
+```{r}
+DT_covNucFreq <- tx_add_siteAnnotation(DT_covNucFreq, GRanges = annotSites_RRACH, colName = "annotSites")
+```
+
+*We will visualize the effect of annotating this RRACH sites with a seqlogo*
+*plot in section \@ref(ggseqlogo-plot)*
+
+## Adding sequence motif presence
+
+To mark all the positions at which specific sequences appear on
+transcripts in the txDT we can use `tx_add_motifPresence()`. 
+
+*Importantly, this function will take a character string that can consist of*
+*the characters in the [IUPAC nucleotide ambiguity code](https://en.wikipedia.org/wiki/Nucleic_acid_notation)*
+
+```{r}
+DT_covNucFreq <- tx_add_motifPresence(DT_covNucFreq, motif = "DRACH", nucPositions = "center")
+```
+
+## Adding rolling mean
+
+Sometime we need a smoother version of a metric, which can be acomplished by
+computing a roll mean across a moving window. For example we can smooth the 
+coverage by applying a rolling mean across the `cov` column. The `winSize` argument 
+determines the length of the window over which the mean is calculatates and 
+the `align`.
+
+```{r}
+DT_covNucFreq <- tx_add_rollingMean(DT_covNucFreq, colName = "cov", winSize = 50, align = "left")
+```
+
+# Plotting functions `tx_plot_*()`
+
+txtools provides a diverse set of functions to plot. For ease of use all of them
+start with the prefix `tx_plot_`
+
+## Start End Coverage plot 
+
+`tx_plot_staEndCov()`: This plot is useful to visualize the coverage, 
+read-start, and read-end patterns. The required input is a txDT, the gene, and 
+the transcriptomic range to be plot. 
+
+It can be used to plot the whole gene as bellow:
+
+```{r}
+tx_plot_staEndCov(DT_covNucFreq, gene = DT_covNucFreq$gene[1],
+                  show_yLabels = FALSE, bar_border = FALSE)
+```
+
+Or part of the gene specifying the relative coordinates range in the `txRange`
+argument.
+
+```{r}
+tx_plot_staEndCov(DT_covNucFreq, gene = DT_covNucFreq$gene[1], txRange = 1000:1050,
+                  show_yLabels = FALSE, bar_border = FALSE)
+```
+
+
+## Nucleotide frequency plot
+
+`tx_plot_nucFreq()`: This plot shows the nucleotide frequency and importantly,
+shows in color the nucleotides that are not matching the reference sequence.
+It is useful to visualize misincorporation rate, which can be originated due to
+a SNP, chemical treatment on RNA or (less informative) sequencing errors.
+
+*Importantly, this plot can show the coverage due to inserts, which has not been assigned
+a nucleotide sequence, but is the gap between read1 and read2 in paired-end
+libraries*
+
+
+```{r}
+selSite <- DT_covNucFreq[order(misincCount, decreasing = TRUE)][1, c("gene", "txcoor", "cov",
+                                                                     "nucTotal", "misincCount",
+                                                                     "misincRate")]
+selSite
+```
+
+
+```{r}
+tx_plot_nucFreq(DT_covNucFreq, gene = selSite$gene[1], txRange = window_around(selSite$txcoor, 20), removeInsert = T)
+```
+
+## ggseqlogo plot
+
+`tx_plot_ggseqlogo()`: This function allows to quickly plot a `r BiocStyle::CRANpkg("ggseqlogo")`
+using as input a txDT and a logical annotation which marks the center position
+to be plot. It is useful to identify motif sequences in sites that have been
+selected, for example for passing certain thresholds of specific metrics.
+
+*In this example we use the sites we annotated while using `tx_add_motifPresence()`*
+*for annotating the DRACH motifs in our small transcriptome set.*
+
+```{r}
+tx_plot_ggseqlogo(DT_covNucFreq, logi_col = "DRACH_motif_center", upFlank = 5, doFlank = 5)
+```
+
+## Metagene plot at CDS start/end
+
+`tx_plot_metageneAtCDS()`: Calculates and plots metagenes using as input a txDT
+and the column names of the metrics to be plot.
+
+```{r}
+tx_plot_metageneAtCDS(txDT = DT_covNucFreq, geneAnnotation = geneAnnot,
+                      colVars = c("start_5p", "end_3p", "cov"), CDS_align = "start", 
+                      upFlank = 500, doFlank = 1000, normalize = T)
+```
+
+
+# Get functions `tx_get_*()`
+
+## Get flanks from annotation
+
+`tx_get_flanksFromLogicAnnot()`: Extracts the surrounding values 
+of annotates sites from any column. The required input is the txDT containing
+the column from were the values will be extracted alogn a logical vector 
+marking the annotated sites (TRUE = site of interest, FALSE = not annotated site).
+The output is a matrix in which rows correspond to annoted sites, and columns
+to the values at each of the positions up-stream, center, and down-stream from
+the site of interest.
+
+Getting this values may be useful to confirm results derived from previous 
+analysis, or to generate an aggregated analysis of the sites of interest. Bellow
+is an example in which we extract the coverage of the sites annotated in the
+`DRACH_motif_center` column.
+
+```{r}
+tx_get_flanksFromLogicAnnot(DT_covNucFreq, logi_col = "DRACH_motif_center", 
+                            values_col = "cov", upFlank = 4, doFlank = 4) %>% head(5) 
+```
+
+## Getting flanking sequences
+
+`tx_get_flankSequence()`: Extracts the contiguous sequence
+of sites of interest. Works similarly to `tx_get_flanksFromLogicAnnot()` but 
+it is a specific case for getting only the sequences in a collapsed format. Its
+output is a character vector in which each element is the sequence at the site
+of interest and its upstream and downstream flanking regions.
+
+Bellow is an example showing the flanking sequence of the sites annotated in the
+`DRACH_morif_center` column.
+
+```{r}
+tx_get_flankSequence(DT_covNucFreq, logi_col = "DRACH_motif_center", 
+                     upFlank = 4, doFlank = 4) %>% head(5) 
+```
+
+## Get gene lengths
+
+`tx_get_geneLengths`: Gets the length of genes contained in a txDT, as measured
+by the number of positions (rows) the gene has in the table. 
+
+```{r}
+tx_get_geneLengths(DT_covNucFreq)
+```
+
+## Get metagene values
+
+`tx_get_metageneAtCDS()`: Gets the metagene profile of desired column variables,
+centered at either the start or end of the CDS.
+
+Bellow is an example in which we retrieve the values of coverage at the start
+of the CDS as well as upstream and downstream flanks.
+
+```{r}
+tx_get_metageneAtCDS(txDT = DT_covNucFreq, geneAnnotation = geneAnnot,
+                      colVars = c("cov"), CDS_align = "start", 
+                      upFlank = 3, doFlank = 5)
+```
+
+## Get transcriptome sequences
+
+`tx_get_transcriptSeqs()`: Retrieves the spliced sequence of genes. Using as 
+input the reference genome and the gene annotation loaded with `tx_load_bed()`.
+
+The output of this function can be either a DNAStringSet from the 
+`r BiocStyle::Biocpkg("Biostrings")` package, or (when providing a file name) a
+FASTA file.
+
+Bellow an example showing the sequences of the genes in the D. melanogaster
+gene annotation, and the DNAStringSet as output.
+
+```{r}
+tx_get_transcriptSeqs(genome = genome, geneAnnot = geneAnnot)
+```
+
+# Statistical tests `tx_test_*()`
+
+txtools provides two functions to perform statistical tests to detect sites
+that show unexpected values at each site in a treatment group compared to a 
+control group.
+
+- t test: In the case of comparing continuous variables a t-test can show the 
+unlikeliness that both groups have the same mean. e.g. whe comparing start to
+coverage rate.
+
+- Likelihood Ratio test (from `r BiocStyle::Biocpkg("edgeR")` package): For 
+comparing count data that are of the type of trial and success between groups, 
+for example when comparing start to coverage ratio but directly with the count 
+data, considering coverage counts as number of trials and the number of read-starts as successes.
+
+Both of these functions require as main input a list of txDTs (txDTL), one for
+each sample on the experimental design.
+
+*For examples on the usage of the tx_test functions, please consult the case*
+*studies vignette `vignetteXXX`*
+
+# Session info {.unnumbered}
+
+```{r sessionInfo, echo=FALSE}
+sessionInfo()
+```
