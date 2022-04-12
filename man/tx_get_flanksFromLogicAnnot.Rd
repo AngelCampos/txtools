@@ -10,7 +10,7 @@ tx_get_flanksFromLogicAnnot(
   values_col,
   upFlank,
   doFlank,
-  addRowNames = FALSE
+  addRowNames = TRUE
 )
 }
 \arguments{

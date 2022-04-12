@@ -16,5 +16,5 @@ GRanges
 Reads and loads bed files checking for compliance with bed file structure
 }
 \author{
-M.A. Garcia-Campos <https://angelcampos.github.io/>
+M.A. Garcia-Campos \url{https://angelcampos.github.io/}
 }

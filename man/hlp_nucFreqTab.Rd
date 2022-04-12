@@ -11,12 +11,14 @@ hlp_nucFreqTab(x, simplify_IUPAC = "not")
 alignments data by gene. Constructed via tx_reads().}
 
 \item{simplify_IUPAC}{character. Method to simplify ambiguous reads:
-1) 'not': Ambiguous reads will be left as their IUPAC_ambiguous code, e.g.
+\enumerate{
+\item 'not': Ambiguous reads will be left as their IUPAC_ambiguous code, e.g.
 for positions in which a 'G' and and 'A' where read an 'R' will note this.
-2) "splitHalf': Ambiguous reads will be divided in half, in odd cases having
+\item "splitHalf': Ambiguous reads will be divided in half, in odd cases having
 fractions of reads assigned.
-3) "splitForceInt": Ambiguous reads will be divided in half, but forced to be
-integers, unassigned fraction of reads will be summed and assigned as 'N'.}
+\item "splitForceInt": Ambiguous reads will be divided in half, but forced to be
+integers, unassigned fraction of reads will be summed and assigned as 'N'.
+}}
 }
 \value{
 data.table

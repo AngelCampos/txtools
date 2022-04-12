@@ -12,7 +12,7 @@ as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT}}
 functions}
 
 \item{minCov}{numeric. Minimum coverage required to output ratio. If coverage
-is less then an NA is output in that position.}
+is less then an NA is output in that position. To output all positions assign 0.}
 }
 \value{
 data.table
