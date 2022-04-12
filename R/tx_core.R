@@ -3,10 +3,10 @@
 #' The txtools package provides functions to analyze genomic data from a
 #' transcriptomic perspective. It consists on functions which make the br
 #'
-#' @section Genome to transcriptome functions:
+#' @section tx_load_*():
 #' These functions work is to load and process the genomic data into their
 #' transcriptomic counterparts.
-#' @section Transcriptomic analysis:
+#' @section tx_reads():
 #' These functions work is to perform different tasks to analyze the
 #' transcriptomic data.
 #' @section Meta-analysis:
@@ -18,6 +18,10 @@
 #'
 #' @docType package
 #' @name txtools
+#' @aliases txtools-package
+#' @keywords DataImport DataRepresentation Coverage Epitranscriptomics RNASeq
+#' @keywords Transcription SNP
+"_PACKAGE"
 NULL
 
 # Loading files into R #########################################################

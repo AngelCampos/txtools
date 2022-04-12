@@ -228,7 +228,7 @@ useful to add certain related metrics.
 For example the rate at which reads start compared to coverage,
 which we call startRatio. To create such common metrics we
 provide several functions under the `tx_add_*()` functions family.
-Bellow a list of them and a brief descritpion of what they add.
+Bellow a list of them and a brief description of what they add.
 
 - `tx_add_startRatio()`: Start to coverage rate
 - `tx_add_startRatio1bpDS()`: Start to coverage rate 1 bp down-stream

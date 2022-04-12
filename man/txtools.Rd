@@ -3,18 +3,20 @@
 \docType{package}
 \name{txtools}
 \alias{txtools}
+\alias{_PACKAGE}
+\alias{txtools-package}
 \title{txtools: A package to analyze transcriptomic data}
 \description{
 The txtools package provides functions to analyze genomic data from a
 transcriptomic perspective. It consists on functions which make the br
 }
-\section{Genome to transcriptome functions}{
+\section{tx_load_*()}{
 
 These functions work is to load and process the genomic data into their
 transcriptomic counterparts.
 }
 
-\section{Transcriptomic analysis}{
+\section{tx_reads()}{
 
 These functions work is to perform different tasks to analyze the
 transcriptomic data.
@@ -32,3 +34,14 @@ Finally graphical functions are available to visualize and inspect final
 and workflow intermediate results to facilitate the analysis process.
 }
 
+\author{
+\strong{Maintainer}: Miguel Angel Garcia-Campos \email{angel.campos@ciencias.unam.mx} (\href{https://orcid.org/0000-0001-5223-8174}{ORCID}) (https://angelcampos.github.io/)
+
+}
+\keyword{Coverage}
+\keyword{DataImport}
+\keyword{DataRepresentation}
+\keyword{Epitranscriptomics}
+\keyword{RNASeq}
+\keyword{SNP}
+\keyword{Transcription}
