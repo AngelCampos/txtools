@@ -1077,3 +1077,8 @@ tx_generateSingleEndFASTQ <- function(genome, geneAnnot, readLen, libSize, fileN
                                 filepath = fileName, format = "fastq", compress = TRUE)
 }
 
+
+## usethis namespace: start
+#' @importFrom lifecycle deprecated
+## usethis namespace: end
+

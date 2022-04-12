@@ -28,8 +28,9 @@ tx_reads_mc <- function(reads, geneAnnot, minReads = 50, withSeq = FALSE, verbos
     tx_reads(reads, geneAnnot, minReads, withSeq, verbose, nCores)
 }
 
-
 #' Add number of nucleotide reads different to the reference genome
+#'
+#' `r lifecycle::badge("deprecated")`
 #'
 #' Add a column to DT of the sum of nucleotide frequency different to the
 #' reference sequence counting deletions, without considering 'N's nor inserts

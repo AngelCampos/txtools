@@ -15,6 +15,9 @@ tx_add_diffNucToRef(DT)
 data.table
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
+}
+\details{
 Add a column to DT of the sum of nucleotide frequency different to the
 reference sequence counting deletions, without considering 'N's nor inserts
 '.' into the calculation.
