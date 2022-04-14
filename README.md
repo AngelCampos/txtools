@@ -3,7 +3,7 @@
 
 <!-- badges: start -->
 
-[![](https://img.shields.io/badge/devel%20version-0.0.6.2-blue.svg)](https://github.com/AngelCampos/txtools)
+[![](https://img.shields.io/badge/devel%20version-0.0.7-blue.svg)](https://github.com/AngelCampos/txtools)
 <!-- badges: end -->
 
 ## Description
@@ -50,10 +50,10 @@ BED_file <- tx_dm3_geneAnnot()
 FASTA_file <- dm3_chr4()
 PE_BAM_file <- untreated3_chr4()
 
-# Loading D. melanogaster gene annotation, genome, and alignments into R.
+# Loading D. melanogaster gene annotation, genome, and paired-end bam alignments
 dm3_geneAnnot <- tx_load_bed(BED_file)
 dm3_genome <- tx_load_genome(FASTA_file)
-dm3_PEreads <- tx_load_bam(file = PE_BAM_file, pairedEnd = T, loadSeq = T)
+dm3_PEreads <- tx_load_bam(file = PE_BAM_file, pairedEnd = TRUE, loadSeq = TRUE)
 ```
 
 First, we process the alignments to their transcriptomic versions using
@@ -66,10 +66,13 @@ reads_SE <- tx_reads(reads = dm3_PEreads,
                      nCores = 1, 
                      minReads = 1)
 #> Processing 75409 reads, using 10 gene models. 
-#> 12563 reads overlap 10 gene models 
-#> Filtering reads by gene model... 
+#> 10373 alignments overlap 10 gene models 
+#> Assigning alignments to gene model... 
 #> Processing sequences. This may take several minutes depending on geneAnnot size ... 
-#> Output contains: 12252 unique reads in 10 gene models
+#> Output contains: 7214 unique alignments in 10 gene models
+#> Warning in tx_reads(reads = dm3_PEreads, geneAnnot = dm3_geneAnnot, withSeq =
+#> TRUE, : Some alignments were not assigned to any gene, you can retrieve them
+#> using the tx_getUnassignedAlignments() function.
 ```
 
 Then we just need to summarize the alignments into a DT. In this case
@@ -95,16 +98,12 @@ metric we can easily spot locations in which RNA transcripts sequence is
 different from that of the reference sequence.
 
 ``` r
-DT <- tx_add_diffNucToRefRatio(DT, addDiffandTotalCols = TRUE)
-DT[which(diffToRefRatio > 0.5 & nucTotal > 40),]
-#>     chr gencoor strand         gene txcoor refSeq cov start_5p end_3p A C  G T
-#> 1: chr4  939355      -    NM_079901   3803      A  90        0      0 0 0 46 0
-#> 2: chr4  939355      - NM_001144385   4033      A  90        0      0 0 0 46 0
-#> 3: chr4  939355      - NM_001103382   4562      A  90        0      0 0 0 46 0
-#>    N -  . diffToRef nucTotal diffToRefRatio
-#> 1: 0 0 44        46       46              1
-#> 2: 0 0 44        46       46              1
-#> 3: 0 0 44        46       46              1
+DT <- tx_add_misincRate(DT, addMisinandTotalCols = TRUE)
+DT[which(misincRate > 0.5 & nucTotal > 40),]
+#>     chr gencoor strand      gene txcoor refSeq cov start_5p end_3p A C  G T N -
+#> 1: chr4  939355      - NM_079901   3803      A  90        0      0 0 0 46 0 0 0
+#>     . misincCount nucTotal misincRate
+#> 1: 44          46       46          1
 ```
 
 Finally, using the `tx_plot_nucFreq()` function we can visualize that
@@ -130,9 +129,9 @@ tx_plot_nucFreq(DT, gene = "NM_079901", txRange = window_around(3803, 15))
     commonly requires a lot of time, having this in mind txtools
     provides a progress bar to keep users informed about the loading
     status. Most importantly, depending on the ammount of both loaded
-    reads and the size of the *Gene Annotation* tx\_reads() processing
+    reads and the size of the *Gene Annotation* tx_reads() processing
     time can take several minutes. A solution to this issue is the use
-    of multi-threadding which has been incorporated into tx\_reads() and
+    of multi-threadding which has been incorporated into tx_reads() and
     other functions, but such functionality is only available for UNIX
     and MAC OS.
 

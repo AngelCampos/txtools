@@ -3,6 +3,7 @@
 \name{tx_reads}
 \alias{tx_reads}
 \alias{tx_reads_mc}
+\alias{tx_flushUnassigned}
 \title{Transcriptomic reads convertion}
 \usage{
 tx_reads(
@@ -19,23 +20,25 @@ tx_reads(
 
 \item{geneAnnot}{GenomicRanges. Gene annotation loaded via the tx_load_bed()}
 
-\item{minReads}{integer. Minimum number of reads required to overlap a gene}
+\item{minReads}{integer. Minimum number of alignments required to overlap a gene}
 
 \item{withSeq}{logical. Set to TRUE if sequence should be preserved; 'reads'
 object should contain sequences.}
 
 \item{verbose}{logical. Set to FALSE to show less information.}
 
-\item{nCores}{integer. Number of cores to use to run function. Multicore
+\item{nCores}{integer. Number of cores to use to run function. Multi-core
 capability not available in Windows OS.}
 }
 \value{
 GRanges
-space. Alignments are located in genes, instead of chromosomes.
 }
 \description{
 Assign aligned reads to their respective gene models and convert their
-positions into a transcriptomic coordinate system. It also stitches together
-paired-end aligned reads into a single character 'word' in which dots '.'
-separate Read1 and Read2 by their corresponding insert.
+positions into their corresponding transcriptomic coordinate system.
+It also stitches together paired-end aligned reads into a single sequence
+in which dots '.' separate Read1 and Read2 by their corresponding insert.
+}
+\details{
+To retrieve unassigned alignments use the function tx_getUnassignedAlignments()
 }

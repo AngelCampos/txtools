@@ -48,16 +48,15 @@ data.table
 This function constructs a list of data.tables that contains nucleotide frequency
 metrics per nucleotide by transcript:
 \itemize{
-\item cov = Insert coverage
-\item start_5p = read-start counts
-\item end_3p = read-end counts
+\item REF = Equal to reference genome
+\item . = Insert. Not read gap between read1 and read2, counted for coverage
+computation
 \item A = Adenine
 \item C = Cytosine
 \item G = Guanine
 \item T = Thymine
-\item N = Undetermined nucleotide
 \item - = Deletion
-\item . = Insert, not read gap between read1 and read2
+\item N = Undetermined nucleotide
 }
 The function requires the input of a GRangesList object output by the
 \code{\link{tx_reads}} function, which should contain sequence alignments in the

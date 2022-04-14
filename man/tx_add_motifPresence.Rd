@@ -9,6 +9,7 @@ tx_add_motifPresence(
   motif,
   nucPositions = "all",
   motifColName = "auto",
+  mask_N = TRUE,
   nCores = 1
 )
 }
@@ -24,14 +25,18 @@ The function allows IUPAC ambiguity codes, e.g. R={A|G}.}
 \itemize{
 \item "all": Will mark all the positions of the motif
 \item "center": Will mark the center of the motif
-\item "i": A number can be passed in which the **i**th position will be
+\item "i": A number can be passed in which the \strong{i}th position will be
 marked. For example, for the 'CAC' motif a value of '2' will mark all 'A's
-surrounded by 'C's
+surrounded by a 'C'.
 }}
 
 \item{motifColName}{character. Name of the new column to be added for
 annotating motif presence. Automatically is set to be a combination of the
 input motif and nucPositions arguments.}
+
+\item{mask_N}{logical. If set to FALSE, 'N' nucleotides are left as is,
+therefore matching motifs. i.e. A consecutive sequence of NNNNN will match
+any 5 letter motif as 'DRACH'; generally not desired.}
 
 \item{nCores}{integer. Number of cores to use to run function. Multicore
 capability is not available in Windows OS.}

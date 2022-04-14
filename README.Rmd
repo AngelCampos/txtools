@@ -61,10 +61,10 @@ BED_file <- tx_dm3_geneAnnot()
 FASTA_file <- dm3_chr4()
 PE_BAM_file <- untreated3_chr4()
 
-# Loading D. melanogaster gene annotation, genome, and alignments into R.
+# Loading D. melanogaster gene annotation, genome, and paired-end bam alignments
 dm3_geneAnnot <- tx_load_bed(BED_file)
 dm3_genome <- tx_load_genome(FASTA_file)
-dm3_PEreads <- tx_load_bam(file = PE_BAM_file, pairedEnd = T, loadSeq = T)
+dm3_PEreads <- tx_load_bam(file = PE_BAM_file, pairedEnd = TRUE, loadSeq = TRUE)
 ```
 
 First, we process the alignments to their transcriptomic versions using the
@@ -100,8 +100,8 @@ these metric we can easily spot locations in which RNA transcripts sequence is
 different from that of the reference sequence. 
 
 ```{r}
-DT <- tx_add_diffNucToRefRatio(DT, addDiffandTotalCols = TRUE)
-DT[which(diffToRefRatio > 0.5 & nucTotal > 40),]
+DT <- tx_add_misincRate(DT, addMisinandTotalCols = TRUE)
+DT[which(misincRate > 0.5 & nucTotal > 40),]
 ```
 
 Finally, using the `tx_plot_nucFreq()` 

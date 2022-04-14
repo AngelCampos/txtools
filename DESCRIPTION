@@ -1,6 +1,6 @@
 Package: txtools
 Title: An interface between GenomicAlignments and transcriptomic representations
-Version: 0.0.6.2
+Version: 0.0.7
 Date: 2020-22-12
 Authors@R: 
     person(given = "Miguel Angel",
@@ -17,12 +17,11 @@ Depends: R (>= 4.0.0)
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 Suggests: 
     testthat (>= 2.1.0),
     knitr,
-    rmarkdown,
-    pasillaBamSubset
+    rmarkdown
 Remotes:
     bioc::GenomicRanges,
     bioc::Biostrings,
@@ -37,6 +36,7 @@ Imports:
     GenomicRanges,
     Biostrings,
     IRanges,
+    pasillaBamSubset,
     Rsamtools,
     S4Vectors (>= 0.23.20),
     GenomicAlignments,
@@ -51,7 +51,13 @@ Imports:
     ggplot2,
     plotly,
     tidyr,
-    methods
+    methods,
+    BiocGenerics,
+    forcats,
+    ggseqlogo,
+    RcppRoll,
+    lifecycle
 VignetteBuilder: knitr
 biocViews: DataImport, DataRepresentation, Coverage, 
     Epitranscriptomics, RNASeq, Transcription, SNP
+Roxygen: list(markdown = TRUE)

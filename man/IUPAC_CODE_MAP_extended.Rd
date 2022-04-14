@@ -8,7 +8,7 @@
 Named character vector
 }
 \source{
-Adapted from \code{\link[Biostrings]{IUPAC_CODE_MAP}}
+Adapted from Biostrings object \code{\link[Biostrings]{IUPAC_CODE_MAP}}
 }
 \usage{
 IUPAC_CODE_MAP_extended

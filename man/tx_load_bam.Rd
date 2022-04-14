@@ -10,7 +10,6 @@ tx_load_bam(
   yieldSize = 1e+05,
   scanFlag = "default",
   loadSeq = FALSE,
-  recoverDumpedAligns = FALSE,
   verbose = TRUE
 )
 }
@@ -27,10 +26,6 @@ See \code{\link[Rsamtools]{ScanBamParam}}}
 
 \item{loadSeq}{logical. Set to TRUE for loading the sequences contained
 in the BAM file}
-
-\item{recoverDumpedAligns}{logical. If set to TRUE ambiguous alignments
-will be retrieved and output along correctly paired reads. More info:
-?GenomicAlignments::readGAlignments}
 
 \item{verbose}{logical. Set to FALSE to show less information}
 }
