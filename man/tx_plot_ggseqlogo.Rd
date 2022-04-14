@@ -10,7 +10,7 @@ tx_plot_ggseqlogo(DT, logi_col, upFlank, doFlank, method = "bits")
 \item{method}{}
 }
 \value{
-
+ggplot
 }
 \description{
 Plots a motif of the sequence surrounding sites marked as TRUE in a logical

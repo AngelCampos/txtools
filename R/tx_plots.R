@@ -16,6 +16,7 @@
 #' @param showLegend logical. If set to FALSE does not renger a legend.
 #'
 #' @return ggplot
+#' @export
 tx_plot_nucFreq <- function(DT,
                             gene,
                             txRange = 1:nrow(DT),
@@ -180,7 +181,7 @@ tx_plot_staEndCov <- function(
 #' @param doFlank
 #' @param method
 #'
-#' @return
+#' @return ggplot
 #' @export
 tx_plot_ggseqlogo <- function(DT, logi_col, upFlank, doFlank, method = "bits"){
     tmpO <- tx_get_flankSequence(DT = DT, logi_col = logi_col, upFlank = upFlank, doFlank = doFlank)
@@ -204,16 +205,17 @@ tx_plot_ggseqlogo <- function(DT, logi_col, upFlank, doFlank, method = "bits"){
 #' @param doFlank
 #' @param summ_fun
 #' @param roll_fun
-#' @param roll_n
-#' @param roll_align
+#' @param roll_n numeric. Window size for rolling functions
+#' @param roll_align character. Either "center" (default), "left" or "right"
 #' @param roll_fill
-#' @param smooth
-#' @param spar
+#' @param smooth logical. Set to FALSE for not smoothing with spline
+#' @param spar numeric. Smoothing parameter, typically (but not necessarily) in (0,1].
+#' Check stats::smooth.spline
 #' @param na.rm
 #' @param normalize
 #' @param tick_by
 #'
-#' @return
+#' @return ggplot
 #' @export
 tx_plot_metageneAtCDS <- function(txDT, geneAnnotation, colVars, CDS_align, upFlank,
                                   doFlank, summ_fun = "sum", roll_fun = "sum", roll_n = 100,

@@ -3,7 +3,7 @@
 
 <!-- badges: start -->
 
-[![](https://img.shields.io/badge/devel%20version-0.0.6-blue.svg)](https://github.com/AngelCampos/txtools)
+[![](https://img.shields.io/badge/devel%20version-0.0.7-blue.svg)](https://github.com/AngelCampos/txtools)
 <!-- badges: end -->
 
 ## Description
@@ -66,10 +66,10 @@ reads_SE <- tx_reads(reads = dm3_PEreads,
                      nCores = 1, 
                      minReads = 1)
 #> Processing 75409 reads, using 10 gene models. 
-#> 12563 alignments overlap 10 gene models 
+#> 10373 alignments overlap 10 gene models 
 #> Assigning alignments to gene model... 
 #> Processing sequences. This may take several minutes depending on geneAnnot size ... 
-#> Output contains: 12252 unique reads in 10 gene models
+#> Output contains: 7214 unique alignments in 10 gene models
 #> Warning in tx_reads(reads = dm3_PEreads, geneAnnot = dm3_geneAnnot, withSeq =
 #> TRUE, : Some alignments were not assigned to any gene, you can retrieve them
 #> using the tx_getUnassignedAlignments() function.
@@ -98,16 +98,12 @@ metric we can easily spot locations in which RNA transcripts sequence is
 different from that of the reference sequence.
 
 ``` r
-DT <- tx_add_diffNucToRefRatio(DT, addDiffandTotalCols = TRUE)
-DT[which(diffToRefRatio > 0.5 & nucTotal > 40),]
-#>     chr gencoor strand         gene txcoor refSeq cov start_5p end_3p A C  G T
-#> 1: chr4  939355      -    NM_079901   3803      A  90        0      0 0 0 46 0
-#> 2: chr4  939355      - NM_001144385   4033      A  90        0      0 0 0 46 0
-#> 3: chr4  939355      - NM_001103382   4562      A  90        0      0 0 0 46 0
-#>    N -  . diffToRef nucTotal diffToRefRatio
-#> 1: 0 0 44        46       46              1
-#> 2: 0 0 44        46       46              1
-#> 3: 0 0 44        46       46              1
+DT <- tx_add_misincRate(DT, addMisinandTotalCols = TRUE)
+DT[which(misincRate > 0.5 & nucTotal > 40),]
+#>     chr gencoor strand      gene txcoor refSeq cov start_5p end_3p A C  G T N -
+#> 1: chr4  939355      - NM_079901   3803      A  90        0      0 0 0 46 0 0 0
+#>     . misincCount nucTotal misincRate
+#> 1: 44          46       46          1
 ```
 
 Finally, using the `tx_plot_nucFreq()` function we can visualize that

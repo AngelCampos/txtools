@@ -143,7 +143,7 @@ tx_load_bed <- function(bedfile){
 #' Load genome as DNAStrinSet from FASTA file. Alias for
 #' \code{\link[Biostrings]{readDNAStringSet}}
 #'
-#' @param fastaFile path to FASTA format file with all genome sequences
+#' @param fastaFile path to FASTA file with genomic sequences
 #'
 #' @return DNAStringSet
 #' @export
@@ -178,7 +178,7 @@ tx_load_rdsDT <- function(file){
 #'
 #' @param reads GAlignments or GAlignmentPairs. Genomic alignments to be processed
 #' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed()
-#' @param minReads integer. Minimum number of reads required to overlap a gene
+#' @param minReads integer. Minimum number of alignments required to overlap a gene
 #' @param withSeq logical. Set to TRUE if sequence should be preserved; 'reads'
 #' object should contain sequences.
 #' @param verbose logical. Set to FALSE to show less information.
@@ -190,8 +190,8 @@ tx_load_rdsDT <- function(file){
 #'
 #' @return GRanges
 #' @export
-tx_reads <- function(reads, geneAnnot, minReads = 50, withSeq = FALSE, verbose = TRUE,
-                     nCores = 1){
+tx_reads <- function(reads, geneAnnot, minReads = 50, withSeq = FALSE,
+                     verbose = TRUE, nCores = 1){
     # Checks
     tx_flushUnassigned()
     check_mc_windows(nCores)
@@ -228,7 +228,7 @@ tx_reads <- function(reads, geneAnnot, minReads = 50, withSeq = FALSE, verbose =
                     "depending on geneAnnot size ... \n")
             }
         }
-    }else{stop("There where no reads, or not enough reads overlapping the gene models. \n")}
+    }else{stop("There where no alignments, or not enough alignments overlapping the gene models. \n")}
     allExons <- exonGRanges(geneAnnot) # All exons in gene models
     # Pass from genomic coordinates into transcriptomic coordinates and
     # Stitch sequences for paired-end reads
@@ -258,7 +258,7 @@ tx_reads <- function(reads, geneAnnot, minReads = 50, withSeq = FALSE, verbose =
         GenomicRanges::GRangesList()
     if(verbose){
         cat("Output contains:", lapply(OUT, names) %>% unlist %>% unique %>% length,
-            "unique reads in", length(OUT), "gene models \n")
+            "unique alignments in", length(OUT), "gene models \n")
     }
     # Dump not assigned alignments into dump environment
     if(length(setdiff(names(reads), unique(unlist(lapply(OUT, names))))) > 1L){
@@ -1532,4 +1532,94 @@ tx_counts <- function(x){
 #' @examples
 tx_dm3_geneAnnot <- function(){
     system.file("extdata", "toyGeneAnnot_Dmelan_chr4.bed", package = "txtools")
+}
+
+
+#' Load data - Case study #2
+#'
+#' @return
+#' @export
+#'
+#' @examples
+tx_data_caseStudy2 <- function(){
+    tmpF <- tempfile()
+    download.file(url = "https://drive.google.com/uc?export=download&id=1ICdtTNU0qK7ZetwNp5RzHDrYT5mrt6y2",
+                  destfile = tmpF)
+    readRDS(tmpF)
+}
+
+#' Download genome to temporary file - Case study # 1
+#'
+#' Sk1 genome. Source Schwartz et al., 2013 https://doi.org/10.1016/j.cell.2013.10.047
+#'
+#' @return
+#' @export
+#'
+#' @examples
+sc_faGenome <- function(){
+    tmpF <- tempfile()
+    download.file(url = "https://drive.google.com/uc?export=download&id=1IgUO5CKdHJh_2L2lp4ADfmGJlhCbKM9r",
+                  destfile = tmpF)
+    cat("sc_faGenome file downloaded to temporary file ", tmpF, "\n")
+    tmpF
+}
+
+#' Download genome to temporary file - Case study # 3
+#'
+#' Thermococcus kodakarensis complete genome
+#' Source: https://www.ncbi.nlm.nih.gov/assembly/GCF_000009965.1/
+#'
+#' @return
+#' @export
+tk_faGenome <- function(){
+    tmpF <- tempfile()
+    download.file(url = "https://drive.google.com/uc?export=download&id=1Iir-E0kVJ3RMHNsbOdSgi847t5lz1-re",
+                  destfile = tmpF)
+    cat("tk_faGenome file downloaded to temporary file ", tmpF, "\n")
+    tmpF
+}
+
+#' Download gene annotation - Case study #1
+#'
+#' Download rRNA gene annotation of Saccharomyces cerevisae strain SK1 to temporary file
+#'
+#' @return
+#' @export
+sc_geneAnnot <- function(){
+    tmpF <- tempfile()
+    download.file(url = "https://drive.google.com/uc?export=download&id=1IlycxDiZoPcbpOsn7wRoXSx-v-79qrIW",
+                  destfile = tmpF)
+    cat("sc_geneAnnot file downloaded to temporary file ", tmpF, "\n")
+    tmpF
+}
+
+#' Download gene annotation - Case study # 2
+#'
+#' Download mm9 gene annotation to temporary file.
+#' Selected genes (toy example).
+#'
+#' Source: UCSC genes https://genome.ucsc.edu/cgi-bin/hgTables
+#'
+#' @return
+#' @export
+mm_geneAnnot <- function(){
+    tmpF <- tempfile()
+    download.file(url = "https://drive.google.com/uc?export=download&id=1IsZryJRYDtgevc8qXd_7pH-KqiNT8tSs",
+                  destfile = tmpF)
+    cat("mm_geneAnnot file downloaded to temporary file ", tmpF, "\n")
+    tmpF
+}
+
+#' Download gene annotation - Case study # 3
+#'
+#' Download T. kodakarensis rRNA gene annotation to temporary file
+#' Source:
+#' @return
+#' @export
+tk_geneAnnot <- function(){
+    tmpF <- tempfile()
+    download.file(url = "https://drive.google.com/uc?export=download&id=1ImtH_ln_HXku2tAh2SaU-Io16zAV3ahQ",
+                  destfile = tmpF)
+    cat("tk_geneAnnot file downloaded to temporary file ", tmpF, "\n")
+    tmpF
 }

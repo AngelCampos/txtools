@@ -24,10 +24,19 @@ tx_plot_metageneAtCDS(
 )
 }
 \arguments{
+\item{roll_n}{numeric. Window size for rolling functions}
+
+\item{roll_align}{character. Either "center" (default), "left" or "right"}
+
+\item{smooth}{logical. Set to FALSE for not smoothing with spline}
+
+\item{spar}{numeric. Smoothing parameter, typically (but not necessarily) in (0,1].
+Check stats::smooth.spline}
+
 \item{tick_by}{}
 }
 \value{
-
+ggplot
 }
 \description{
 Plot metagene at CDS

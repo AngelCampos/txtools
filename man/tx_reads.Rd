@@ -20,7 +20,7 @@ tx_reads(
 
 \item{geneAnnot}{GenomicRanges. Gene annotation loaded via the tx_load_bed()}
 
-\item{minReads}{integer. Minimum number of reads required to overlap a gene}
+\item{minReads}{integer. Minimum number of alignments required to overlap a gene}
 
 \item{withSeq}{logical. Set to TRUE if sequence should be preserved; 'reads'
 object should contain sequences.}

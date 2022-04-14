@@ -899,7 +899,8 @@ check_GR_has_seq <- function(x, argName){
         x <- unlist(x)
     }
     if(!("seq" %in% names(GenomicRanges::mcols(x)))){
-        stop("'", argName, "' has no seq (sequences) meta-column")
+        stop("'", argName, "' has no seq (sequences) meta-column.",
+             "\nMake sure you set the argument 'withSeq' to TRUE in tx_reads()")
     }
 }
 

@@ -76,8 +76,7 @@ To work with the reads in the transcriptomic space, txtools requires a
 *that the genes in the annotation consist of a single exon block.*
 
 ```{r}
-# BED_path <- tx_dm3_geneAnnot() # geneAnnotation built-in txtools
-BED_path <- system.file("extdata", "toyGeneAnnot_Dmelan_chr4.bed", package = "txtools")
+BED_path <- tx_dm3_geneAnnot() # geneAnnotation built-in txtools
 geneAnnot <- tx_load_bed(BED_path)
 ```
 
@@ -252,6 +251,7 @@ of a 'C'.
 *`r CRANpkg("magrittr")` package.*
 
 ```{r}
+library("magrittr")
 DT_covNucFreq <- DT_covNucFreq %>% 
     tx_add_startRatio() %>% 
     tx_add_startRatio1bpDS() %>% 
@@ -383,15 +383,14 @@ libraries*
 
 
 ```{r}
-selSite <- DT_covNucFreq[order(misincCount, decreasing = TRUE)][1, c("gene", "txcoor", "cov",
-                                                                     "nucTotal", "misincCount",
-                                                                     "misincRate")]
+selSite <- DT_covNucFreq[which(misincRate > 0.5 & nucTotal > 40),
+                         c("gene", "txcoor", "cov", "nucTotal", "misincCount", "misincRate")]
 selSite
 ```
 
 
 ```{r}
-tx_plot_nucFreq(DT_covNucFreq, gene = selSite$gene[1], txRange = window_around(selSite$txcoor, 20), removeInsert = T)
+tx_plot_nucFreq(DT_covNucFreq, gene = selSite$gene, txRange = window_around(selSite$txcoor, 20), removeInsert = T)
 ```
 
 ## ggseqlogo plot

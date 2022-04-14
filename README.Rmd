@@ -100,8 +100,8 @@ these metric we can easily spot locations in which RNA transcripts sequence is
 different from that of the reference sequence. 
 
 ```{r}
-DT <- tx_add_diffNucToRefRatio(DT, addDiffandTotalCols = TRUE)
-DT[which(diffToRefRatio > 0.5 & nucTotal > 40),]
+DT <- tx_add_misincRate(DT, addMisinandTotalCols = TRUE)
+DT[which(misincRate > 0.5 & nucTotal > 40),]
 ```
 
 Finally, using the `tx_plot_nucFreq()` 

@@ -62,3 +62,25 @@
 #' @format GRanges
 #'
 "annotSites_RRACH"
+
+
+#' txtools-processed data - Case study # 1
+#'
+#' @format list
+#'
+"sc_txDTL"
+
+#' txtools-processed data - Case study # 3
+#'
+#' @format list
+#'
+"txDTL_Tk"
+
+#' Sk1 rRNA modifications catalogue
+#'
+#' Source: Taoka et al., 2016 (https://doi.org/10.1093/nar/gkw564)
+#'
+#'
+#' @format data.table
+#'
+"sc_rRNAmods_Taoka"

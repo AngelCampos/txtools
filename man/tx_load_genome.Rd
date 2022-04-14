@@ -7,7 +7,7 @@
 tx_load_genome(fastaFile)
 }
 \arguments{
-\item{fastaFile}{path to FASTA format file with all genome sequences}
+\item{fastaFile}{path to FASTA file with genomic sequences}
 }
 \value{
 DNAStringSet
