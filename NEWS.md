@@ -1,9 +1,16 @@
-# Updates during development
-
+## v0.0.7
+* General Update
+* Added vignette "txtools_user_guide"
+* Changed tx_add_diffNucToRef() for tx_add_misincCount()
+* Changed tx_add_diffNucToRefRatio() for tx_add_misincRate()
+* Fix minor bugs
+ 
 ## v0.0.6
 
 * Fixed a bug detected when loading BAM files with mappings with empty 
 sequence field
+* 0.0.6.2 patch: Fixed bug related with spurious paired-end alignments, R1 and
+R2 order is wrong.
 
 ## v0.0.5
 
