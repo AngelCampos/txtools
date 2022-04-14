@@ -38,7 +38,7 @@ commands in the R console:
 ```{r, installation, eval = F}
 if (!requireNamespace("remotes", quietly = TRUE))
     install.packages("remotes")
-devtools::install_github("AngelCampos/txtools", build_vignettes = TRUE)
+remotes::install_github("AngelCampos/txtools", build_vignettes = TRUE)
 ```
 
 ## Quick example
