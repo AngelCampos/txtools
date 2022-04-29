@@ -1,5 +1,5 @@
 
-# txtools
+# txtools <a href=''><img src='man/figures/logo.png' align="right" height="139" /></a>
 
 <!-- badges: start -->
 
@@ -26,7 +26,7 @@ commands in the R console:
 ``` r
 if (!requireNamespace("remotes", quietly = TRUE))
     install.packages("remotes")
-devtools::install_github("AngelCampos/txtools", build_vignettes = TRUE)
+remotes::install_github("AngelCampos/txtools", build_vignettes = TRUE)
 ```
 
 ## Quick example
