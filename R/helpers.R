@@ -1052,7 +1052,23 @@ rowMeansColG <- function(DF, colGroups, na.rm = T){
     return(out)
 }
 
-# Generate single-end FASTQ file
+#' Generate single-end FASTQ file
+#'
+#' Generate single-end FASTQ file form genome and gene annotation.
+#' Distribution of reads is randomly selected following a negative binomial distribution with
+#'
+#' @param genome
+#' @param geneAnnot
+#' @param readLen
+#' @param libSize
+#' @param fileName
+#' @param NB_r
+#' @param NB_mu
+#' @param nCores
+#'
+#' @return
+#'
+#' @examples
 tx_generateSingleEndFASTQ <- function(genome, geneAnnot, readLen, libSize, fileName, NB_r = 5, NB_mu = 500, nCores){
     # filter transcripts by size
     txOME_seqs <- tx_get_transcriptSeqs(genome = genome, geneAnnot = geneAnnot, nCores = nCores)
@@ -1069,13 +1085,13 @@ tx_generateSingleEndFASTQ <- function(genome, geneAnnot, readLen, libSize, fileN
     metaTX$reads1 <- lapply(seq_along(metaTX$seqs), function(i){
         stringr::str_sub(metaTX$seqs[i], metaTX$starts_1[[i]],
                          metaTX$starts_1[[i]] + readLen - 1) %>%
-            DNAStringSet()
+            Biostrings::DNAStringSet()
     }) %>% do.call(what = "c")
     names(metaTX$reads1) <- paste0("R1_", 1:length(metaTX$reads1))
     qualStr <- paste(rep("H", readLen), collapse = "")
     # Writing FASTQ
     Biostrings::writeXStringSet(x = metaTX$reads1,
-                                quali = BStringSet(rep(qualStr, each = length(metaTX$reads1))),
+                                quali = Biostrings::BStringSet(rep(qualStr, each = length(metaTX$reads1))),
                                 filepath = fileName, format = "fastq", compress = TRUE)
 }
 

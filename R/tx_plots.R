@@ -248,7 +248,8 @@ tx_plot_metageneAtCDS <- function(txDT, geneAnnotation, colVars, CDS_align, upFl
     if(is.null(tick_by)){
         tick_by <- upFlank / 2
     }
-    tmpGG <- ggplot2::ggplot(tmpDF, ggplot2::aes(x = position, y = value, group = group, colour = group)) +
+    tmpGG <- ggplot2::ggplot(tmpDF, ggplot2::aes(x = tmpDF$position, y = tmpDF$value,
+                                                 group = tmpDF$group, colour = tmpDF$group)) +
         ggplot2::geom_line() +
         ggplot2::scale_x_discrete(limits = unique(tmpDF$position),
                                   breaks = unique(tmpDF$position)[seq(1, length(unique(tmpDF$position)), by = tick_by)]) +

@@ -10,6 +10,7 @@ tx_load_bam(
   yieldSize = 1e+05,
   scanFlag = "default",
   loadSeq = FALSE,
+  strandMode = 1,
   verbose = TRUE
 )
 }
@@ -27,7 +28,10 @@ See \code{\link[Rsamtools]{ScanBamParam}}}
 \item{loadSeq}{logical. Set to TRUE for loading the sequences contained
 in the BAM file}
 
-\item{verbose}{logical. Set to FALSE to show less information}
+\item{strandMode}{numeric. \itemize{\item 1 (default): strand of the pair is strand of
+its first alignment: Directional Illumina (Ligation), Standard SOLiD.
+\item 2: strand of the pair is strand of its last alignment: dUTP, NSR, NNSR, Illumina stranded TruSeq PE protocol.
+\item 0: strand of the pair is unspecified (*), works as both "+" and "-".} More info: \code{\link[GenomicAlignments]{GAlignmentPairs-class}}.}
 }
 \value{
 GRanges

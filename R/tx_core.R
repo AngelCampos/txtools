@@ -40,7 +40,10 @@ NULL
 #' See \code{\link[Rsamtools]{ScanBamParam}}
 #' @param loadSeq logical. Set to TRUE for loading the sequences contained
 #' in the BAM file
-#' @param verbose logical. Set to FALSE to show less information
+#' @param strandMode numeric. \itemize{\item 1 (default): strand of the pair is strand of
+#' its first alignment: Directional Illumina (Ligation), Standard SOLiD.
+#' \item 2: strand of the pair is strand of its last alignment: dUTP, NSR, NNSR, Illumina stranded TruSeq PE protocol.
+#' \item 0: strand of the pair is unspecified (*), works as both "+" and "-".} More info: \code{\link[GenomicAlignments]{GAlignmentPairs-class}}.
 #'
 #' @return GRanges
 #' @export
@@ -53,7 +56,7 @@ NULL
 #' hg19_bam <- tx_load_bam(bamFile, pairedEnd = TRUE, loadSeq = TRUE, verbose = TRUE)
 #' summary(hg19_bam)
 tx_load_bam <- function(file, pairedEnd, yieldSize = 100000,
-                        scanFlag = "default", loadSeq = FALSE, verbose = TRUE){
+                        scanFlag = "default", loadSeq = FALSE, strandMode = 1, verbose = TRUE){
     if(!is.logical(pairedEnd)){stop("Argument 'pairedEnd' must be of class logical")}
     if(!is.logical(loadSeq)){stop("Argument 'loadSeq' must be of class logical")}
     if(verbose){cat("Reading number of records in file \n")}
@@ -90,7 +93,8 @@ tx_load_bam <- function(file, pairedEnd, yieldSize = 100000,
             suppressWarnings(
                 GenomicAlignments::readGAlignmentPairs(BAMFILE,
                                                        use.names = TRUE,
-                                                       param = readParams))
+                                                       param = readParams,
+                                                       strandMode = strandMode))
         }else if(pairedEnd == FALSE){
             suppressWarnings(
                 GenomicAlignments::readGAlignments(BAMFILE,
@@ -100,6 +104,11 @@ tx_load_bam <- function(file, pairedEnd, yieldSize = 100000,
     }) %>% do.call(what = c)
     close(BAMFILE)
     if(verbose){close(pb)}
+    if(pairedEnd == FALSE & strandMode == 2){
+        reads <- BiocGenerics::invertStrand(reads)
+    }else if(pairedEnd == FALSE & strandMode == 3){
+        GenomicAlignments::strand(reads) <- "*"
+    }
     if(loadSeq){reads <- hlp_cleanBam_emptySeq(reads, verbose)}
     if(verbose){cat(" \n")}
     if(verbose){
@@ -254,7 +263,7 @@ tx_reads <- function(reads, geneAnnot, minReads = 50, withSeq = FALSE,
         })
     }
     names(OUT) <- geneAnnot$name
-    OUT <- OUT[lapply(OUT, length) %>% unlist %>% magrittr::is_greater_than(minReads)] %>%
+    OUT <- OUT[lapply(OUT, length) %>% unlist %>% magrittr::is_weakly_greater_than(minReads)] %>%
         GenomicRanges::GRangesList()
     if(verbose){
         cat("Output contains:", lapply(OUT, names) %>% unlist %>% unique %>% length,
@@ -725,9 +734,9 @@ tx_unifyTxDTL <- function(txDTL, geneAnnot = NULL, genome = NULL, type = "inters
     }else if(type == "union"){
         if(is.null(geneAnnot)){stop("geneAnnot must be provided, as loaded with tx_load_bed()")}
         if(is.null(genome)){stop("geneAnnot must be provided, as loaded with tx_load_genome()")}
-        selGenes <- Reduce(union, mclapply(mc.cores = nCores, txDTL, function(x) unique(x$gene)))
+        selGenes <- Reduce(union, lapply(txDTL, function(x) unique(x$gene)))
         selGA <- geneAnnot[geneAnnot$name %in% selGenes]
-        new_txDTL <- mclapply(mc.cores = nCores, txDTL, function(x){
+        new_txDTL <- parallel::mclapply(mc.cores = nCores, txDTL, function(x){
             x <- x[x$gene %in% selGenes]
             x <- x[order(x$gene, x$txcoor)]
             tx_complete_DT(DT = x, geneAnnot = selGA, nCores = nCores, genome = genome)
@@ -1389,12 +1398,12 @@ tx_test_LRTedgeR <- function(DTL, tVar, sVar, test_groups, minTrials = 50){
     cMat_cov <- lapply(DTL, function(DT){
         DT[[tVar]]
     }) %>% do.call(what = cbind) %>%
-        set_colnames(paste0(names(DTL), "-cov")) %>%
-        set_rownames(1:nrow(DTL[[1]]))
+        magrittr::set_colnames(paste0(names(DTL), "-cov")) %>%
+        magrittr::set_rownames(1:nrow(DTL[[1]]))
     cMat_sta <- lapply(DTL, function(DT){
         DT[[sVar]]
     }) %>% do.call(what = cbind) %>%
-        set_colnames(paste0(names(DTL), "-sta")) %>% set_rownames(1:nrow(DTL[[1]]))
+        magrittr::set_colnames(paste0(names(DTL), "-sta")) %>% magrittr::set_rownames(1:nrow(DTL[[1]]))
     cMat_cov <- cMat_cov - cMat_sta # Difference to make starts + cov = total cov (needed by edgeR)
     # DGE object creation
     Treat <- factor(lapply(test_groups, function(x) rep(x, 2)) %>% unlist)
@@ -1414,9 +1423,9 @@ tx_test_LRTedgeR <- function(DTL, tVar, sVar, test_groups, minTrials = 50){
     # library size
     TotalLibSize <- y$samples$lib.size[RTstoppage=="sta"] + y$samples$lib.size[RTstoppage=="cov"]
     y$samples$lib.size <- rep(TotalLibSize, each=2)
-    META <- data.table(names(DTL), group = test_groups)
+    META <- data.table::data.table(names(DTL), group = test_groups)
     # design matrix
-    designSL <- model.matrix(~0+group, data = META)
+    designSL <- stats::model.matrix(~0+group, data = META)
     design <- edgeR::modelMatrixMeth(designSL)
     # Estimate dispersion
     cat("Estimating data dispersion and fitting GNB model\n")
@@ -1424,30 +1433,32 @@ tx_test_LRTedgeR <- function(DTL, tVar, sVar, test_groups, minTrials = 50){
     # Fitting Negative Binomial Generalized Linear Models
     fit <- edgeR::glmFit(y1, design)
     #Contrast
+    groupWT <- NULL #dummy variable
+    groupKO <- NULL #dummy
     contr <- limma::makeContrasts(onlyIP = (groupWT-groupKO), levels = design)
     #Likelihood ratio test
     lrt <- edgeR::glmLRT(fit, contrast = contr[, "onlyIP"])
     #Results table
     RES_sta <- cbind(lrt$table, y$genes)
-    RES_sta$FDR <- p.adjust(RES_sta$PValue, method = "fdr")
+    RES_sta$FDR <- stats::p.adjust(RES_sta$PValue, method = "fdr")
     test_mat <- do.call(what = "cbind", lapply(DTL, function(DT) DT[[sVar]] / DT[[tVar]]))
     rownames(test_mat) <- paste(DTL[[1]][["gene"]], DTL[[1]][["txcoor"]], sep = ":")
     test_mat <- test_mat[paste(y$genes$gene, y$genes$txcoor, sep = ":"),] %>%
         rowMeansColG(test_groups)
     test_mat <- test_mat[,1] - test_mat[,2]
-    RES_sta <- data.table(RES_sta, RD = test_mat)
+    RES_sta <- data.table::data.table(RES_sta, RD = test_mat)
     RES_sta <- RES_sta[order(RES_sta$FDR, decreasing = FALSE),]
     if("refSeq" %in% colnames(DTL[[1]])){
         RES_sta <- dplyr::right_join(RES_sta,
-                                     select(DTL[[1]],
-                                            c("chr", "gencoor", "strand",
-                                              "gene", "txcoor", "refSeq")),
+                                     dplyr::select(DTL[[1]],
+                                                   c("chr", "gencoor", "strand",
+                                                     "gene", "txcoor", "refSeq")),
                                      by = c("gene", "txcoor"))
     }else{
         RES_sta <- dplyr::right_join(RES_sta,
-                                     select(DTL[[1]],
-                                            c("chr", "gencoor", "strand",
-                                              "gene", "txcoor")))
+                                     dplyr::select(DTL[[1]],
+                                                   c("chr", "gencoor", "strand",
+                                                     "gene", "txcoor")))
     }
     return(RES_sta)
 }
@@ -1543,7 +1554,7 @@ tx_dm3_geneAnnot <- function(){
 #' @examples
 tx_data_caseStudy2 <- function(){
     tmpF <- tempfile()
-    download.file(url = "https://drive.google.com/uc?export=download&id=1ICdtTNU0qK7ZetwNp5RzHDrYT5mrt6y2",
+    utils::download.file(url = "https://drive.google.com/uc?export=download&id=1ICdtTNU0qK7ZetwNp5RzHDrYT5mrt6y2",
                   destfile = tmpF)
     readRDS(tmpF)
 }
@@ -1558,7 +1569,7 @@ tx_data_caseStudy2 <- function(){
 #' @examples
 sc_faGenome <- function(){
     tmpF <- tempfile()
-    download.file(url = "https://drive.google.com/uc?export=download&id=1IgUO5CKdHJh_2L2lp4ADfmGJlhCbKM9r",
+    utils::download.file(url = "https://drive.google.com/uc?export=download&id=1IgUO5CKdHJh_2L2lp4ADfmGJlhCbKM9r",
                   destfile = tmpF)
     cat("sc_faGenome file downloaded to temporary file ", tmpF, "\n")
     tmpF
@@ -1573,7 +1584,7 @@ sc_faGenome <- function(){
 #' @export
 tk_faGenome <- function(){
     tmpF <- tempfile()
-    download.file(url = "https://drive.google.com/uc?export=download&id=1Iir-E0kVJ3RMHNsbOdSgi847t5lz1-re",
+    utils::download.file(url = "https://drive.google.com/uc?export=download&id=1Iir-E0kVJ3RMHNsbOdSgi847t5lz1-re",
                   destfile = tmpF)
     cat("tk_faGenome file downloaded to temporary file ", tmpF, "\n")
     tmpF
@@ -1587,7 +1598,7 @@ tk_faGenome <- function(){
 #' @export
 sc_geneAnnot <- function(){
     tmpF <- tempfile()
-    download.file(url = "https://drive.google.com/uc?export=download&id=1IlycxDiZoPcbpOsn7wRoXSx-v-79qrIW",
+    utils::download.file(url = "https://drive.google.com/uc?export=download&id=1IlycxDiZoPcbpOsn7wRoXSx-v-79qrIW",
                   destfile = tmpF)
     cat("sc_geneAnnot file downloaded to temporary file ", tmpF, "\n")
     tmpF
@@ -1604,7 +1615,7 @@ sc_geneAnnot <- function(){
 #' @export
 mm_geneAnnot <- function(){
     tmpF <- tempfile()
-    download.file(url = "https://drive.google.com/uc?export=download&id=1IsZryJRYDtgevc8qXd_7pH-KqiNT8tSs",
+    utils::download.file(url = "https://drive.google.com/uc?export=download&id=1IsZryJRYDtgevc8qXd_7pH-KqiNT8tSs",
                   destfile = tmpF)
     cat("mm_geneAnnot file downloaded to temporary file ", tmpF, "\n")
     tmpF
@@ -1618,7 +1629,7 @@ mm_geneAnnot <- function(){
 #' @export
 tk_geneAnnot <- function(){
     tmpF <- tempfile()
-    download.file(url = "https://drive.google.com/uc?export=download&id=1ImtH_ln_HXku2tAh2SaU-Io16zAV3ahQ",
+    utils::download.file(url = "https://drive.google.com/uc?export=download&id=1ImtH_ln_HXku2tAh2SaU-Io16zAV3ahQ",
                   destfile = tmpF)
     cat("tk_geneAnnot file downloaded to temporary file ", tmpF, "\n")
     tmpF

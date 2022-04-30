@@ -4,33 +4,35 @@ tx_plot_metaGeneByBins <- function(DT, colName, nBins = 100, FUN = "mean", minTx
     if(nBins >= minTxLength){stop("Number of bins most be smaller than minimum",
                                   "transcript length.")}
     if(!(colName %in% colnames(DT))){stop("colName is not a column in DT.")}
-    nStarts <- DT[, sum(DT$start_5p), by = gene][order(V1, decreasing = T),]
-    DT <- DT[gene %in% nStarts$gene[nStarts$V1 >= minReadsPerGene]]
+    nStarts <- DT[, sum(DT$start_5p), by = DT$gene][order(DT$V1, decreasing = T),]
+    DT <- DT[DT$gene %in% nStarts$gene[nStarts$V1 >= minReadsPerGene]]
     geneLens <- tx_get_geneLengths(DT)
-    DT <- DT[gene %in% names(geneLens)[geneLens > minTxLength]]
+    DT <- DT[DT$gene %in% names(geneLens)[geneLens > minTxLength]]
     GENES <- as.character(unique(DT$gene))
     if(length(GENES) < 1){stop("No genes after filtering parameters")}
-    meanCovBinned <- mclapply(seq(GENES), function(i){
+    meanCovBinned <- parallel::mclapply(seq(GENES), function(i){
         iGene <- GENES[i]
-        tmpDT <- DT[gene == iGene,]
-        tmpDT$group <- tmpDT$txcoor %>% cut_number(n = nBins)
+        tmpDT <- DT[DT$gene == iGene,]
+        tmpDT$group <- tmpDT$txcoor %>% ggplot2::cut_number(n = nBins)
         out <- tapply(tmpDT[[colName]], tmpDT$group, FUN, na.rm = na.rm)
         out[is.nan(out)] <- NA
         out
-    }) %>% do.call(what = rbind) %>% apply(MARGIN = 2, FUN = FUN, na.rm = na.rm) %>% set_names(NULL)
-    DF <- data.frame(bins = seq(meanCovBinned) %>% as.numeric,
+    }) %>% do.call(what = rbind) %>% apply(MARGIN = 2, FUN = FUN, na.rm = na.rm) %>%
+        magrittr::set_names(NULL)
+    DF <- data.frame(bins = seq(meanCovBinned) %>% as.numeric(),
                      score = meanCovBinned)
     plotTitle <- paste("METAGENE BY BINS -", FUN, colName) %>% toupper()
     plotSub <- paste0("n(genes) =", length(GENES), ", minTxLen =", minTxLength,
                       ", minReadsPerGene =", minReadsPerGene, ", smooth.sp =", smooth)
     Y_axis <- paste(FUN, colName)
     if(smooth){
-        DF$smooth <- smooth.spline(DF$score)$y
-        ggplot(DF, aes(x = bins, y = smooth)) + geom_line() + theme_classic() +
-            ggtitle(plotTitle, plotSub) + ylab(Y_axis)
+        DF$smooth <- stats::smooth.spline(DF$score)$y
+        ggplot2::ggplot(DF, ggplot2::aes(x = DF$bins, y = DF$smooth)) +
+            ggplot2::geom_line() + ggplot2::theme_classic() +
+            ggplot2::ggtitle(plotTitle, plotSub) + ggplot2::ylab(Y_axis)
     }else{
-        ggplot(DF, aes(x = bins, y = score)) + geom_line() + theme_classic() +
-            ggtitle(plotTitle, plotSub) + ylab(Y_axis)
+        ggplot2::ggplot(DF, ggplot2::aes(x = DF$bins, y = DF$score)) + ggplot2::geom_line() + ggplot2::theme_classic() +
+            ggplot2::ggtitle(plotTitle, plotSub) + ggplot2::ylab(Y_axis)
     }
 }
 
@@ -75,7 +77,7 @@ tx_plot_oneNumeric <- function(DTL, gene, txRange = 1:nrow(DTL[[1]]), columnName
                                makePlotly = FALSE, show_yLabels = TRUE,
                                bar_border = TRUE, showLegend = TRUE,
                                col = "#c2c2c2"){
-    if(all(is(DTL) %in% is(list()))){
+    if(all(methods::is(DTL) %in% methods::is(list()))){
         lapply(DTL, function(x) check_refSeq(x))
         DTL <- lapply(DTL, function(x) check_DT(x))
         if(!all(unlist(lapply(DTL, function(x) gene %in% x$gene)))){stop("gene not found in DT object")}
@@ -86,7 +88,7 @@ tx_plot_oneNumeric <- function(DTL, gene, txRange = 1:nrow(DTL[[1]]), columnName
             DT <- DT[DT$txcoor %in% txRange,]
             DT$pos <- paste(DT$txcoor, DT$refSeq, sep = "-")
             DT$pos <- factor(DT$pos, levels = DT$pos)
-            tmpData <- tidyr::pivot_longer(DT, cols = all_of(columnName),
+            tmpData <- tidyr::pivot_longer(DT, cols = tidyr::all_of(columnName),
                                            values_to = "counts",
                                            names_to = "coverage") %>%
                 data.table::data.table()
@@ -104,7 +106,7 @@ tx_plot_oneNumeric <- function(DTL, gene, txRange = 1:nrow(DTL[[1]]), columnName
         DT <- DT[DT$txcoor %in% txRange,]
         DT$pos <- paste(DT$txcoor, DT$refSeq, sep = "-")
         DT$pos <- factor(DT$pos, levels = DT$pos)
-        tmpData <- tidyr::pivot_longer(DT, cols = all_of(columnName),
+        tmpData <- tidyr::pivot_longer(DT, cols = tidyr::all_of(columnName),
                                        values_to = "counts",
                                        names_to = "coverage") %>%
             data.table::data.table()
@@ -128,7 +130,7 @@ tx_plot_oneNumeric <- function(DTL, gene, txRange = 1:nrow(DTL[[1]]), columnName
         tmpGG <- tmpGG + ggplot2::geom_bar(stat = "identity")
     }
     if(show_yLabels){
-        if(all(is(DTL) == is(list()))){
+        if(all(methods::is(DTL) == methods::is(list()))){
             tmpDT <- DTL[[1]]
             nucCols <- txBrowser_pal()(6)[-1:-2][as.numeric(
                 factor(tmpDT[tmpDT$gene == gene & tmpDT$txcoor %in% txRange, ]$refSeq))]
@@ -149,11 +151,8 @@ tx_plot_oneNumeric <- function(DTL, gene, txRange = 1:nrow(DTL[[1]]), columnName
     if(!showLegend){
         tmpGG <- tmpGG + ggplot2::theme(legend.position="none")
     }
-    if(all(is(DTL) == is(list()))){
+    if(all(methods::is(DTL) == methods::is(list()))){
         tmpGG <- tmpGG + ggplot2::facet_wrap(sample~.)
-    }
-    if(makePlotly){
-        plotly::ggplotly(tmpGG)
     }else{
         tmpGG
     }
@@ -164,7 +163,7 @@ tx_combineTxReadsList <- function(txReadsList){
     tmp <- lapply(txReadsList, function(x) unlist(x)) %>%
         GenomicRanges::GRangesList() %>%
         unlist()
-    split(tmp, seqnames(tmp))
+    split(tmp, GenomicAlignments::seqnames(tmp))
 }
 
 # Ideas for functions ##########################################################
