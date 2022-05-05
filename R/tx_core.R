@@ -311,6 +311,10 @@ tx_extend_UTR <- function(GR, ext_5p = 0, ext_3p = 0){
     if(is.null(GR$blocks)){
         stop("GR does not containg 'blocks' meta column.")
     }
+    if(class(GR$blocks) == "IRanges"){
+        GR$blocks <- IRanges::IRangesList(start = split(rep(1, length(GR)), 1:length(GR)),
+                                          end = split(rep(1, length(GR)), 1:length(GR)))
+    }
     GR_out <- plyranges::stretch(plyranges::anchor_5p(GR), ext_3p)
     GR_out <- plyranges::stretch(plyranges::anchor_3p(GR_out), ext_5p)
     GR_out$blocks <- stretchBlocks_3p(GR_out$blocks, ext_3p, GenomicRanges::strand(GR))
