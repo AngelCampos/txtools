@@ -1376,9 +1376,9 @@ tx_get_transcriptSeqs <- function(genome, geneAnnot, outFile = NULL, nCores = 1)
         tmp3
     }) %>% do.call(what = "c")
     if(is.null(outFile)){
-        allSEQS
+        allSEQS[geneAnnot$name]
     }else{
-        Biostrings::writeXStringSet(allSEQS, filepath = outFile, format = "fasta")
+        Biostrings::writeXStringSet(allSEQS[geneAnnot$name], filepath = outFile, format = "fasta")
     }
 }
 
