@@ -136,18 +136,14 @@ hlpr_ReadsInGene <- function(reads, iGene, geneAnnot, split_i, allExons, minRead
     # Constructing the merged read sequence
     if(iStrand == "+"){
         tReads$seq1 <- GenomicAlignments::sequenceLayer(S4Vectors::mcols(tReads)$seq_r1,
-                                                        S4Vectors::mcols(tReads)$cigar_r1) %>%
-            stringr::str_remove_all(pattern = "\\.")
+                                                        S4Vectors::mcols(tReads)$cigar_r1)
         tReads$seq2 <- GenomicAlignments::sequenceLayer(S4Vectors::mcols(tReads)$seq_r2,
-                                                        S4Vectors::mcols(tReads)$cigar_r2) %>%
-            stringr::str_remove_all(pattern = "\\.")
+                                                        S4Vectors::mcols(tReads)$cigar_r2)
     }else if(iStrand == "-"){
         tReads$seq1 <- GenomicAlignments::sequenceLayer(S4Vectors::mcols(tReads)$seq_r1,
-                                                        S4Vectors::mcols(tReads)$cigar_r1) %>%
-            Biostrings::reverseComplement() %>% stringr::str_remove_all(pattern = "\\.")
+                                                        S4Vectors::mcols(tReads)$cigar_r1)
         tReads$seq2 <- GenomicAlignments::sequenceLayer(S4Vectors::mcols(tReads)$seq_r2,
-                                                        S4Vectors::mcols(tReads)$cigar_r2) %>%
-            Biostrings::reverseComplement() %>% stringr::str_remove_all(pattern = "\\.")
+                                                        S4Vectors::mcols(tReads)$cigar_r2)
     }
     # Trim overflowing reads
     i <- which(Biostrings::nchar(tReads$seq1) > GenomicAlignments::width(tReads))
@@ -155,14 +151,14 @@ hlpr_ReadsInGene <- function(reads, iGene, geneAnnot, split_i, allExons, minRead
     i <- which(Biostrings::nchar(tReads$seq2) > GenomicAlignments::width(tReads))
     tReads[i]$seq2 <- stringr::str_sub(tReads[i]$seq2, start = - GenomicAlignments::width(tReads[i]))
     # Calculate overlap
-    tReads$diffSeq <- Biostrings::nchar(tReads$seq1) + nchar(tReads$seq2) - GenomicAlignments::width(tReads)
+    tReads$diffSeq <- Biostrings::nchar(tReads$seq1) + Biostrings::nchar(tReads$seq2) - GenomicAlignments::width(tReads)
     tReads$oL <- tReads$diffSeq %>% magrittr::is_greater_than(0)
     tReads$mergedSeq <- "." # Place holder
     # No overlap reads
     i <- which(!(tReads$oL))
     if(length(i) > 0){
         gapLen <- GenomicAlignments::width(tReads[i]) -
-            Biostrings::nchar(tReads[i]$seq1) - nchar(tReads[i]$seq2)
+            Biostrings::nchar(tReads[i]$seq1) - Biostrings::nchar(tReads[i]$seq2)
         insSeq <- stringr::str_dup(string = ".", gapLen)
         tReads[i]$mergedSeq <- paste(tReads[i]$seq1, insSeq,
                                      tReads[i]$seq2, sep = "") %>%
@@ -181,7 +177,7 @@ hlpr_ReadsInGene <- function(reads, iGene, geneAnnot, split_i, allExons, minRead
                 ovSeq[j] <- Biostrings::DNAStringSet(c(tmp1[j], tmp2[j])) %>%
                     Biostrings::consensusMatrix() %>%
                     Biostrings::consensusString(ambiguityMap = txtools::IUPAC_CODE_MAP_extended,
-                                                threshold = 0.2)
+                                                threshold = 0.16)
             }
         }
         tReads[i]$mergedSeq <- paste0(stringr::str_sub(tReads[i]$seq1,
@@ -190,7 +186,7 @@ hlpr_ReadsInGene <- function(reads, iGene, geneAnnot, split_i, allExons, minRead
                                                            tReads[i]$diffSeq),
                                       ovSeq, stringr::str_sub(tReads[i]$seq2,
                                                               start = tReads[i]$diffSeq + 1,
-                                                              end = nchar(tReads[i]$seq2)))
+                                                              end = Biostrings::nchar(tReads[i]$seq2)))
     }
     # Final reads
     fReads <- tReads
