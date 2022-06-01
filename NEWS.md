@@ -4,6 +4,8 @@
 * Changed tx_add_diffNucToRef() for tx_add_misincCount()
 * Changed tx_add_diffNucToRefRatio() for tx_add_misincRate()
 * Fix minor bugs
+* 0.0.7.3 patch: Fixed a bug that incorrectly processed alignments in paired-end
+libraries with N (gap) operations in their CIGAR strings.
  
 ## v0.0.6
 

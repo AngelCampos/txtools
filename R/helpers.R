@@ -141,9 +141,11 @@ hlpr_ReadsInGene <- function(reads, iGene, geneAnnot, split_i, allExons, minRead
                                                         S4Vectors::mcols(tReads)$cigar_r2)
     }else if(iStrand == "-"){
         tReads$seq1 <- GenomicAlignments::sequenceLayer(S4Vectors::mcols(tReads)$seq_r1,
-                                                        S4Vectors::mcols(tReads)$cigar_r1)
+                                                        S4Vectors::mcols(tReads)$cigar_r1) %>%
+            Biostrings::reverseComplement()
         tReads$seq2 <- GenomicAlignments::sequenceLayer(S4Vectors::mcols(tReads)$seq_r2,
-                                                        S4Vectors::mcols(tReads)$cigar_r2)
+                                                        S4Vectors::mcols(tReads)$cigar_r2) %>%
+            Biostrings::reverseComplement()
     }
     # Trim overflowing reads
     i <- which(Biostrings::nchar(tReads$seq1) > GenomicAlignments::width(tReads))
