@@ -4,8 +4,10 @@ IUPAC_CODE_MAP_extended <- c(Biostrings::IUPAC_CODE_MAP,
                              structure(paste0(Biostrings::IUPAC_CODE_MAP, "-"),
                                        names = names(Biostrings::IUPAC_CODE_MAP)),
                              structure("." , names =  "."),
-                             structure(paste0(Biostrings::IUPAC_CODE_MAP[1:4], "."),
-                                       names = names(Biostrings::IUPAC_CODE_MAP[1:4])))
+                             structure(".-" , names =  "-"),
+                             structure("-." , names =  "-"),
+                             structure(paste0(Biostrings::IUPAC_CODE_MAP, "."),
+                                       names = names(Biostrings::IUPAC_CODE_MAP)))
 
 use_data(IUPAC_CODE_MAP_extended, overwrite = TRUE)
 IUPAC_code_2nucs <- c("A", "C", "G", "T", "M", "R", "W", "S", "Y", "K", "N", "-", ".")
