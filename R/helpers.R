@@ -103,6 +103,29 @@ hlpr_ReadsInGene <- function(reads, iGene, geneAnnot, split_i, allExons, minRead
         lapply(function(x) all(x == 1)) %>% unlist %>% which
     pass <- pass[as.numeric(intersect(passNeg, passPos))]
     if(length(pass) < minReads){return(GenomicRanges::GRanges())} # No reads Return empty GA
+    # Check gaps match intron-exon junction structure
+    which_N <- GenomicAlignments::njunc(iReads_r1[pass]) > 0 |
+        GenomicAlignments::njunc(iReads_r2[pass]) > 0
+    if(sum(which_N) > 0){
+        selAligns_r1 <- iReads_r1[pass][which_N]
+        selAligns_r2 <- iReads_r2[pass][which_N]
+        selExons <- allExons[[iGene]]
+        tmpRanges_r1 <- GenomicAlignments::cigarRangesAlongReferenceSpace(
+            GenomicAlignments::cigar(selAligns_r1), ops = "M", with.ops = TRUE,
+            pos = GenomicRanges::start(selAligns_r1))
+        tmpRanges_r2 <- GenomicAlignments::cigarRangesAlongReferenceSpace(
+            GenomicAlignments::cigar(selAligns_r2), ops = "M", with.ops = TRUE,
+            pos = GenomicRanges::start(selAligns_r2))
+        tmp1 <- S4Vectors::`%in%`(S4Vectors::`%in%`(GenomicRanges::end(tmpRanges_r1), GenomicRanges::end(selExons)),
+                                  S4Vectors::`%in%`(GenomicRanges::start(tmpRanges_r1), GenomicRanges::start(selExons)))
+        tmp1[unlist(lapply(tmp1, "length")) == 1] <- TRUE
+        tmp2 <- S4Vectors::`%in%`(S4Vectors::`%in%`(GenomicRanges::end(tmpRanges_r2), GenomicRanges::end(selExons)),
+            S4Vectors::`%in%`(GenomicRanges::start(tmpRanges_r2), GenomicRanges::start(selExons)))
+        tmp2[unlist(lapply(tmp2, "length")) == 1] <- TRUE
+        which_N[which_N] <- !(all(tmp1) & all(tmp2))
+        pass <- pass[!which_N]
+        if(length(pass) < minReads){return(GenomicRanges::GRanges())} # No reads Return empty GA
+    }
     # Boundaries of merged reads
     if(iStrand == "+"){
         tReads <- data.frame(start    = match(GenomicRanges::start(iReads_r1[pass]), iExon),
@@ -136,15 +159,19 @@ hlpr_ReadsInGene <- function(reads, iGene, geneAnnot, split_i, allExons, minRead
     # Constructing the merged read sequence
     if(iStrand == "+"){
         tReads$seq1 <- GenomicAlignments::sequenceLayer(S4Vectors::mcols(tReads)$seq_r1,
-                                                        S4Vectors::mcols(tReads)$cigar_r1)
+                                                        S4Vectors::mcols(tReads)$cigar_r1,
+                                                        to = "reference-N-regions-removed")
         tReads$seq2 <- GenomicAlignments::sequenceLayer(S4Vectors::mcols(tReads)$seq_r2,
-                                                        S4Vectors::mcols(tReads)$cigar_r2)
+                                                        S4Vectors::mcols(tReads)$cigar_r2,
+                                                        to = "reference-N-regions-removed")
     }else if(iStrand == "-"){
         tReads$seq1 <- GenomicAlignments::sequenceLayer(S4Vectors::mcols(tReads)$seq_r1,
-                                                        S4Vectors::mcols(tReads)$cigar_r1) %>%
+                                                        S4Vectors::mcols(tReads)$cigar_r1,
+                                                        to = "reference-N-regions-removed") %>%
             Biostrings::reverseComplement()
         tReads$seq2 <- GenomicAlignments::sequenceLayer(S4Vectors::mcols(tReads)$seq_r2,
-                                                        S4Vectors::mcols(tReads)$cigar_r2) %>%
+                                                        S4Vectors::mcols(tReads)$cigar_r2,
+                                                        to = "reference-N-regions-removed") %>%
             Biostrings::reverseComplement()
     }
     # Trim overflowing reads
