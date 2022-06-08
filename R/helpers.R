@@ -243,6 +243,21 @@ hlpr_ReadsInGene_SingleEnd <- function(reads, iGene, geneAnnot, split_i,
     pass <- (stEndTable %in% iExon) %>% matrix(ncol = 2, byrow = F) %>%
         rowSums() %>% magrittr::equals(2) %>% which()
     if(length(pass) < minReads){return(GenomicRanges::GRanges())} # No reads Return empty GA
+    # Check gaps match intron-exon junction structure
+    which_N <- GenomicAlignments::njunc(iReads_r1[pass]) > 0
+    if(sum(which_N) > 0){
+        selAligns_r1 <- iReads_r1[pass][which_N]
+        selExons <- allExons[[iGene]]
+        tmpRanges_r1 <- GenomicAlignments::cigarRangesAlongReferenceSpace(
+            GenomicAlignments::cigar(selAligns_r1), ops = "M", with.ops = TRUE,
+            pos = GenomicRanges::start(selAligns_r1))
+        tmp1 <- S4Vectors::`%in%`(GenomicRanges::end(tmpRanges_r1), GenomicRanges::end(selExons)) |
+            S4Vectors::`%in%`(GenomicRanges::start(tmpRanges_r1), GenomicRanges::start(selExons))
+        tmp1[unlist(lapply(tmp1, "length")) == 1] <- TRUE
+        which_N[which_N] <- !(all(tmp1))
+        pass <- pass[!which_N]
+        if(length(pass) < minReads){return(GenomicRanges::GRanges())} # No reads Return empty GA
+    }
     # Boundaries of merged reads
     if(iStrand == "+"){
         tReads <- data.frame(start  = match(GenomicRanges::start(iReads_r1[pass]), iExon),

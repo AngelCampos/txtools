@@ -74,9 +74,8 @@ tx_plot_metaGeneByBins <- function(DT, colName, nBins = 100, FUN = "mean", minTx
 
 # Plot one numeric variable
 tx_plot_oneNumeric <- function(DTL, gene, txRange = 1:nrow(DTL[[1]]), columnName,
-                               makePlotly = FALSE, show_yLabels = TRUE,
-                               bar_border = TRUE, showLegend = TRUE,
-                               col = "#c2c2c2"){
+                               show_yLabels = TRUE, bar_border = TRUE,
+                               showLegend = TRUE, col = "#c2c2c2"){
     if(all(methods::is(DTL) %in% methods::is(list()))){
         lapply(DTL, function(x) check_refSeq(x))
         DTL <- lapply(DTL, function(x) check_DT(x))

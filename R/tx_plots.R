@@ -9,8 +9,6 @@
 #' delimit this range in the data.table.
 #' @param removeInsert logical. Removes counts from insert reads, which do not
 #' call for a nucleotide, are just the gap between read1 and read2.
-#' @param makePlotly logical. Outputs an interactive plot by using the ggplotly()
-#' function.
 #' @param show_yLabels logical. If set to FALSE hides the y axis labels.
 #' @param bar_border logical. If set to FALSE removes the border of the bars.
 #' @param showLegend logical. If set to FALSE does not renger a legend.
@@ -20,11 +18,10 @@
 tx_plot_nucFreq <- function(DT,
                             gene,
                             txRange = 1:nrow(DT),
-                            removeInsert = T,
-                            makePlotly = F,
-                            show_yLabels = T,
-                            bar_border = T,
-                            showLegend = T){
+                            removeInsert = TRUE,
+                            show_yLabels = TRUE,
+                            bar_border = TRUE,
+                            showLegend = TRUE){
     check_refSeq(DT)
     DT <- check_DT(DT)
     allCols <- all(c("refSeq", "A", "C", "G", "T", "-", "N") %in% names(DT))
@@ -86,9 +83,6 @@ tx_plot_nucFreq <- function(DT,
     }
     if(!showLegend){
         tmpGG <- tmpGG + ggplot2::theme(legend.position="none")
-    }
-    if(makePlotly){
-        plotly::ggplotly(tmpGG)
     }else{
         tmpGG
     }
@@ -104,8 +98,6 @@ tx_plot_nucFreq <- function(DT,
 #' @param txRange integer. Range in data to be used, 'txcoor' column is used to
 #' delimit this range in the data.table.
 #' @param removeCov logical. If set to TRUE remove coverage counts.
-#' @param makePlotly logical. Outputs an interactive plot by using the ggplotly()
-#' function.
 #' @param show_yLabels logical. If set to FALSE hides the y axis labels.
 #' @param bar_border logical. If set to FALSE removes the border of the bars.
 #' @param showLegend logical. If set to FALSE does not renger a legend.
@@ -113,7 +105,7 @@ tx_plot_nucFreq <- function(DT,
 #' @return ggplot
 #' @export
 tx_plot_staEndCov <- function(
-    DT, gene, txRange = 1:nrow(DT), makePlotly = FALSE, removeCov = FALSE,
+    DT, gene, txRange = 1:nrow(DT), removeCov = FALSE,
     show_yLabels = TRUE, bar_border = TRUE, showLegend = TRUE){
     check_refSeq(DT)
     DT <- check_DT(DT)
@@ -162,9 +154,6 @@ tx_plot_staEndCov <- function(
     }
     if(!showLegend){
         tmpGG <- tmpGG + ggplot2::theme(legend.position="none")
-    }
-    if(makePlotly){
-        plotly::ggplotly(tmpGG)
     }else{
         tmpGG
     }

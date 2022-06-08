@@ -59,9 +59,9 @@ testthat::expect_equal(as.character(class(reads_PE[[1]])), "GRanges")
 assigned_aligns <- tx_reads(bam_sk1, gA_sk1, minReads = 1, withSeq = TRUE, verbose = FALSE) %>%
     suppressWarnings()
 
-# Unassigned alignments
+# Retrieving and flushing unassigned alignments
 unAssigned <- tx_getUnassignedAlignments()
-testthat::expect_equal(length(unAssigned),  103L)
+testthat::expect_equal(length(unAssigned),  104L)
 tx_flushUnassigned()
 testthat::expect_equal(tx_getUnassignedAlignments(), NULL)
 
@@ -70,11 +70,11 @@ testthat::expect_equal(tx_getUnassignedAlignments(), NULL)
 uA_o <- intersect(GenomicAlignments::findOverlaps(unAssigned@first, gA_sk1)@from,
                   GenomicAlignments::findOverlaps(GenomicAlignments::invertStrand(unAssigned@last),
                                 gA_sk1)@from)
-testthat::expect_equal(diff(uA_o) %>% magrittr::equals(1) %>% all(), TRUE)
-testthat::expect_equal(length(uA_o), 103L) #103 unassigned and all overlapping
+testthat::expect_equal(diff(uA_o) %>% magrittr::equals(1) %>% all(), TRUE) ## All overlap gene annotation
 
-# All have out of exons
+# Most reads have starts or end outside of exon limits
 byGenes <- hlpr_splitReadsByGenes(unAssigned, gA_sk1, "any", 1)
+iGene <- names(byGenes)[1]
 anyRemain <- lapply(names(byGenes), function(iGene){
     r1_sta <- GenomicAlignments::start(unAssigned[byGenes[[iGene]]]@first)
     r1_end <- GenomicAlignments::end(unAssigned[byGenes[[iGene]]]@first)
@@ -84,7 +84,32 @@ anyRemain <- lapply(names(byGenes), function(iGene){
     which(r1_sta %in% exonCoors & r1_end %in% exonCoors & r2_sta %in% exonCoors &
         r2_end %in% exonCoors)
 }) %>% unlist()
-testthat::expect_equivalent(anyRemain, integer())
+testthat::expect_equivalent(anyRemain, 33L)
+
+# Gapped alignment, doesn't match exon structure
+gene_i <- "YDR424C"
+remainAlign <- unAssigned[byGenes[[gene_i]]][anyRemain]
+which_N <- GenomicAlignments::njunc(remainAlign@first) > 0 |
+    GenomicAlignments::njunc(remainAlign@last) > 0
+selAligns_r1 <- remainAlign@first[which_N]
+selAligns_r2 <- remainAlign@last[which_N]
+selExons <- exonGRanges(gA_sk1[gA_sk1$name == gene_i])
+tmpRanges_r1 <- GenomicAlignments::cigarRangesAlongReferenceSpace(
+    GenomicAlignments::cigar(selAligns_r1), ops = "M", with.ops = TRUE,
+    pos = GenomicRanges::start(selAligns_r1))
+tmpRanges_r2 <- GenomicAlignments::cigarRangesAlongReferenceSpace(
+    GenomicAlignments::cigar(selAligns_r2), ops = "M", with.ops = TRUE,
+    pos = GenomicRanges::start(selAligns_r2))
+tmp1 <- S4Vectors::`%in%`(GenomicRanges::end(tmpRanges_r1), GenomicRanges::end(selExons)) |
+    S4Vectors::`%in%`(GenomicRanges::start(tmpRanges_r1), GenomicRanges::start(selExons))
+tmp1[unlist(lapply(tmp1, "length")) == 1] <- TRUE
+tmp2 <- S4Vectors::`%in%`(GenomicRanges::end(tmpRanges_r2), GenomicRanges::end(selExons)) |
+    S4Vectors::`%in%`(GenomicRanges::start(tmpRanges_r2), GenomicRanges::start(selExons))
+tmp2[unlist(lapply(tmp2, "length")) == 1] <- TRUE
+which_N[which_N] <- !(all(tmp1) & all(tmp2))
+testthat::expect_equivalent(sum(which_N), 1) # The remaining alginment was left
+#                                              out due to its gaps not meeting
+#                                              the gene structure
 
 # Check that sequences from reads that traverse exons are correctly reconstructed.
 reads_sk1 <- tx_reads(bam_sk1, gA_sk1, minReads = 1, verbose = F) %>% suppressWarnings()
@@ -104,7 +129,7 @@ splicing_check <- lapply(1:length(gA_sk1), function(i){
         tx_add_misincCount()
     sum(DT$misincCount)
 }) %>% unlist
-testthat::expect_equivalent(splicing_check, c(36, 72)) # There are some mismatches, got to check them on IGV.
+testthat::expect_equivalent(splicing_check, c(0, 0)) # There are some mismatches, got to check them on IGV.
 
 # # Would be useful to know which part of the read falls outside of the exon structure
 # GA_index <- indexAlignmentsByGenomicRegion(bam_sk1, tx_extend_UTR(gA_sk1, 20, 20))

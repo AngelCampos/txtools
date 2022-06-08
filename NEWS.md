@@ -1,12 +1,15 @@
 ## v0.0.7
+
 * General Update
 * Added vignette "txtools_user_guide"
 * Changed tx_add_diffNucToRef() for tx_add_misincCount()
 * Changed tx_add_diffNucToRefRatio() for tx_add_misincRate()
 * Fix minor bugs
-* 0.0.7.3 patch: Fixed a bug that incorrectly processed alignments in paired-end
-libraries with N (gap) operations in their CIGAR strings.
- 
+* **0.0.7.4 patch**: Fixed a bug that incorrectly included alignments with N 
+operations in their CIGAR strings (gaps), that didn't match the gene structure.
+* Removed plotly conversion in tx_plot_*() functions. As can be easily done by
+the user with plotly::ggplotly()
+
 ## v0.0.6
 
 * Fixed a bug detected when loading BAM files with mappings with empty 

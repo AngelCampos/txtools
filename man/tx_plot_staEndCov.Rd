@@ -8,7 +8,6 @@ tx_plot_staEndCov(
   DT,
   gene,
   txRange = 1:nrow(DT),
-  makePlotly = FALSE,
   removeCov = FALSE,
   show_yLabels = TRUE,
   bar_border = TRUE,
@@ -22,9 +21,6 @@ tx_plot_staEndCov(
 
 \item{txRange}{integer. Range in data to be used, 'txcoor' column is used to
 delimit this range in the data.table.}
-
-\item{makePlotly}{logical. Outputs an interactive plot by using the ggplotly()
-function.}
 
 \item{removeCov}{logical. If set to TRUE remove coverage counts.}
 

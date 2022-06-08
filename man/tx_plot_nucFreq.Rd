@@ -8,11 +8,10 @@ tx_plot_nucFreq(
   DT,
   gene,
   txRange = 1:nrow(DT),
-  removeInsert = T,
-  makePlotly = F,
-  show_yLabels = T,
-  bar_border = T,
-  showLegend = T
+  removeInsert = TRUE,
+  show_yLabels = TRUE,
+  bar_border = TRUE,
+  showLegend = TRUE
 )
 }
 \arguments{
@@ -25,9 +24,6 @@ delimit this range in the data.table.}
 
 \item{removeInsert}{logical. Removes counts from insert reads, which do not
 call for a nucleotide, are just the gap between read1 and read2.}
-
-\item{makePlotly}{logical. Outputs an interactive plot by using the ggplotly()
-function.}
 
 \item{show_yLabels}{logical. If set to FALSE hides the y axis labels.}
 

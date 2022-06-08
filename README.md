@@ -3,7 +3,7 @@
 
 <!-- badges: start -->
 
-[![](https://img.shields.io/badge/devel%20version-0.0.7.3-blue.svg)](https://github.com/AngelCampos/txtools)
+[![](https://img.shields.io/badge/devel%20version-0.0.7.4-blue.svg)](https://github.com/AngelCampos/txtools)
 <!-- badges: end -->
 
 ## Description
@@ -69,7 +69,7 @@ reads_SE <- tx_reads(reads = dm3_PEreads,
 #> 10373 alignments overlap 10 gene models 
 #> Assigning alignments to gene model... 
 #> Processing sequences. This may take several minutes depending on geneAnnot size ... 
-#> Output contains: 7214 unique alignments in 10 gene models
+#> Output contains: 7173 unique alignments in 10 gene models
 #> Warning in tx_reads(reads = dm3_PEreads, geneAnnot = dm3_geneAnnot, withSeq =
 #> TRUE, : Some alignments were not assigned to any gene, you can retrieve them
 #> using the tx_getUnassignedAlignments() function.
