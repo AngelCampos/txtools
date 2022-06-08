@@ -116,11 +116,11 @@ hlpr_ReadsInGene <- function(reads, iGene, geneAnnot, split_i, allExons, minRead
         tmpRanges_r2 <- GenomicAlignments::cigarRangesAlongReferenceSpace(
             GenomicAlignments::cigar(selAligns_r2), ops = "M", with.ops = TRUE,
             pos = GenomicRanges::start(selAligns_r2))
-        tmp1 <- S4Vectors::`%in%`(S4Vectors::`%in%`(GenomicRanges::end(tmpRanges_r1), GenomicRanges::end(selExons)),
-                                  S4Vectors::`%in%`(GenomicRanges::start(tmpRanges_r1), GenomicRanges::start(selExons)))
+        tmp1 <- S4Vectors::`%in%`(GenomicRanges::end(tmpRanges_r1), GenomicRanges::end(selExons)) |
+            S4Vectors::`%in%`(GenomicRanges::start(tmpRanges_r1), GenomicRanges::start(selExons))
         tmp1[unlist(lapply(tmp1, "length")) == 1] <- TRUE
-        tmp2 <- S4Vectors::`%in%`(S4Vectors::`%in%`(GenomicRanges::end(tmpRanges_r2), GenomicRanges::end(selExons)),
-            S4Vectors::`%in%`(GenomicRanges::start(tmpRanges_r2), GenomicRanges::start(selExons)))
+        tmp2 <- S4Vectors::`%in%`(GenomicRanges::end(tmpRanges_r2), GenomicRanges::end(selExons)) |
+            S4Vectors::`%in%`(GenomicRanges::start(tmpRanges_r2), GenomicRanges::start(selExons))
         tmp2[unlist(lapply(tmp2, "length")) == 1] <- TRUE
         which_N[which_N] <- !(all(tmp1) & all(tmp2))
         pass <- pass[!which_N]
