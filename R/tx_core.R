@@ -149,17 +149,20 @@ tx_load_bed <- function(bedfile){
 
 #' Load genome
 #'
-#' Load genome as DNAStrinSet from FASTA file. Alias for
-#' \code{\link[Biostrings]{readDNAStringSet}}
+#' Load genome as DNAStrinSet from FASTA file.
+#'
+#' Chromosome names will be limited to the first word separated by a space
 #'
 #' @param fastaFile path to FASTA file with genomic sequences
 #'
 #' @return DNAStringSet
 #' @export
-#'
-#' @examples
 tx_load_genome <- function(fastaFile){
-    Biostrings::readDNAStringSet(fastaFile)
+    out <- Biostrings::readDNAStringSet(fastaFile)
+    names(out) <- names(out) %>%
+        stringr::str_split(pattern = " ") %>%
+        lapply(function(x) x[1]) %>% unlist()
+    out
 }
 
 #' Loading RDS files into data.tables

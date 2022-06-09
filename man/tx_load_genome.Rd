@@ -13,6 +13,8 @@ tx_load_genome(fastaFile)
 DNAStringSet
 }
 \description{
-Load genome as DNAStrinSet from FASTA file. Alias for
-\code{\link[Biostrings]{readDNAStringSet}}
+Load genome as DNAStrinSet from FASTA file.
+}
+\details{
+Chromosome names will be limited to the first word separated by a space
 }
