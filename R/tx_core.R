@@ -601,12 +601,19 @@ tx_cutEnds_DT <- function(DT, cut_5p = 0, cut_3p = 0){
 
 #' Order txDT
 #'
+#' Orders a txDT by gene name and transcriptomic coordinate (txcoor).
+#' Accordingly reorders chromosome, strand, and gene factors' levels
+#'
 #' @param DT
 #'
 #' @return
 #' @export
 tx_orderDT <- function(DT){
     DT[order(as.character(DT$gene), DT$txcoor), ]
+    levels(DT$chr) <- sort(levels(DT$chr))
+    levels(DT$strand) <- sort(levels(DT$strand))
+    levels(DT$gene) <- sort(levels(DT$gene))
+    DT
 }
 
 #' Complete a DT object missing genes
@@ -713,7 +720,7 @@ tx_unifyTxDTL <- function(txDTL, geneAnnot = NULL, genome = NULL, type = "inters
         selGenes <- Reduce(intersect, lapply(txDTL, function(x) unique(x$gene)))
         parallel::mclapply(mc.cores = nCores, txDTL, function(x){
             x <- x[x$gene %in% selGenes,]
-            x <- tx_orderDT(x)
+            tx_orderDT(x)
         })
     }else if(type == "union"){
         if(is.null(geneAnnot)){stop("geneAnnot must be provided, as loaded with tx_load_bed()")}
