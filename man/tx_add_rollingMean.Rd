@@ -38,9 +38,6 @@ is less then an NA is output in that position. To output all positions assign 0.
 \item{nCores}{integer. Number of cores to use to run function. Multicore
 capability is not available in Windows OS.}
 }
-\value{
-
-}
 \description{
 Adding rolling mean to txDT
 }

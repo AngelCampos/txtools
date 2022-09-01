@@ -9,9 +9,6 @@ tx_test_ttest(DTL, cont_var, test_groups, test_na.rm = FALSE, ...)
 \arguments{
 \item{...}{}
 }
-\value{
-
-}
 \description{
 t test
 }

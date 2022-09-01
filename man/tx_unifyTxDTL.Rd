@@ -15,9 +15,6 @@ tx_unifyTxDTL(
 \arguments{
 \item{nCores}{}
 }
-\value{
-
-}
 \description{
 Unify lists of txDTs
 }

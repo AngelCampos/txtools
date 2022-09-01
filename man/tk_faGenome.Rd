@@ -6,9 +6,6 @@
 \usage{
 tk_faGenome()
 }
-\value{
-
-}
 \description{
 Thermococcus kodakarensis complete genome
 Source: https://www.ncbi.nlm.nih.gov/assembly/GCF_000009965.1/

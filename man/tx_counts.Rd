@@ -16,6 +16,3 @@ integer
 \description{
 Total counts of reads per gene model
 }
-\author{
-M.A. Garcia-Campos
-}

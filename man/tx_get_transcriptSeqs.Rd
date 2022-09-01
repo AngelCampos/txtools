@@ -9,9 +9,6 @@ tx_get_transcriptSeqs(genome, geneAnnot, outFile = NULL, nCores = 1)
 \arguments{
 \item{nCores}{}
 }
-\value{
-
-}
 \description{
 Get transcriptome sequences
 }

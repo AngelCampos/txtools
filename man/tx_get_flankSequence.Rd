@@ -9,9 +9,6 @@ tx_get_flankSequence(DT, logi_col, upFlank, doFlank, addNames = FALSE)
 \arguments{
 \item{addNames}{}
 }
-\value{
-
-}
 \description{
 Get flanking sequences
 }

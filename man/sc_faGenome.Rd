@@ -6,9 +6,6 @@
 \usage{
 sc_faGenome()
 }
-\value{
-
-}
 \description{
 Sk1 genome. Source Schwartz et al., 2013 https://doi.org/10.1016/j.cell.2013.10.047
 }

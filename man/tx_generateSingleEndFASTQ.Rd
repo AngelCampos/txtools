@@ -18,9 +18,6 @@ tx_generateSingleEndFASTQ(
 \arguments{
 \item{nCores}{}
 }
-\value{
-
-}
 \description{
 Generate single-end FASTQ file form genome and gene annotation.
 Distribution of reads is randomly selected following a negative binomial distribution with

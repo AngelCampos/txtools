@@ -22,6 +22,3 @@ creating unique position identifiers, for use in downstream analysis which
 requires them. The column is added after the mandatory 'txcoor' column.
 Unique names formation is expected and checked by default.
 }
-\author{
-M.A. Garcia-Campos
-}

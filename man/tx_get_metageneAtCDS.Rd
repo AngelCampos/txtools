@@ -16,9 +16,6 @@ tx_get_metageneAtCDS(
 \arguments{
 \item{doFlank}{}
 }
-\value{
-
-}
 \description{
 Get metagene at CDS
 }

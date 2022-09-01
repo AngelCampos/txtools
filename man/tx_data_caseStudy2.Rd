@@ -6,9 +6,6 @@
 \usage{
 tx_data_caseStudy2()
 }
-\value{
-
-}
 \description{
 Load data - Case study #2
 }

@@ -9,9 +9,6 @@ tx_shift_geneWise(DT, colToShift, direction, bp, nCores = 1)
 \arguments{
 \item{nCores}{}
 }
-\value{
-
-}
 \description{
 shift column in txDT
 }

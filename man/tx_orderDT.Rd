@@ -9,9 +9,6 @@ tx_orderDT(DT)
 \arguments{
 \item{DT}{}
 }
-\value{
-
-}
 \description{
 Order txDT
 }
