@@ -134,7 +134,6 @@ tx_load_bam <- function(file, pairedEnd, yieldSize = 100000,
 #'
 #' @author M.A. Garcia-Campos <https://angelcampos.github.io/>
 #'
-#' @examples
 tx_load_bed <- function(bedfile){
     tmp <- plyranges::read_bed(bedfile)
     if(length(S4Vectors::mcols(tmp)) == 2){
@@ -172,7 +171,6 @@ tx_load_genome <- function(fastaFile){
 #' @return data.table
 #' @export
 #'
-#' @examples
 tx_load_rdsDT <- function(file){
     data.table::data.table(readRDS(file))
 }
@@ -309,7 +307,6 @@ tx_getUnassignedAlignments <- function(){
 #' @return GRanges
 #' @export
 #'
-#' @examples
 tx_extend_UTR <- function(GR, ext_5p = 0, ext_3p = 0){
     if(is.null(GR$blocks)){
         stop("GR does not containg 'blocks' meta column.")
@@ -340,7 +337,6 @@ tx_extend_UTR <- function(GR, ext_5p = 0, ext_3p = 0){
 #'
 #' @author M.A. Garcia-Campos
 #' @aliases tx_filter_max_width
-#' @examples
 tx_filter_maxWidth <- function(x, thr, nCores = 1){
     check_integerGreaterThanZero_arg(nCores, "nCores")
     check_integer_arg(thr, "thr")
@@ -368,8 +364,6 @@ tx_filter_maxWidth <- function(x, thr, nCores = 1){
 #'
 #' @return CompressedGRangesList.
 #' @export
-#'
-#' @examples
 tx_sample_GRList <- function(x, p, nCores = 1){
     parallel::mclapply(mc.cores = nCores, x, function(GR){
         GR[sample(c(T,F), prob = c(p, 1-p), replace = T, size = length(GR))]
@@ -405,8 +399,6 @@ tx_sample_GRList <- function(x, p, nCores = 1){
 #' @family makeDT functions
 #' @author M.A. Garcia-Campos
 #' @aliases tx_coverageDT
-#'
-#' @examples
 tx_makeDT_coverage <- function(x, geneAnnot, genome = NULL, fullDT = FALSE,
                                nCores = 1){
     tx_flushUnassigned()
@@ -470,8 +462,6 @@ tx_makeDT_coverage <- function(x, geneAnnot, genome = NULL, fullDT = FALSE,
 #' @family makeDT functions
 #' @author M.A. Garcia-Campos
 #' @aliases tx_nucFreqDT
-#'
-#' @examples
 tx_makeDT_nucFreq <- function(x, geneAnnot, genome = NULL,
                               simplify_IUPAC = "splitForceInt", fullDT = FALSE,
                               nCores = 1){
@@ -539,8 +529,6 @@ tx_makeDT_nucFreq <- function(x, geneAnnot, genome = NULL,
 #' @family makeDT functions
 #' @author M.A. Garcia-Campos
 #' @aliases tx_covNucFreqDT
-#'
-#' @examples
 tx_makeDT_covNucFreq <- function(x, geneAnnot, genome = NULL,
                                  simplify_IUPAC = "splitForceInt", fullDT = FALSE,
                                  nCores = 1){
@@ -584,7 +572,6 @@ tx_merge_DT <- function(DTL){
 #'
 #' @return list
 #' @export
-#'
 tx_split_DT <- function(DT, dropEmpty = TRUE){
     tmp <- split(DT, f = DT$gene, drop = dropEmpty)
     # lapply(tmp, function(y) {
@@ -605,8 +592,6 @@ tx_split_DT <- function(DT, dropEmpty = TRUE){
 #'
 #' @return data.table
 #' @export
-#'
-#' @examples
 tx_cutEnds_DT <- function(DT, cut_5p = 0, cut_3p = 0){
     DTL <- tx_split_DT(check_DT(DT))
     lapply(DTL, function(x){
@@ -620,10 +605,8 @@ tx_cutEnds_DT <- function(DT, cut_5p = 0, cut_3p = 0){
 #'
 #' @return
 #' @export
-#'
-#' @examples
 tx_orderDT <- function(DT){
-    DT[order(DT$gene, DT$txcoor),]
+    DT[order(as.character(DT$gene), DT$txcoor), ]
 }
 
 #' Complete a DT object missing genes
@@ -647,7 +630,6 @@ tx_orderDT <- function(DT){
 #' @return data.table
 #' @export
 #'
-#' @examples
 tx_complete_DT <- function(DT, geneAnnot, genome = NULL, nCores = 1){
     check_mc_windows(nCores)
     DT <- check_DT(DT)
@@ -678,7 +660,7 @@ tx_complete_DT <- function(DT, geneAnnot, genome = NULL, nCores = 1){
     DTL <- tx_split_DT(DT)
     completeDTL <- c(DTL, tmpCoorTabs)
     completeDTL <- completeDTL[geneAnnot$name]
-    tx_merge_DT(tx_orderDT(completeDTL))
+    tx_orderDT(tx_merge_DT(completeDTL))
 }
 
 
@@ -692,8 +674,6 @@ tx_complete_DT <- function(DT, geneAnnot, genome = NULL, nCores = 1){
 #'
 #' @return
 #' @export
-#'
-#' @examples
 tx_shift_geneWise <- function(DT, colToShift, direction, bp, nCores = 1){
     if(!colToShift %in% colnames(DT)){
         stop("colToShift is not a column of DT")
@@ -725,27 +705,23 @@ tx_shift_geneWise <- function(DT, colToShift, direction, bp, nCores = 1){
 #'
 #' @return
 #' @export
-#'
-#' @examples
 tx_unifyTxDTL <- function(txDTL, geneAnnot = NULL, genome = NULL, type = "intersection", nCores = 1){
     if(!all(Reduce(intersect, lapply(txDTL, colnames)) == Reduce(union, lapply(txDTL, colnames)))){
         stop("Column names of the elements of txDTL must be the same")
     }
     if(type == "intersection"){
         selGenes <- Reduce(intersect, lapply(txDTL, function(x) unique(x$gene)))
-        new_txDTL <- parallel::mclapply(mc.cores = nCores, txDTL, function(x){
+        parallel::mclapply(mc.cores = nCores, txDTL, function(x){
             x <- x[x$gene %in% selGenes,]
-            x[order(x$gene, x$txcoor),]
+            x <- tx_orderDT(x)
         })
-        return(new_txDTL)
     }else if(type == "union"){
         if(is.null(geneAnnot)){stop("geneAnnot must be provided, as loaded with tx_load_bed()")}
         if(is.null(genome)){stop("geneAnnot must be provided, as loaded with tx_load_genome()")}
         selGenes <- Reduce(union, lapply(txDTL, function(x) unique(x$gene)))
         selGA <- geneAnnot[geneAnnot$name %in% selGenes]
-        new_txDTL <- parallel::mclapply(mc.cores = nCores, txDTL, function(x){
-            x <- x[x$gene %in% selGenes]
-            x <- x[order(x$gene, x$txcoor)]
+        parallel::mclapply(mc.cores = nCores, txDTL, function(x){
+            x <- x[x$gene %in% selGenes, ]
             tx_complete_DT(DT = x, geneAnnot = selGA, nCores = nCores, genome = genome)
         })
     }else{stop("Argument 'type' must be either 'intersection' or 'union'")}
@@ -774,8 +750,6 @@ tx_unifyTxDTL <- function(txDTL, geneAnnot = NULL, genome = NULL, type = "inters
 #' @export
 #'
 #' @author M.A. Garcia-Campos
-#'
-#' @examples
 tx_add_refSeqDT <- function(DT, genome, geneAnnot, nCores = 1){
     DT <- check_DT(DT) %>% hlp_removeColumnIfPresent("refSeq")
     check_mc_windows(nCores)
@@ -826,8 +800,6 @@ tx_add_misincCount <- function(DT){
 #' @return data.table
 #' @export
 #'
-#'
-#' @examples
 tx_add_nucTotal <- function(DT){
     DT <- check_DT(DT) %>% hlp_removeColumnIfPresent("nucTotal")
     selNucs <- setdiff(intersect(txtools::IUPAC_code_2nucs, names(DT)), c(".", "N"))
@@ -843,15 +815,18 @@ tx_add_nucTotal <- function(DT){
 #' @param DT data.table
 #' @param addMisinandTotalCols Set to TRUE to add counts of total nucleotides
 #' read (nucTotal) and different to reference nucleotide (misincCount) columns.
+#' @param minNucReads Minimum number of nucleotides read needed to calculate
+#' misincorporation rate
 #'
 #' @return data.table
 #' @export
 #'
 #' @seealso \code{\link{tx_add_diffNucToRef}} and \code{\link{tx_add_nucTotal}}
-tx_add_misincRate <- function(DT, addMisinandTotalCols = FALSE){
+tx_add_misincRate <- function(DT, minNucReads = 20, addMisinandTotalCols = FALSE){
     DT <- check_DT(DT) %>% hlp_removeColumnIfPresent("misincRate")
     tmpDT <- tx_add_misincCount(DT) %>% tx_add_nucTotal()
     tmp <- round(tmpDT$misincCount / tmpDT$nucTotal, 6)
+    tmp[tmpDT$nucTotal < minNucReads] <- NA
     if(addMisinandTotalCols){DT <- tmpDT}
     tibble::add_column(DT, misincRate = tmp)
 }
@@ -862,22 +837,24 @@ tx_add_misincRate <- function(DT, addMisinandTotalCols = FALSE){
 #' positions in cytidines that were read as thymine in RNA after bisulphite treatment.
 #'
 #' @param DT
-#' @param minCov
 #' @param refNuc Reference nucleotide
 #' @param misNuc Misincorporated nucleotide
+#' @param minNucReads Minimum number of nucleotides read needed to calculate
+#' misincorporation rate
 #'
 #' @return
 #' @export
 #'
-#' @examples
-tx_add_misincorpRateNucSpec <- function(DT, minCov = 50, refNuc, misNuc){
+#' @aliases tx_add_misincorpRateNucSpec
+tx_add_misincRateNucSpec <- function(DT, refNuc, misNuc, minNucReads = 20){
     DT <- data.table::data.table(DT)
     newColName <- paste0("MR_", refNuc, "to", misNuc)
     if(newColName %in% colnames(DT)){
         DT <- DT[,!grepl(newColName, colnames(DT))]
     }
     tmp <- round(DT[[misNuc]] / (DT[[misNuc]] + DT[[refNuc]]), 6)
-    tmp[DT$cov < minCov] <- NA
+    tmpNucReads <- DT[[misNuc]] + DT[[refNuc]]
+    tmp[tmpNucReads < minNucReads] <- NA
     tmp[!(DT$refSeq %in% refNuc)] <- NA
     DT[, newColName] <- tmp
     DT
@@ -918,8 +895,6 @@ tx_add_startRatio <- function(DT, minCov = 50){
 #'
 #' @return data.table
 #' @export
-#'
-#' @examples
 tx_add_startRatio1bpDS <- function(DT, minCov = 50){
     DT <- check_DT(DT) %>% hlp_removeColumnIfPresent("startRatio1bpDS")
     tmp <- (DT$start_5p) / (DT$cov)
@@ -942,8 +917,6 @@ tx_add_startRatio1bpDS <- function(DT, minCov = 50){
 #'
 #' @return data.table
 #' @export
-#'
-#' @examples
 tx_add_startRatio1bpUS <- function(DT, minCov = 50){
     DT <- check_DT(DT) %>% hlp_removeColumnIfPresent("startRatio1bpUS")
     tmp <- (DT$start_5p) / (DT$cov)
@@ -1015,8 +988,6 @@ tx_add_endRatio1bpDS <- function(DT, minCov = 50){
 #'
 #' @return data.table
 #' @export
-#'
-#' @examples
 tx_add_endRatio1bpUS <- function(DT, minCov = 50){
     DT <- check_DT(DT) %>% hlp_removeColumnIfPresent("endRatio1bpUS")
     tmp <- (DT$end_3p) / (DT$cov)
@@ -1042,8 +1013,6 @@ tx_add_endRatio1bpUS <- function(DT, minCov = 50){
 #' @return data.table
 #' @export
 #'
-#' @author M.A. Garcia-Campos
-#' @examples
 tx_add_pos <- function(DT, sep = ":", check_uniq = T){
     DT <- check_DT(DT) %>% hlp_removeColumnIfPresent("pos")
     pos <- paste(DT$gene, DT$txcoor, sep = sep)
@@ -1072,8 +1041,6 @@ tx_add_pos <- function(DT, sep = ":", check_uniq = T){
 #'
 #' @return data.table
 #' @export
-#'
-#' @examples
 tx_add_siteAnnotation <- function (DT, GRanges, colName, nCores = 1){
     check_mc_windows(nCores)
     check_integerGreaterThanZero_arg(nCores, "nCores")
@@ -1117,7 +1084,6 @@ tx_add_siteAnnotation <- function (DT, GRanges, colName, nCores = 1){
 #'
 #' @return data.table
 #' @export
-#'
 tx_add_motifPresence <- function (DT, motif, nucPositions = "all",
                                   motifColName = "auto", mask_N = TRUE, nCores = 1){
     check_mc_windows(nCores)
@@ -1178,7 +1144,6 @@ tx_add_motifPresence <- function (DT, motif, nucPositions = "all",
 #'
 #' @return
 #' @export
-#'
 tx_add_rollingMean <- function(DT, colName, winSize, newColName = NULL,
                                fill = NA, align = "center", minCov = 20, nCores = 1){
     if(is.null(newColName)){newColName <- paste("rollMean", colName, winSize, sep = "_" )}
@@ -1210,8 +1175,6 @@ tx_add_rollingMean <- function(DT, colName, winSize, newColName = NULL,
 #' functions.
 #' @return matrix
 #' @export
-#'
-#' @examples
 tx_get_flanksFromLogicAnnot <- function(DT, logi_col, values_col, upFlank, doFlank, addRowNames = TRUE){
     if(!is.logical(DT[[logi_col]])){stop("column ", logi_col, " must be of class 'logical'.")}
     if(!values_col %in% colnames(DT)){stop(values_col, " column must be in DT")}
@@ -1245,8 +1208,6 @@ tx_get_flanksFromLogicAnnot <- function(DT, logi_col, values_col, upFlank, doFla
 #'
 #' @return
 #' @export
-#'
-#' @examples
 tx_get_flankSequence <- function(DT, logi_col, upFlank, doFlank, addNames = FALSE){
     if(!is.logical(DT[[logi_col]])){stop("column ", logi_col, " must be of class 'logical'.")}
     if(!"refSeq" %in% colnames(DT)){stop("refSeq must be in DT. You can add it with tx_add_refSeq().")}
@@ -1282,8 +1243,6 @@ tx_get_flankSequence <- function(DT, logi_col, upFlank, doFlank, addNames = FALS
 #'
 #' @return named numeric. Length of genes as per times they appear in DT
 #' @export
-#'
-#' @examples
 tx_get_geneLengths <- function(DT){
     tmpTb <- table(as.character(DT$gene))
     tmpTb %>% as.numeric() %>% magrittr::set_names(names(tmpTb))
@@ -1300,8 +1259,6 @@ tx_get_geneLengths <- function(DT){
 #'
 #' @return
 #' @export
-#'
-#' @examples
 tx_get_metageneAtCDS <- function(txDT, geneAnnotation, colVars, CDS_align, upFlank, doFlank){
     check_GA_txDT_compat(txDT, geneAnnotation)
     invisible(sapply(c("gencoor", "strand", "gene"), function(x) check_DThasCol(txDT, x)))
@@ -1359,8 +1316,6 @@ tx_get_metageneAtCDS <- function(txDT, geneAnnotation, colVars, CDS_align, upFla
 #'
 #' @return
 #' @export
-#'
-#' @examples
 tx_get_transcriptSeqs <- function(genome, geneAnnot, outFile = NULL, nCores = 1){
     check_GA_genome_chrCompat(geneAnnot, genome)
     CHRS <- as.character(unique(GenomicRanges::seqnames(geneAnnot)))
@@ -1398,8 +1353,6 @@ tx_get_transcriptSeqs <- function(genome, geneAnnot, outFile = NULL, nCores = 1)
 #'
 #' @return
 #' @export
-#'
-#' @examples
 tx_test_LRTedgeR <- function(DTL, tVar, sVar, test_groups, minTrials = 50){
     DTL <- tx_unifyTxDTL(DTL)
     cMat_cov <- lapply(DTL, function(DT){
@@ -1481,8 +1434,6 @@ tx_test_LRTedgeR <- function(DTL, tVar, sVar, test_groups, minTrials = 50){
 #'
 #' @return
 #' @export
-#'
-#' @examples
 tx_test_ttest <- function(DTL, cont_var, test_groups, test_na.rm = FALSE, ...){
     sapply(DTL, function(x) check_DThasCol(x, cont_var))
     #check if needed to unify
@@ -1528,10 +1479,6 @@ window_around <- function(position, windowLength){
 #'
 #' @return integer
 #' @export
-#'
-#' @author M.A. Garcia-Campos
-#'
-#' @examples
 tx_counts <- function(x){
     tmp <- suppressWarnings(unlist(x)) %>% GenomeInfoDb::seqnames() %>% table()
     magrittr::set_names(as.integer(tmp), names(tmp))
@@ -1547,7 +1494,6 @@ tx_counts <- function(x){
 #' @return character. Path to dm3 gene annotation file
 #' @export
 #'
-#' @examples
 tx_dm3_geneAnnot <- function(){
     system.file("extdata", "toyGeneAnnot_Dmelan_chr4.bed", package = "txtools")
 }
@@ -1558,11 +1504,10 @@ tx_dm3_geneAnnot <- function(){
 #' @return
 #' @export
 #'
-#' @examples
 tx_data_caseStudy2 <- function(){
     tmpF <- tempfile()
     utils::download.file(url = "https://drive.google.com/uc?export=download&id=1ICdtTNU0qK7ZetwNp5RzHDrYT5mrt6y2",
-                  destfile = tmpF)
+                         destfile = tmpF)
     readRDS(tmpF)
 }
 
@@ -1573,11 +1518,10 @@ tx_data_caseStudy2 <- function(){
 #' @return
 #' @export
 #'
-#' @examples
 sc_faGenome <- function(){
     tmpF <- tempfile()
     utils::download.file(url = "https://drive.google.com/uc?export=download&id=1IgUO5CKdHJh_2L2lp4ADfmGJlhCbKM9r",
-                  destfile = tmpF)
+                         destfile = tmpF)
     cat("sc_faGenome file downloaded to temporary file ", tmpF, "\n")
     tmpF
 }
@@ -1592,7 +1536,7 @@ sc_faGenome <- function(){
 tk_faGenome <- function(){
     tmpF <- tempfile()
     utils::download.file(url = "https://drive.google.com/uc?export=download&id=1Iir-E0kVJ3RMHNsbOdSgi847t5lz1-re",
-                  destfile = tmpF)
+                         destfile = tmpF)
     cat("tk_faGenome file downloaded to temporary file ", tmpF, "\n")
     tmpF
 }
@@ -1606,7 +1550,7 @@ tk_faGenome <- function(){
 sc_geneAnnot <- function(){
     tmpF <- tempfile()
     utils::download.file(url = "https://drive.google.com/uc?export=download&id=1IlycxDiZoPcbpOsn7wRoXSx-v-79qrIW",
-                  destfile = tmpF)
+                         destfile = tmpF)
     cat("sc_geneAnnot file downloaded to temporary file ", tmpF, "\n")
     tmpF
 }
@@ -1623,7 +1567,7 @@ sc_geneAnnot <- function(){
 mm_geneAnnot <- function(){
     tmpF <- tempfile()
     utils::download.file(url = "https://drive.google.com/uc?export=download&id=1IsZryJRYDtgevc8qXd_7pH-KqiNT8tSs",
-                  destfile = tmpF)
+                         destfile = tmpF)
     cat("mm_geneAnnot file downloaded to temporary file ", tmpF, "\n")
     tmpF
 }
@@ -1637,7 +1581,7 @@ mm_geneAnnot <- function(){
 tk_geneAnnot <- function(){
     tmpF <- tempfile()
     utils::download.file(url = "https://drive.google.com/uc?export=download&id=1ImtH_ln_HXku2tAh2SaU-Io16zAV3ahQ",
-                  destfile = tmpF)
+                         destfile = tmpF)
     cat("tk_geneAnnot file downloaded to temporary file ", tmpF, "\n")
     tmpF
 }

@@ -9,6 +9,11 @@
 operations in their CIGAR strings (gaps), that didn't match the gene structure.
 * Removed plotly conversion in tx_plot_*() functions. As can be easily done by
 the user with plotly::ggplotly()
+* **0.0.7.8 patch**: Fixed tx_orderDT() so that order is not affected by levels 
+in the 'gene' factor; accordingly fix tx_unifyTxDTL() so DTs have the same 
+txcoor order. Changing name of function tx_add_misincorpRateNucSpec()
+in favor of tx_add_misincRateNucSpec(), so that it conforms to other function 
+names, former can be used as alias but has been deprecated.
 
 ## v0.0.6
 

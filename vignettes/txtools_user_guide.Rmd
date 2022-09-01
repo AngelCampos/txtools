@@ -240,7 +240,7 @@ Bellow a list of them and a brief description of what they add.
 reference sequence.
 - `tx_add_misincRate()`: Rate of nucleotide reads different to the 
 reference sequence.
-- `tx_add_misincorpRateNucSpec()`: Rate of misincorporation of an
+- `tx_add_misincRateNucSpec()`: Rate of misincorporation of an
 specific nucleotide with respect to a reference nucleotide. e.g. the
 rate at which 'T' was incorporated (or misread) in the RNA instead
 of a 'C'.
@@ -262,7 +262,7 @@ DT_covNucFreq <- DT_covNucFreq %>%
     tx_add_nucTotal() %>% 
     tx_add_misincCount() %>% 
     tx_add_misincRate() %>% 
-    tx_add_misincorpRateNucSpec(refNuc = "C", misNuc = "T")
+    tx_add_misincRateNucSpec(refNuc = "C", misNuc = "T")
 ```
 
 ## Adding unique position identifier

@@ -77,3 +77,9 @@ tx_add_diffNucToRefRatio <- function(DT, addDiffandTotalCols = FALSE){
     if(addDiffandTotalCols){DT <- tmpDT}
     tibble::add_column(DT, diffToRefRatio = tmp)
 }
+
+#' @export
+tx_add_misincorpRateNucSpec <- function(DT, refNuc, misNuc, minNucReads = 20){
+    lifecycle::deprecate_warn("0.0.7", "tx_add_misincorpRateNucSpec()", "tx_add_misincRateNucSpec()")
+    tx_add_misincRateNucSpec(DT, refNuc, misNuc, minNucReads = minNucReads)
+}

@@ -5,8 +5,6 @@
 #' \code{\link[GenomicAlignments]{findMateAlignment}}
 #'
 #' @export
-#'
-#' @examples
 getDumpedAlignments <- function(){
     GenomicAlignments::getDumpedAlignments()
 }
