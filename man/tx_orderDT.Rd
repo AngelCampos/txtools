@@ -10,5 +10,6 @@ tx_orderDT(DT)
 \item{DT}{}
 }
 \description{
-Order txDT
+Orders a txDT by gene name and transcriptomic coordinate (txcoor).
+Accordingly reorders chromosome, strand, and gene factors' levels
 }
