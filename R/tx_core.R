@@ -610,6 +610,9 @@ tx_cutEnds_DT <- function(DT, cut_5p = 0, cut_3p = 0){
 #' @export
 tx_orderDT <- function(DT){
     DT[order(as.character(DT$gene), DT$txcoor), ]
+    DT$chr <- forcats::fct_drop(DT$chr)
+    DT$strand <- forcats::fct_drop(DT$strand)
+    DT$gene <- forcats::fct_drop(DT$gene)
     levels(DT$chr) <- sort(levels(DT$chr))
     levels(DT$strand) <- sort(levels(DT$strand))
     levels(DT$gene) <- sort(levels(DT$gene))
