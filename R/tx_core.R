@@ -609,14 +609,10 @@ tx_cutEnds_DT <- function(DT, cut_5p = 0, cut_3p = 0){
 #' @return
 #' @export
 tx_orderDT <- function(DT){
+    DT$chr <- factor(as.character(DT$chr))
+    DT$strand <- factor(as.character(DT$strand))
+    DT$gene <- factor(as.character(DT$gene))
     DT[order(as.character(DT$gene), DT$txcoor), ]
-    DT$chr <- forcats::fct_drop(DT$chr)
-    DT$strand <- forcats::fct_drop(DT$strand)
-    DT$gene <- forcats::fct_drop(DT$gene)
-    levels(DT$chr) <- sort(levels(DT$chr))
-    levels(DT$strand) <- sort(levels(DT$strand))
-    levels(DT$gene) <- sort(levels(DT$gene))
-    DT
 }
 
 #' Complete a DT object missing genes
@@ -654,8 +650,7 @@ tx_complete_DT <- function(DT, geneAnnot, genome = NULL, nCores = 1){
     } # No missing genes
     tmpCoorTabs <- hlpr_genCoorTabGenes(genes = missGenes,
                                         geneAnnot = geneAnnot,
-                                        nCores = nCores) %>%
-        tx_merge_DT()
+                                        nCores = nCores) %>% tx_merge_DT()
     # Add refSeq if present in DT
     if("refSeq" %in% names(DT)){
         tmpCoorTabs <- tx_add_refSeqDT(DT = tmpCoorTabs, genome = genome,
@@ -666,11 +661,8 @@ tx_complete_DT <- function(DT, geneAnnot, genome = NULL, nCores = 1){
                          data.table::data.table(matrix(0,
                                                        nrow = nrow(tmpCoorTabs),
                                                        ncol = length(missCols))) %>%
-                             magrittr::set_names(missCols)) %>% tx_split_DT()
-    DTL <- tx_split_DT(DT)
-    completeDTL <- c(DTL, tmpCoorTabs)
-    completeDTL <- completeDTL[geneAnnot$name]
-    tx_orderDT(tx_merge_DT(completeDTL))
+                             magrittr::set_names(missCols))
+    tx_orderDT(rbind(DT, tmpCoorTabs))
 }
 
 
