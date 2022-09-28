@@ -117,6 +117,9 @@ tx_plot_nucFreq(DT, gene = "NM_079901", txRange = window_around(3803, 15))
 
 ## Further documentation
 
+The *txtools* user guide is available as a vignette typing
+`vignette("txtools")` at the R console.
+
 ## Current limitations:
 
 -   Insertions: txtools is not able to deal with insertions. This is

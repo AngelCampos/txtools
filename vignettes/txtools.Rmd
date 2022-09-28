@@ -1,6 +1,6 @@
 ---
 title: "txtools User Guide"
-author: "Miguel Garcia"
+author: "Miguel Angel Garcia-Campos"
 package: txtools
 abstract: |
   txtools is an R package for processing and analysis of
