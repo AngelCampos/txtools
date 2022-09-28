@@ -24,16 +24,40 @@ tx_plot_metageneAtCDS(
 )
 }
 \arguments{
-\item{roll_n}{numeric. Window size for rolling functions}
+\item{txDT}{data.table. As generated with tx_makeDT_*() functions.}
+
+\item{geneAnnotation}{GRanges. Gene annotation as loaded with tx_load_bed()}
+
+\item{colVars}{character. Names of columns to be displayed in metagene plot}
+
+\item{CDS_align}{character. Either "start" or "end" depending on the desired
+alignment to the CDS.}
+
+\item{upFlank}{numeric. Up-stream flank}
+
+\item{doFlank}{numeric. Down-stream flank}
+
+\item{summ_fun}{character. Summing function either "sum" or "mean". Default: "sum"}
+
+\item{roll_fun}{character. Rolling function either "sum" or "mean". Default: "sum"}
+
+\item{roll_n}{numeric. Window size for rolling function}
 
 \item{roll_align}{character. Either "center" (default), "left" or "right"}
+
+\item{roll_fill}{vector. Either an empty vector (no fill), or a vector
+(recycled to) length 3 giving left, middle and right fills. NA by default}
 
 \item{smooth}{logical. Set to FALSE for not smoothing with spline}
 
 \item{spar}{numeric. Smoothing parameter, typically (but not necessarily) in (0,1].
 Check stats::smooth.spline}
 
-\item{tick_by}{}
+\item{na.rm}{logical. Omit all NAs from computations. Default: TRUE}
+
+\item{normalize}{logical. Makes all areas under the curve equivalent to 100. Default: TRUE}
+
+\item{tick_by}{numeric. Distance between ticks in plot. Default: upFlank/2}
 }
 \value{
 ggplot

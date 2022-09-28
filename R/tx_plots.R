@@ -186,23 +186,25 @@ tx_plot_ggseqlogo <- function(DT, logi_col, upFlank, doFlank, method = "bits"){
 
 #' Plot metagene at CDS
 #'
-#' @param txDT
-#' @param geneAnnotation
-#' @param colVars
-#' @param CDS_align
-#' @param upFlank
-#' @param doFlank
-#' @param summ_fun
-#' @param roll_fun
-#' @param roll_n numeric. Window size for rolling functions
+#' @param txDT data.table. As generated with tx_makeDT_*() functions.
+#' @param geneAnnotation GRanges. Gene annotation as loaded with tx_load_bed()
+#' @param colVars character. Names of columns to be displayed in metagene plot
+#' @param CDS_align character. Either "start" or "end" depending on the desired
+#' alignment to the CDS.
+#' @param upFlank numeric. Up-stream flank
+#' @param doFlank numeric. Down-stream flank
+#' @param summ_fun character. Summing function either "sum" or "mean". Default: "sum"
+#' @param roll_fun character. Rolling function either "sum" or "mean". Default: "sum"
+#' @param roll_n numeric. Window size for rolling function
 #' @param roll_align character. Either "center" (default), "left" or "right"
-#' @param roll_fill
+#' @param roll_fill vector. Either an empty vector (no fill), or a vector
+#' (recycled to) length 3 giving left, middle and right fills. NA by default
 #' @param smooth logical. Set to FALSE for not smoothing with spline
 #' @param spar numeric. Smoothing parameter, typically (but not necessarily) in (0,1].
 #' Check stats::smooth.spline
-#' @param na.rm
-#' @param normalize
-#' @param tick_by
+#' @param na.rm logical. Omit all NAs from computations. Default: TRUE
+#' @param normalize logical. Makes all areas under the curve equivalent to 100. Default: TRUE
+#' @param tick_by numeric. Distance between ticks in plot. Default: upFlank/2
 #'
 #' @return ggplot
 #' @export
@@ -242,12 +244,13 @@ tx_plot_metageneAtCDS <- function(txDT, geneAnnotation, colVars, CDS_align, upFl
         ggplot2::geom_line() +
         ggplot2::scale_x_discrete(limits = unique(tmpDF$position),
                                   breaks = unique(tmpDF$position)[seq(1, length(unique(tmpDF$position)), by = tick_by)]) +
-        ggplot2::theme_minimal() + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1))
+        ggplot2::theme_minimal() + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1)) +
+        ggplot2::xlab("Relative position to CDS") + ggplot2::ylab("Value")
     if(CDS_align == "end"){
-        tmpGG <- tmpGG + ggplot2::geom_vline(xintercept = "CDS_end" , col = "black", linetype="dashed") +
+        tmpGG <- tmpGG + ggplot2::geom_vline(xintercept = "CDS_end", col = "black", linetype = "dashed") +
             ggplot2::ggtitle("Metagene aligned at CDS_end")
     }else if(CDS_align == "start"){
-        tmpGG <- tmpGG + ggplot2::geom_vline(xintercept = "CDS_start" , col = "black", linetype="dashed") +
+        tmpGG <- tmpGG + ggplot2::geom_vline(xintercept = "CDS_start", col = "black", linetype = "dashed") +
             ggplot2::ggtitle("Metagene aligned at CDS_start")
     }
     tmpGG
