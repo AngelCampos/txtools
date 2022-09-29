@@ -209,7 +209,7 @@ tx_plot_ggseqlogo <- function(DT, logi_col, upFlank, doFlank, method = "bits"){
 #' @return ggplot
 #' @export
 tx_plot_metageneAtCDS <- function(txDT, geneAnnotation, colVars, CDS_align, upFlank,
-                                  doFlank, summ_fun = "sum", roll_fun = "sum", roll_n = 100,
+                                  doFlank, summ_fun = "mean", roll_fun = "mean", roll_n = 100,
                                   roll_align = "center", roll_fill = NA, smooth = TRUE, spar  = 0.3,
                                   na.rm = TRUE, normalize = TRUE, tick_by = NULL){
     tmpO <- tx_get_metageneAtCDS(txDT = txDT, geneAnnotation = geneAnnotation, colVars = colVars,
