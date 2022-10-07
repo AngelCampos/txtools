@@ -143,6 +143,12 @@ tx_load_bed <- function(bedfile){
                                        end = IRanges::end(tmp) -
                                            IRanges::start(tmp) + 1)
     }
+    # Check no duplicated gene names
+    dupN <- duplicated(tmp$name)
+    if(sum(dupN) > 0){
+        stop("Duplicated genes found in gene annotation.\n",
+             paste(tmp$name[dupN], collapse = " "))
+    }
     return(tmp)
 }
 
