@@ -9,10 +9,10 @@ Authors@R:
            email = "angel.campos@ciencias.unam.mx",
            comment = c(ORCID = "0000-0001-5223-8174", 
                        webpage = "https://angelcampos.github.io/"))
-Description: txtools extends the functionality of GenomicAlignments filtering 
-    and processing RNA-seq reads aligned to a genome into their transcriptomic
-    versions and allows data to be represented in a transcriptomic oriented way,
-    along generating easy-handling summarized tables.
+Description: txtools extends the functionality of GenomicAlignments and 
+    GenomicAlignments by filtering and processing RNA-seq reads aligned to a 
+    genome into their transcriptomic counterparts and allows generating 
+    easy-handling summarized tables.
 Depends: R (>= 4.0.0)
 License: MIT + file LICENSE
 Encoding: UTF-8
@@ -33,17 +33,26 @@ Remotes:
     bioc::plyranges,
     bioc::pasillaBamSubset,
     bioc::GenomeInfoDb,
-    bioc::BiocStyle
+    bioc::BiocStyle,
+    bioc::limma,
+    bioc::genefilter,
+    bioc::edgeR,
+    bioc::BiocGenerics
 Imports: 
     GenomicRanges,
     Biostrings,
     IRanges,
-    pasillaBamSubset,
     Rsamtools,
     S4Vectors (>= 0.23.20),
     GenomicAlignments,
     plyranges,
+    pasillaBamSubset,
     GenomeInfoDb,
+    BiocStyle,
+    limma,
+    genefilter,
+    edgeR,
+    BiocGenerics,
     magrittr,
     stringr,
     data.table,
@@ -51,18 +60,13 @@ Imports:
     utils,
     rlang (>= 0.4.3),
     ggplot2,
+    ggseqlogo,
     tidyr,
     methods,
-    BiocGenerics,
     forcats,
-    ggseqlogo,
     RcppRoll,
     lifecycle,
-    BiocStyle,
-    dplyr,
-    edgeR,
-    genefilter,
-    limma
+    dplyr
 VignetteBuilder: knitr
 biocViews: DataImport, DataRepresentation, Coverage, 
     Epitranscriptomics, RNASeq, Transcription, SNP
