@@ -22,8 +22,8 @@ data.table
 }
 \description{
 Add a logical variable column in DT, for which the genomic coordinates of a
-GRanges object are used to differentiate between 1-bp length sites.
-In which TRUE equals to presence of site in the provided GRanges object.
+GRanges object are used to annotate 1 bp sites.
+In which TRUE equals to presence of the site in the provided GRanges object.
 This annotation is useful, for example, when marking already known RNA
 modification sites.
 }
