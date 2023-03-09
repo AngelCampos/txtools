@@ -17,7 +17,7 @@ tx_plot_metaGeneByBins <- function(DT, colName, nBins = 100, FUN = "mean", minTx
         out <- tapply(tmpDT[[colName]], tmpDT$group, FUN, na.rm = na.rm)
         out[is.nan(out)] <- NA
         out
-    }) %>% do.call(what = rbind) %>% apply(MARGIN = 2, FUN = FUN, na.rm = na.rm) %>%
+    }) %>% do.call(what = "rbind") %>% apply(MARGIN = 2, FUN = FUN, na.rm = na.rm) %>%
         magrittr::set_names(NULL)
     DF <- data.frame(bins = seq(meanCovBinned) %>% as.numeric(),
                      score = meanCovBinned)
@@ -55,7 +55,7 @@ tx_plot_metaGeneByBins <- function(DT, colName, nBins = 100, FUN = "mean", minTx
 #         out <- tapply(tmpDT[[colName]], tmpDT$group, FUN, na.rm = na.rm)
 #         out[is.nan(out)] <- NA
 #         out
-#     }) %>% do.call(what = rbind) %>% apply(MARGIN = 2, FUN = FUN, na.rm = na.rm) %>% set_names(NULL)
+#     }) %>% do.call(what = "rbind") %>% apply(MARGIN = 2, FUN = FUN, na.rm = na.rm) %>% set_names(NULL)
 #     DF <- data.frame(bins = seq(meanCovBinned) %>% as.numeric,
 #                      score = meanCovBinned)
 #     plotTitle <- paste("METAGENE BY BINS -", FUN, colName) %>% toupper()
@@ -94,7 +94,7 @@ tx_plot_oneNumeric <- function(DTL, gene, txRange = 1:nrow(DTL[[1]]), columnName
             tmpData$coverage <- factor(tmpData$coverage, levels = columnName)
             tmpData$sample <- names(DTL)[i]
             tmpData
-        }) %>% do.call(what = rbind)
+        }) %>% do.call(what = "rbind")
     }else{
         DT <- DTL
         DT <- check_refSeq(DT)

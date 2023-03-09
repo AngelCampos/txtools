@@ -101,7 +101,7 @@ tx_load_bam <- function(file, pairedEnd, yieldSize = 100000,
                                                    use.names = TRUE,
                                                    param = readParams))
         }
-    }) %>% do.call(what = c)
+    }) %>% do.call(what = "c")
     close(BAMFILE)
     if(verbose){close(pb)}
     if(pairedEnd == FALSE & strandMode == 2){
@@ -1364,12 +1364,12 @@ tx_test_LRTedgeR <- function(DTL, tVar, sVar, test_groups, minTrials = 50){
     DTL <- tx_unifyTxDTL(DTL)
     cMat_cov <- lapply(DTL, function(DT){
         DT[[tVar]]
-    }) %>% do.call(what = cbind) %>%
+    }) %>% do.call(what = "cbind") %>%
         magrittr::set_colnames(paste0(names(DTL), "-cov")) %>%
         magrittr::set_rownames(1:nrow(DTL[[1]]))
     cMat_sta <- lapply(DTL, function(DT){
         DT[[sVar]]
-    }) %>% do.call(what = cbind) %>%
+    }) %>% do.call(what = "cbind") %>%
         magrittr::set_colnames(paste0(names(DTL), "-sta")) %>% magrittr::set_rownames(1:nrow(DTL[[1]]))
     cMat_cov <- cMat_cov - cMat_sta # Difference to make starts + cov = total cov (needed by edgeR)
     # DGE object creation
