@@ -69,5 +69,5 @@ Imports:
     dplyr
 VignetteBuilder: knitr
 biocViews: DataImport, DataRepresentation, Coverage, 
-    Epitranscriptomics, RNASeq, Transcription, SNP
+    Epitranscriptomics, RNASeq, Transcription
 Roxygen: list(markdown = TRUE)

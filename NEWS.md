@@ -1,3 +1,13 @@
+## v0.0.8
+
+* Fixed loading paired end BAM files when strand sign is defined by read2 
+("last").
+* Bugs fixed
+* Minor improvements:
+    * Loading genome name as first word separated by spaces
+    * Edited main vignette tutorial "txtools"
+    * Added bam2txDT.R script in inst/ dir
+
 ## v0.0.7
 
 * General Update
