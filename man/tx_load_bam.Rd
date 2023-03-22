@@ -28,10 +28,10 @@ See \code{\link[Rsamtools]{ScanBamParam}}}
 \item{loadSeq}{logical. Set to TRUE for loading the sequences contained
 in the BAM file}
 
-\item{strandMode}{numeric. \itemize{\item 1 (default): strand of the pair is strand of
-its first alignment: Directional Illumina (Ligation), Standard SOLiD.
-\item 2: strand of the pair is strand of its last alignment: dUTP, NSR, NNSR, Illumina stranded TruSeq PE protocol.
-\item 0: strand of the pair is unspecified (*), works as both "+" and "-".} More info: \code{\link[GenomicAlignments]{GAlignmentPairs-class}}.}
+\item{strandMode}{numeric. \itemize{
+\item 1 (default): Strand of the pair is that of its \strong{first} alignment: Directional Illumina (Ligation), Standard SOLiD. (Single-end No change in strand)
+\item 2: strand of the pair is strand of its \strong{last} alignment: dUTP, NSR, NNSR, Illumina stranded TruSeq PE protocol. (Single-end: Change to inverse strand)
+\item 0: strand of the pair is set to '*' (unspecified), works as both "+" and "-".} More info: \code{\link[GenomicAlignments]{GAlignmentPairs-class}}.}
 }
 \value{
 GRanges

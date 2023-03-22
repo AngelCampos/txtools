@@ -21,6 +21,3 @@ data.table
 This function is the multi-core version of hlp_genCoorTab(), and is only
 available for use in UNIX-like operative systems.
 }
-\author{
-M.A. Garcia-Campos
-}

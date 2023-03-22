@@ -28,6 +28,3 @@ data.table
 \description{
 Calculate nucleotide frequency pileup for all gene models
 }
-\author{
-M.A. Garcia-Campos
-}

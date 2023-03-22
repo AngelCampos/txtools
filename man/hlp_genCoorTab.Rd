@@ -18,6 +18,3 @@ data.table
 \description{
 Table with genomic and transcriptomic coordinates
 }
-\author{
-M.A. Garcia-Campos
-}
