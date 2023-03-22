@@ -47,9 +47,8 @@ exonBlockGen <- function(iGene, geneAnnot_GR){
 # Reads overlapping gene models
 hlpr_splitReadsByGenes <- function(reads, bedR, overlapType, minReads){
     #IgnoreStrand feature missing
-    allOver_1 <- GenomicRanges::findOverlaps(reads@first, bedR, type = overlapType)
-    allOver_2 <- GenomicRanges::findOverlaps(GenomicAlignments::invertStrand(reads@last),
-                                             bedR,type = overlapType)
+    allOver_1 <- GenomicRanges::findOverlaps(GenomicAlignments::first(reads, real.strand = TRUE), bedR, type = overlapType)
+    allOver_2 <- GenomicRanges::findOverlaps(GenomicAlignments::last(reads, real.strand = TRUE), bedR, type = overlapType)
     split_1 <- split(allOver_1@from, allOver_1@to)
     split_2 <- split(allOver_2@from, allOver_2@to)
     names(split_1) <- bedR[names(split_1) %>% as.numeric()]$name
@@ -82,8 +81,8 @@ hlpr_ReadsInGene <- function(reads, iGene, geneAnnot, split_i, allExons, minRead
     iExon <- exonBlockGen(iGene = iGene, geneAnnot_GR = geneAnnot)
     selReadsbyPair <- split_i[[iGene]]
     # Selecting paired reads to merge
-    iReads_r1 <- reads@first[selReadsbyPair]
-    iReads_r2 <- reads@last[selReadsbyPair]
+    iReads_r1 <- GenomicAlignments::first(reads, real.strand = TRUE)[selReadsbyPair]
+    iReads_r2 <- GenomicAlignments::last(reads, real.strand = TRUE)[selReadsbyPair]
     # Filtering reads strictly inside exons
     # Both ends of both reads fall into the gene model
     stEndTable <- as.matrix(data.frame(r1_S = GenomicRanges::start(iReads_r1),
@@ -97,8 +96,7 @@ hlpr_ReadsInGene <- function(reads, iGene, geneAnnot, split_i, allExons, minRead
     tmp <- GenomicRanges::findOverlaps(iReads_r1[pass], allExons[[iGene]])
     passPos <- split(tmp@to, tmp@from) %>% lapply(diff) %>%
         lapply(function(x) all(x == 1)) %>% unlist %>% which
-    tmp <- GenomicRanges::findOverlaps(GenomicAlignments::invertStrand(iReads_r2[pass]),
-                                       allExons[[iGene]])
+    tmp <- GenomicRanges::findOverlaps(iReads_r2[pass], allExons[[iGene]])
     passNeg <- split(tmp@to, tmp@from) %>% lapply(diff) %>%
         lapply(function(x) all(x == 1)) %>% unlist %>% which
     pass <- pass[as.numeric(intersect(passNeg, passPos))]
@@ -367,8 +365,6 @@ hlp_coverageTab <- function(x){
 #' @export
 #'
 #' @author M.A. Garcia-Campos
-#'
-#' @examples
 hlp_coverageTab_mc <- function(x, nCores){
     if(class(x) != "CompressedGRangesList"){
         stop("x must be of class SimpleGRangesList")
@@ -410,10 +406,6 @@ hlp_coverageTab_mc <- function(x, nCores){
 #'
 #' @return data.table
 #' @export
-#'
-#' @author M.A. Garcia-Campos
-#'
-#' @examples
 hlp_nucFreqTab <- function(x, simplify_IUPAC = "not"){
     if(!all(simplify_IUPAC %in% c("not", "splitHalf", "splitForceInt"))){
         stop("simplify_IUPAC argument must be either: 'not', 'splitHalf' or ",
@@ -449,10 +441,6 @@ hlp_nucFreqTab <- function(x, simplify_IUPAC = "not"){
 #'
 #' @return data.table
 #' @export
-#'
-#' @author M.A. Garcia-Campos
-#'
-#' @examples
 hlp_nucFreqTab_mc <- function(x, simplify_IUPAC = "not", nCores){
     iGenes <- names(x)
     parallel::mclapply(mc.cores = nCores, X = iGenes, function(iGene){
@@ -477,10 +465,6 @@ hlp_nucFreqTab_mc <- function(x, simplify_IUPAC = "not", nCores){
 #'
 #' @return data.table
 #' @export
-#'
-#' @author M.A. Garcia-Campos
-#'
-#' @examples
 hlp_genCoorTab <- function(x, geneAnnot){
     if(all(names(x) %in% geneAnnot$name)){
         lapply(names(x), function(iGene){
@@ -517,10 +501,6 @@ hlp_genCoorTab <- function(x, geneAnnot){
 #'
 #' @return data.table
 #' @export
-#'
-#' @author M.A. Garcia-Campos
-#'
-#' @examples
 hlp_genCoorTab_mc <- function(x, geneAnnot, nCores){
     check_mc_windows(nCores)
     if(all(names(x) %in% geneAnnot$name)){
@@ -652,8 +632,8 @@ hlp_cleanBam_emptySeq <- function(reads, verbose){
         if(verbose){cat(length(reads) - sum(lSel), "reads filtered out for empty sequence field")}
         reads[lSel]
     }else if(methods::is(reads, class2 = "GAlignmentPairs")){
-        lSel <- BiocGenerics::width(S4Vectors::mcols(reads@first)$seq) != 0 &
-            BiocGenerics::width(S4Vectors::mcols(reads@last)$seq) != 0
+        lSel <- BiocGenerics::width(S4Vectors::mcols(GenomicAlignments::first(reads, real.strand = TRUE))$seq) != 0 &
+            BiocGenerics::width(S4Vectors::mcols(GenomicAlignments::last(reads, real.strand = TRUE))$seq) != 0
         if(verbose){cat(length(reads) - sum(lSel), "reads filtered out for empty sequence field")}
         reads[lSel]
     }
@@ -948,8 +928,8 @@ check_GR_has_seq <- function(x, argName){
 check_BAM_has_seq <- function(x){
     pairedEnd <- switch(class(x), GAlignmentPairs = TRUE, GAlignments = FALSE)
     if(pairedEnd){
-        if(!all(c("seq" %in% names(GenomicRanges::mcols(x@first)),
-                  "seq" %in% names(GenomicRanges::mcols(x@last))))){
+        if(!all(c("seq" %in% names(GenomicRanges::mcols(GenomicAlignments::first(x, real.strand = TRUE))),
+                  "seq" %in% names(GenomicRanges::mcols(GenomicAlignments::last(x, real.strand = TRUE)))))){
             stop("Input GAlignmentPairs object has no 'seq' metacolumn for either
                  first or last reads")
         }
@@ -986,7 +966,7 @@ annot_CDSsta_DTL <- Vectorize(function(DT, CDS_start){
 annot_CDSend_DTL <- Vectorize(function(DT, CDS_end){
     DT$CDS_end[DT$gencoor == CDS_end[CDS_end$gene == DT$gene[1],]$gencoor] <- TRUE
     DT
-    }, vectorize.args = "DT", SIMPLIFY = FALSE)
+}, vectorize.args = "DT", SIMPLIFY = FALSE)
 
 
 # Check that all genes in DT are in geneAnnot
@@ -1015,8 +995,6 @@ check_DThasCol <- function(DT, colName){
 #' name's are in both DTL.
 #'
 #' @return list
-#'
-#' @examples
 hid_aggregate_DTlist <- function (DTL1, DTL2, colsToAdd, keepAll = TRUE){
     allNames <- union(names(DTL1), names(DTL2))
     namesInBoth <- intersect(names(DTL1), names(DTL2))
@@ -1056,18 +1034,27 @@ indexAlignmentsByGenomicRegion <- function(GAlignments, geneAnnot, overlapType =
     intronic <- notExon[tmpGR]
     intergen <- notExon[-tmpGR]
     if(class(GAlignments) == "GAlignmentPairs"){
-        ovExonic <- union(GenomicRanges::findOverlaps(
-            GAlignments@first, exonic, type = overlapType)@from,
+        ovExonic <- union(
             GenomicRanges::findOverlaps(
-                GAlignments@last, GenomicRanges::invertStrand(exonic), type = overlapType)@from)
-        ovIntron <- union(GenomicRanges::findOverlaps(
-            GAlignments@first, intronic, type = overlapType)@from,
+                GenomicAlignments::first(GAlignments, real.strand = TRUE),
+                exonic, type = overlapType)@from,
             GenomicRanges::findOverlaps(
-                GAlignments@last, GenomicRanges::invertStrand(intronic), type = overlapType)@from)
-        ovInterg <- union(GenomicRanges::findOverlaps(
-            GAlignments@first, intergen, type = overlapType)@from,
+                GenomicAlignments::last(GAlignments, real.strand = TRUE),
+                exonic, type = overlapType)@from)
+        ovIntron <- union(
             GenomicRanges::findOverlaps(
-                GAlignments@last, GenomicRanges::invertStrand(intergen), type = overlapType)@from)
+                GenomicAlignments::first(GAlignments, real.strand = TRUE),
+                intronic, type = overlapType)@from,
+            GenomicRanges::findOverlaps(
+                GenomicAlignments::last(GAlignments, real.strand = TRUE),
+                intronic, type = overlapType)@from)
+        ovInterg <- union(
+            GenomicRanges::findOverlaps(
+                GenomicAlignments::first(GAlignments, real.strand = TRUE),
+                intergen, type = overlapType)@from,
+            GenomicRanges::findOverlaps(
+                GenomicAlignments::last(GAlignments, real.strand = TRUE),
+                intergen, type = overlapType)@from)
         ovRest <- setdiff(1:length(GAlignments), union(union(ovExonic, ovIntron), ovInterg))
     }else if(class(GAlignments) == "GAlignments"){
         ovExonic <- GenomicRanges::findOverlaps(GAlignments, exonic, type = overlapType)@from
@@ -1106,12 +1093,12 @@ rowMeansColG <- function(DF, colGroups, na.rm = T){
 #' @param NB_mu
 #' @param nCores
 #'
-#' @return
-#'
-#' @examples
-tx_generateSingleEndFASTQ <- function(genome, geneAnnot, readLen, libSize, fileName, NB_r = 5, NB_mu = 500, nCores){
+#' @return Writes FASTQ fileName
+tx_generateSingleEndFASTQ <- function(genome, geneAnnot, readLen, libSize,
+                                      fileName, NB_r = 5, NB_mu = 500, nCores){
     # filter transcripts by size
-    txOME_seqs <- tx_get_transcriptSeqs(genome = genome, geneAnnot = geneAnnot, nCores = nCores)
+    txOME_seqs <- tx_get_transcriptSeqs(genome = genome, geneAnnot = geneAnnot,
+                                        nCores = nCores)
     txOME_seqs <- txOME_seqs[BiocGenerics::width(txOME_seqs) >= readLen]
     # Random starts
     metaTX <- list(seqs = txOME_seqs, width = BiocGenerics::width(txOME_seqs))
@@ -1131,8 +1118,10 @@ tx_generateSingleEndFASTQ <- function(genome, geneAnnot, readLen, libSize, fileN
     qualStr <- paste(rep("H", readLen), collapse = "")
     # Writing FASTQ
     Biostrings::writeXStringSet(x = metaTX$reads1,
-                                quali = Biostrings::BStringSet(rep(qualStr, each = length(metaTX$reads1))),
-                                filepath = fileName, format = "fastq", compress = TRUE)
+                                quali = Biostrings::BStringSet(
+                                    rep(qualStr, each = length(metaTX$reads1))),
+                                filepath = fileName, format = "fastq",
+                                compress = TRUE)
 }
 
 
