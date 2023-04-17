@@ -1164,6 +1164,22 @@ tx_add_rollingMean <- function(DT, colName, winSize, newColName = NULL,
     tibble::add_column(DT, tmp) %>% magrittr::set_names(c(oNames, newColName))
 }
 
+#' Add SpliceSites
+#'
+#' @param txDT data.table. Output of txtools data.tables with coverage information
+#' as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT}}
+#' functions.
+#' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed()
+#'
+#' @return txDT
+#' @export
+tx_add_spliceSitesLogical <- function(txDT, geneAnnot){
+    GENES <- as.character(unique(txDT$gene))
+    GA_GR <- exonGRanges(geneAnnot[geneAnnot$name %in% GENES])
+    tx_merge_DT(hlp_splLog_v(iGene = GENES, GA_GR, tx_split_DT(txDT)))
+}
+
+
 # Get functions ################################################################
 
 #' Get data from a position and their neighboring positions
@@ -1308,11 +1324,18 @@ tx_get_metageneAtCDS <- function(txDT, geneAnnotation, colVars, CDS_align, upFla
                                         values_col = colVar,
                                         addRowNames = TRUE)
         })
-    }else{stop("CDS_align should be either 'start' or 'end'.")}
+    }else if(CDS_align == "spliceSite"){
+        txDT <- tx_add_spliceSitesLogical(txDT, geneAnnotation)
+        tmpFlanks <- lapply(colVars, function(colVar){
+            tx_get_flanksFromLogicAnnot(DT = txDT,
+                                        logi_col = "spliceSite",
+                                        upFlank = upFlank,
+                                        doFlank = doFlank,
+                                        values_col = colVar,
+                                        addRowNames = TRUE)})
+    }else {stop("CDS_align should be either 'start' or 'end'.")}
     return(tmpFlanks %>% magrittr::set_names(colVars))
 }
-
-
 
 #' Get transcriptome sequences
 #'

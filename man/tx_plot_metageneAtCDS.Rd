@@ -30,8 +30,8 @@ tx_plot_metageneAtCDS(
 
 \item{colVars}{character. Names of columns to be displayed in metagene plot}
 
-\item{CDS_align}{character. Either "start" or "end" depending on the desired
-alignment to the CDS.}
+\item{CDS_align}{character. Either "start", "end", or "spliceSite" depending on the desired
+alignment to CDS start, CDS end, or splicing sites, respectively.}
 
 \item{upFlank}{numeric. Up-stream flank}
 

@@ -189,8 +189,8 @@ tx_plot_ggseqlogo <- function(DT, logi_col, upFlank, doFlank, method = "bits"){
 #' @param txDT data.table. As generated with tx_makeDT_*() functions.
 #' @param geneAnnotation GRanges. Gene annotation as loaded with tx_load_bed()
 #' @param colVars character. Names of columns to be displayed in metagene plot
-#' @param CDS_align character. Either "start" or "end" depending on the desired
-#' alignment to the CDS.
+#' @param CDS_align character. Either "start", "end", or "spliceSite" depending on the desired
+#' alignment to CDS start, CDS end, or splicing sites, respectively.
 #' @param upFlank numeric. Up-stream flank
 #' @param doFlank numeric. Down-stream flank
 #' @param summ_fun character. Summing function either "sum" or "mean". Default: "sum"
@@ -245,13 +245,16 @@ tx_plot_metageneAtCDS <- function(txDT, geneAnnotation, colVars, CDS_align, upFl
         ggplot2::scale_x_discrete(limits = unique(tmpDF$position),
                                   breaks = unique(tmpDF$position)[seq(1, length(unique(tmpDF$position)), by = tick_by)]) +
         ggplot2::theme_minimal() + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1)) +
-        ggplot2::xlab("Relative position to CDS") + ggplot2::ylab("Value")
+        ggplot2::xlab("Relative position") + ggplot2::ylab("Value")
     if(CDS_align == "end"){
         tmpGG <- tmpGG + ggplot2::geom_vline(xintercept = "CDS_end", col = "black", linetype = "dashed") +
             ggplot2::ggtitle("Metagene aligned at CDS_end")
     }else if(CDS_align == "start"){
         tmpGG <- tmpGG + ggplot2::geom_vline(xintercept = "CDS_start", col = "black", linetype = "dashed") +
             ggplot2::ggtitle("Metagene aligned at CDS_start")
+    }else if(CDS_align == "spliceSite"){
+        tmpGG <- tmpGG + ggplot2::geom_vline(xintercept = "spliceSite", col = "black", linetype = "dashed") +
+            ggplot2::ggtitle("Metagene aligned at spliceSite")
     }
     tmpGG
 }

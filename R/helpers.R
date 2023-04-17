@@ -1124,6 +1124,14 @@ tx_generateSingleEndFASTQ <- function(genome, geneAnnot, readLen, libSize,
                                 compress = TRUE)
 }
 
+hlp_splLog <- function(iGene, GA_GR, splDT){
+    splGenCoors <- c(utils::tail(GenomicRanges::start(GA_GR[[iGene]]), -1), utils::head(GenomicRanges::end(GA_GR[[iGene]]), -1))
+    splDT[[iGene]]$spliceSite <- splDT[[iGene]]$gencoor %in% splGenCoors
+    splDT[[iGene]]
+}
+
+hlp_splLog_v <- Vectorize(hlp_splLog, vectorize.args = "iGene", SIMPLIFY = FALSE)
+
 
 ## usethis namespace: start
 #' @importFrom lifecycle deprecated
