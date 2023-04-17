@@ -7,6 +7,9 @@
     * Loading genome name as first word separated by spaces
     * Edited main vignette tutorial "txtools"
     * Added bam2txDT.R script in inst/ dir
+* Patch 0.0.8.1:
+    * Added "splicingSite" option to tx_get_metageAtCDS() and 
+    tx_plot_metageneAtCDS().
 
 ## v0.0.7
 

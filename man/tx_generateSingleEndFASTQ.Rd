@@ -19,7 +19,7 @@ tx_generateSingleEndFASTQ(
 \item{nCores}{}
 }
 \value{
-Writes FASTQ file
+Writes FASTQ fileName
 }
 \description{
 Generate single-end FASTQ file form genome and gene annotation.

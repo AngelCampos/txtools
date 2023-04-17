@@ -3,7 +3,7 @@
 
 <!-- badges: start -->
 
-[![](https://img.shields.io/badge/devel%20version-0.0.8-blue.svg)](https://github.com/AngelCampos/txtools)
+[![](https://img.shields.io/badge/devel%20version-0.0.8.1-blue.svg)](https://github.com/AngelCampos/txtools)
 <!-- badges: end -->
 
 ## Description
