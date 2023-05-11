@@ -2,7 +2,7 @@
 % Please edit documentation in R/tx_core.R
 \name{tx_add_motifPresence}
 \alias{tx_add_motifPresence}
-\title{Adds the presence of a motif}
+\title{Add motif presence}
 \usage{
 tx_add_motifPresence(
   DT,
@@ -45,5 +45,5 @@ capability is not available in Windows OS.}
 data.table
 }
 \description{
-Adds the presence of a motif
+Add motif presence
 }

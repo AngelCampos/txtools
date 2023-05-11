@@ -4,14 +4,7 @@
 \alias{tx_get_metageneAtCDS}
 \title{Get metagene at CDS}
 \usage{
-tx_get_metageneAtCDS(
-  txDT,
-  geneAnnotation,
-  colVars,
-  CDS_align,
-  upFlank,
-  doFlank
-)
+tx_get_metageneAtCDS(txDT, geneAnnot, colVars, CDS_align, upFlank, doFlank)
 }
 \arguments{
 \item{doFlank}{}

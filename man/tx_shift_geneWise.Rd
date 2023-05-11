@@ -2,7 +2,7 @@
 % Please edit documentation in R/tx_core.R
 \name{tx_shift_geneWise}
 \alias{tx_shift_geneWise}
-\title{shift column in txDT}
+\title{Shift column in txDT}
 \usage{
 tx_shift_geneWise(DT, colToShift, direction, bp, nCores = 1)
 }
@@ -10,5 +10,5 @@ tx_shift_geneWise(DT, colToShift, direction, bp, nCores = 1)
 \item{nCores}{}
 }
 \description{
-shift column in txDT
+Shift column in txDT
 }

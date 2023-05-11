@@ -14,7 +14,7 @@ functions.}
 \item{geneAnnot}{GenomicRanges. Gene annotation loaded via the tx_load_bed()}
 }
 \value{
-txDT
+data.table
 }
 \description{
 Add SpliceSites

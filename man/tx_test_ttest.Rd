@@ -2,7 +2,7 @@
 % Please edit documentation in R/tx_core.R
 \name{tx_test_ttest}
 \alias{tx_test_ttest}
-\title{t test}
+\title{t-test in txDT list}
 \usage{
 tx_test_ttest(DTL, cont_var, test_groups, test_na.rm = FALSE, ...)
 }
@@ -10,5 +10,6 @@ tx_test_ttest(DTL, cont_var, test_groups, test_na.rm = FALSE, ...)
 \item{...}{}
 }
 \description{
-t test
+Apply a t-test per nucleotide position separating by groups over a txDT list.
+At least 2 samples in each group are needed.
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/tx_core.R
 \name{tx_add_rollingMean}
 \alias{tx_add_rollingMean}
-\title{Adding rolling mean to txDT}
+\title{Add rolling mean}
 \usage{
 tx_add_rollingMean(
   DT,
@@ -39,5 +39,5 @@ is less then an NA is output in that position. To output all positions assign 0.
 capability is not available in Windows OS.}
 }
 \description{
-Adding rolling mean to txDT
+Add rolling mean
 }

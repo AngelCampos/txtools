@@ -6,13 +6,13 @@
 \usage{
 tx_plot_metageneAtCDS(
   txDT,
-  geneAnnotation,
+  geneAnnot,
   colVars,
   CDS_align,
   upFlank,
   doFlank,
   summ_fun = "mean",
-  roll_fun = "mean",
+  roll_fun = NULL,
   roll_n = 100,
   roll_align = "center",
   roll_fill = NA,
@@ -26,7 +26,7 @@ tx_plot_metageneAtCDS(
 \arguments{
 \item{txDT}{data.table. As generated with tx_makeDT_*() functions.}
 
-\item{geneAnnotation}{GRanges. Gene annotation as loaded with tx_load_bed()}
+\item{geneAnnot}{GRanges. Gene annotation as loaded with tx_load_bed()}
 
 \item{colVars}{character. Names of columns to be displayed in metagene plot}
 

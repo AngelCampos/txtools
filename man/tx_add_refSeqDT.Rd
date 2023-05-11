@@ -7,9 +7,8 @@
 tx_add_refSeqDT(DT, genome, geneAnnot, nCores = 1)
 }
 \arguments{
-\item{DT}{data.table. A data.table object. See
-\code{\link{tx_makeDT_coverage}}, \code{\link{tx_makeDT_nucFreq}} or
-\code{\link{tx_makeDT_covNucFreq}} functions.}
+\item{DT}{data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
+\code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.}
 
 \item{genome}{list. The full reference genome sequences, as prepackaged
 by BSgenome, See ?BSgenome::available.genomes(); or loaded by \code{\link{tx_load_genome}}}
@@ -27,7 +26,4 @@ data.table
 Adds a column of characters representing the corresponsing nucleotide at
 the reference genome position, considering the strand of the transcript.
 The input DT must be the output, or resemble it, of the
-}
-\author{
-M.A. Garcia-Campos
 }
