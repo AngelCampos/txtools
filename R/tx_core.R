@@ -1205,7 +1205,7 @@ tx_add_spliceSitesLogical <- function(txDT, geneAnnot){
 #'
 #' @return data.table
 #' @export
-tx_add_geneRegions <- function(txDT, geneAnnot, nCores = 1){
+tx_add_geneRegion <- function(txDT, geneAnnot, nCores = 1){
     check_GA_txDT_compat(txDT, geneAnnot)
     txDT <- hlp_removeColumnIfPresent(txDT, "geneRegion")
     invisible(sapply(c("gencoor", "strand", "gene"), function(x) check_DThasCol(txDT, x)))
@@ -1231,7 +1231,7 @@ tx_add_geneRegions <- function(txDT, geneAnnot, nCores = 1){
     tmpGenes <- as.character(unique(txDT$gene))
     tmpL <- split(txDT$gencoor, txDT$gene)[tmpGenes]
     tmpF <- parallel::mclapply(mc.cores = nCores, tmpGenes, function(gene_i){
-        tmpO <- txDT[txDT$gene == gene_i, ]$geneRegion
+        tmpO <- rep(NA, sum(txDT$gene == gene_i))
         txStr <- CDS_tab[CDS_tab$gene == gene_i,]$strand
         if(gene_i %in% CG$name){
             if(txStr == "+"){
