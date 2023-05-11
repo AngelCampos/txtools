@@ -19,7 +19,7 @@ tx_plot_metageneAtCDS(
   smooth = TRUE,
   spar = 0.3,
   na.rm = TRUE,
-  normalize = TRUE,
+  normalize = FALSE,
   tick_by = NULL
 )
 }
