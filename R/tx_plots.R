@@ -45,9 +45,9 @@ tx_plot_nucFreq <- function(DT,
     if(removeInsert){
         tmpData <- tmpData[tmpData$nuc != ".",]
         tmpData$nuc <- factor(tmpData$nuc, levels = c("REF", "A", "C", "G", "T", "-", "N"))
-        tmpGG <- ggplot2::ggplot(tmpData, ggplot2::aes(x = tmpData$pos,
-                                                       y = tmpData$counts,
-                                                       fill = tmpData$nuc)) +
+        tmpGG <- ggplot2::ggplot(tmpData, ggplot2::aes(x = .data$pos,
+                                                       y = .data$counts,
+                                                       fill = .data$nuc)) +
             ggplot2::theme_minimal() + scale_fill_txBrowser_2() +
             ggplot2::ylab("Frequency") + ggplot2::xlab("Transcriptome coordinate") +
             ggplot2::theme(legend.position="bottom") +
@@ -55,9 +55,9 @@ tx_plot_nucFreq <- function(DT,
             ggplot2::ggtitle(gene)
     }else{
         tmpData$nuc <- factor(tmpData$nuc, levels = c(".", "REF", "A", "C", "G", "T", "-", "N"))
-        tmpGG <- ggplot2::ggplot(tmpData, ggplot2::aes(x = tmpData$pos,
-                                                       y = tmpData$counts,
-                                                       fill = tmpData$nuc)) +
+        tmpGG <- ggplot2::ggplot(tmpData, ggplot2::aes(x = .data$pos,
+                                                       y = .data$counts,
+                                                       fill = .data$nuc)) +
             ggplot2::theme_minimal() + scale_fill_txBrowser() +
             ggplot2::ylab("Frequency") + ggplot2::xlab("Transcriptome coordinate") +
             ggplot2::theme(legend.position="bottom") +
@@ -123,9 +123,9 @@ tx_plot_staEndCov <- function(
                                                             "start_5p",
                                                             "end_3p"))
     tmpGG <- ggplot2::ggplot(tmpData,
-                             ggplot2::aes(x = tmpData$pos,
-                                          y = tmpData$counts,
-                                          fill = tmpData$coverage)) +
+                             ggplot2::aes(x = .data$pos,
+                                          y = .data$counts,
+                                          fill = .data$coverage)) +
         ggplot2::theme_minimal() +
         ggplot2::scale_fill_manual(values = c("#c2c2c2", "#5b54a0", "#f1876d")) +
         ggplot2::ylab("Frequency") + ggplot2::xlab("Transcriptome coordinate") +
@@ -211,7 +211,7 @@ tx_plot_ggseqlogo <- function(DT, logi_col, upFlank, doFlank, method = "bits"){
 tx_plot_metageneAtCDS <- function(txDT, geneAnnot, colVars, CDS_align, upFlank,
                                   doFlank, summ_fun = "mean", roll_fun = NULL, roll_n = 100,
                                   roll_align = "center", roll_fill = NA, smooth = TRUE, spar  = 0.3,
-                                  na.rm = TRUE, normalize = TRUE, tick_by = NULL){
+                                  na.rm = TRUE, normalize = FALSE, tick_by = NULL){
     tmpO <- tx_get_metageneAtCDS(txDT = txDT, geneAnnot = geneAnnot, colVars = colVars,
                                  CDS_align = CDS_align, upFlank = upFlank, doFlank = doFlank)
     tmpDF <- lapply(names(tmpO), function(x){
@@ -239,9 +239,9 @@ tx_plot_metageneAtCDS <- function(txDT, geneAnnot, colVars, CDS_align, upFlank,
     if(is.null(tick_by)){
         tick_by <- upFlank / 2
     }
-    tmpGG <- ggplot2::ggplot(tmpDF, ggplot2::aes(x = tmpDF$position, y = tmpDF$value,
-                                                 group = tmpDF$group, colour = tmpDF$group)) +
-        ggplot2::geom_line() +
+    tmpGG <- ggplot2::ggplot(tmpDF, ggplot2::aes(x = .data$position, y = .data$value,
+                                                 group = .data$group, colour = .data$group)) +
+        ggplot2::geom_line(ggplot2::aes(x = .data$position), size = 1) +
         ggplot2::scale_x_discrete(limits = unique(tmpDF$position),
                                   breaks = unique(tmpDF$position)[seq(1, length(unique(tmpDF$position)), by = tick_by)]) +
         ggplot2::theme_minimal() + ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1)) +
@@ -330,8 +330,8 @@ tx_plot_metageneExons <- function(txDT, colVars, nBins, geneAnnot = NULL,
                        bin = factor(metageneBinNames, levels = metageneBinNames),
                        var = k)
         }) %>% do.call(what = "rbind") %>% magrittr::set_rownames(NULL)
-        ggplot2::ggplot(tmpO, ggplot2::aes(x = tmpO$bin, y = tmpO$value, group = tmpO$var, colour = tmpO$var)) +
-            ggplot2::geom_line(ggplot2::aes(x = tmpO$bin), size = 1) +
+        ggplot2::ggplot(tmpO, ggplot2::aes(x = .data$bin, y = .data$value, group = .data$var, colour = .data$var)) +
+            ggplot2::geom_line(ggplot2::aes(x = .data$bin), size = 1) +
             ggplot2::scale_x_discrete(limits = metageneBinNames,
                                       breaks = metageneBinNames[c(1, seq(0, length(metageneBinNames), xLabelJump))]) +
             ggplot2::theme_minimal() +
@@ -348,7 +348,7 @@ tx_plot_metageneExons <- function(txDT, colVars, nBins, geneAnnot = NULL,
                                 values_to = "value", cols = dplyr::everything()) %>% cbind(var = k)
         }) %>% do.call(what = "rbind") %>% data.frame()
         tmpO$bin <- factor(tmpO$bin, levels = metageneBinLevls)
-        ggplot2::ggplot(tmpO, ggplot2::aes(x = tmpO$bin, y = tmpO$value, colour = tmpO$var)) +
+        ggplot2::ggplot(tmpO, ggplot2::aes(x = .data$bin, y = .data$value, colour = .data$var)) +
             ggplot2::geom_boxplot(outlier.colour = NA) +
             ggplot2::facet_grid(tmpO$var ~ .) +
             ggplot2::scale_x_discrete(limits = levels(tmpO$bin),
@@ -361,6 +361,91 @@ tx_plot_metageneExons <- function(txDT, colVars, nBins, geneAnnot = NULL,
             ggplot2::geom_vline(xintercept = "CDS end", col = "black", linetype = "dashed") +
             ggplot2::ggtitle("Metagene codifying genes") +
             ggplot2::theme(legend.position="bottom")
+    }else{
+        stop("'plot_type' argument must be either 'lineplot' or 'boxplot'")
+    }
+}
+
+# Helpers ###############
+
+#' Plot an extracted metaGeneMatrix
+#'
+#' It plots an extracted metagene matrix from get_metageneRegions(). Useful
+#' when modifying the metagene matrix, like filtering genes out.
+#'
+#' Note It must have the same nBins arguments as the ones used to generate the
+#' metagene matrix.
+#'
+#' @param metaGeneMatrix
+#' @param colVars
+#' @param nBins_5UTR
+#' @param nBins_CDS
+#' @param nBins_3UTR
+#' @param summ_fun
+#' @param smooth
+#' @param spar
+#' @param plot_type
+#'
+#' @return
+#' @export
+#'
+#' @examples
+hlp_plot_metageneRegions <- function(metaGeneMatrix, colVars, nBins_5UTR,
+                                     nBins_CDS = NULL, nBins_3UTR = NULL, summ_fun = "mean",
+                                     smooth = TRUE, spar = 0.3, plot_type = "lineplot"){
+    metageneBinNames <- c(paste("UTR5", seq(nBins_5UTR), sep = "_"),
+                          paste("CDS", seq(nBins_CDS), sep = "_"),
+                          paste("UTR3", seq(nBins_3UTR), sep = "_"))
+    metageneBinLevls <- c(paste("UTR5", seq(nBins_5UTR), sep = "_"), "CDS start",
+                          paste("CDS", seq(nBins_CDS), sep = "_"), "CDS end",
+                          paste("UTR3", seq(nBins_3UTR), sep = "_"))
+    if(plot_type == "lineplot"){
+        tmpO <- lapply(colVars, function(k){
+            tmpY <- apply(metaGeneMatrix[[k]], 2, FUN = summ_fun, na.rm = TRUE)
+            if(smooth){
+                tmpY[!is.na(tmpY)] <- stats::smooth.spline(tmpY[!is.na(tmpY)], spar = spar)$y
+            }
+            data.frame(value = tmpY,
+                       bin = factor(metageneBinNames, levels = metageneBinLevls),
+                       var = k)
+        }) %>% do.call(what = "rbind") %>% magrittr::set_rownames(NULL)
+
+        tmpP <- lapply(colVars, function(k){
+            data.frame(value = NA, bin = factor(c("CDS start", "CDS end"),
+                                                levels = metageneBinLevls), var = k)
+        }) %>% do.call(what = "rbind") %>% rbind(tmpO)
+
+        ggplot2::ggplot(tmpP, ggplot2::aes(x = .data$bin, y = .data$value, group = .data$var, colour = .data$var)) +
+            ggplot2::geom_line(ggplot2::aes(x = .data$bin), size = 1) +
+            ggplot2::scale_x_discrete(limits = levels(tmpP$bin),
+                                      breaks = c("CDS start", "CDS end")) +
+            ggplot2::theme_minimal() +
+            ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1)) +
+            ggplot2::xlab("Summarizing Bins") +
+            ggplot2::ylab("Value") +
+            ggplot2::geom_vline(xintercept = "CDS start", col = "black", linetype = "dashed") +
+            ggplot2::geom_vline(xintercept = "CDS end", col = "black", linetype = "dashed") +
+            ggplot2::ggtitle("Metagene codifying genes") +
+            ggplot2::theme(legend.position = "bottom")
+    }else if(plot_type == "boxplot"){
+        tmpO <- lapply(colVars, function(k){
+            tidyr::pivot_longer(data = data.table::data.table(metaGeneMatrix[[k]]), names_to = "bin",
+                                values_to = "value", cols = dplyr::everything()) %>% cbind(var = k)
+        }) %>% do.call(what = "rbind") %>% data.frame()
+        tmpO$bin <- factor(tmpO$bin, levels = metageneBinLevls)
+        ggplot2::ggplot(tmpO, ggplot2::aes(x = .data$bin, y = .data$value, colour = .data$var)) +
+            ggplot2::geom_boxplot(outlier.colour = NA) +
+            ggplot2::facet_grid(tmpO$var ~ .) +
+            ggplot2::scale_x_discrete(limits = levels(tmpO$bin),
+                                      breaks = c("CDS start", "CDS end")) +
+            ggplot2::theme_bw() +
+            ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1)) +
+            ggplot2::xlab("Summarizing Bins") +
+            ggplot2::ylab("Value") +
+            ggplot2::geom_vline(xintercept = "CDS start", col = "black", linetype = "dashed") +
+            ggplot2::geom_vline(xintercept = "CDS end", col = "black", linetype = "dashed") +
+            ggplot2::ggtitle("Metagene codifying genes") +
+            ggplot2::theme(legend.position = "bottom")
     }else{
         stop("'plot_type' argument must be either 'lineplot' or 'boxplot'")
     }

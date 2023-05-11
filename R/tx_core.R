@@ -21,6 +21,7 @@
 #' @aliases txtools-package
 #' @keywords DataImport DataRepresentation Coverage Epitranscriptomics RNASeq
 #' @keywords Transcription SNP
+#' @importFrom rlang .data
 "_PACKAGE"
 NULL
 
@@ -1229,7 +1230,6 @@ tx_add_geneRegions <- function(txDT, geneAnnot, nCores = 1){
                                 strand = "-"))
     tmpGenes <- as.character(unique(txDT$gene))
     tmpL <- split(txDT$gencoor, txDT$gene)[tmpGenes]
-    txDT$geneRegion <- character()
     tmpF <- parallel::mclapply(mc.cores = nCores, tmpGenes, function(gene_i){
         tmpO <- txDT[txDT$gene == gene_i, ]$geneRegion
         txStr <- CDS_tab[CDS_tab$gene == gene_i,]$strand
@@ -1466,7 +1466,8 @@ tx_get_metageneAtCDS <- function(txDT, geneAnnot, colVars, CDS_align, upFlank, d
                                         upFlank = upFlank,
                                         doFlank = doFlank,
                                         values_col = colVar,
-                                        addRowNames = TRUE)})
+                                        addRowNames = TRUE)
+        })
     }else if(CDS_align == "end"){
         CDS_end <- rbind(data.frame(gene = CG[pos_CG]$name,
                                     gencoor = IRanges::end(CG[pos_CG]$thick)),
@@ -1572,10 +1573,9 @@ tx_get_metageneRegions <- function(txDT, geneAnnot, colVars, nBins_5UTR,
         txDT <- tx_add_geneRegions(txDT, geneAnnot, nCores = nCores)
     }
     # Remove genes with small regions
-    tmpR <- txDT[, list(UTR5 = sum(txDT$geneRegion == "5'UTR"),
-                        CDS = sum(txDT$geneRegion == "CDS"),
-                        UTR3 = sum(txDT$geneRegion == "3'UTR")), by = txDT$gene]
-    remGenes <- tmpR[tmpR$UTR3 < nBins_3UTR | tmpR$UTR5 < nBins_5UTR | tmpR$CDS < nBins_CDS, ]$gene
+    tmpR <- lapply(split(txDT$geneRegion, txDT$gene), FUN = "table") %>% do.call(what = "rbind") %>% data.frame()
+    tmpR$gene <- rownames(tmpR)
+    remGenes <- tmpR[tmpR$X3.UTR < nBins_3UTR | tmpR$X5.UTR < nBins_5UTR | tmpR$CDS < nBins_CDS, ]$gene
     txDT <- txDT[!(txDT$gene %in% remGenes), ]
     if(length(remGenes) > 0){
         warning(length(remGenes), " genes where removed from the analysis due to shorter length than selected binSizes.")
