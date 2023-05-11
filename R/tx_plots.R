@@ -69,7 +69,7 @@ tx_plot_nucFreq <- function(DT,
     }else{
         tmpGG <- tmpGG + ggplot2::geom_bar(stat = "identity")
     }
-    if(show_yLabels){
+    if(show_yLabels & length(txRange) < 200){
         nucCols <- txBrowser_pal()(6)[-1:-2][as.numeric(factor(DT$refSeq))]
         tmpGG <- suppressWarnings(
             tmpGG +
@@ -105,8 +105,8 @@ tx_plot_nucFreq <- function(DT,
 #' @return ggplot
 #' @export
 tx_plot_staEndCov <- function(
-    DT, gene, txRange = 1:nrow(DT), removeCov = FALSE,
-    show_yLabels = TRUE, bar_border = TRUE, showLegend = TRUE){
+        DT, gene, txRange = 1:nrow(DT), removeCov = FALSE,
+        show_yLabels = TRUE, bar_border = TRUE, showLegend = TRUE){
     check_refSeq(DT)
     DT <- check_DT(DT)
     if(!(gene %in% DT$gene)){stop("gene not found in DT object")}
@@ -139,7 +139,7 @@ tx_plot_staEndCov <- function(
     }else{
         tmpGG <- tmpGG + ggplot2::geom_bar(stat = "identity")
     }
-    if(show_yLabels){
+    if(show_yLabels & length(txRange) < 200){
         nucCols <- txBrowser_pal()(6)[-1:-2][as.numeric(factor(DT$refSeq))]
         tmpGG <- suppressWarnings(
             tmpGG +
@@ -187,7 +187,7 @@ tx_plot_ggseqlogo <- function(DT, logi_col, upFlank, doFlank, method = "bits"){
 #' Plot metagene at CDS
 #'
 #' @param txDT data.table. As generated with tx_makeDT_*() functions.
-#' @param geneAnnotation GRanges. Gene annotation as loaded with tx_load_bed()
+#' @param geneAnnot GRanges. Gene annotation as loaded with tx_load_bed()
 #' @param colVars character. Names of columns to be displayed in metagene plot
 #' @param CDS_align character. Either "start", "end", or "spliceSite" depending on the desired
 #' alignment to CDS start, CDS end, or splicing sites, respectively.
@@ -208,11 +208,11 @@ tx_plot_ggseqlogo <- function(DT, logi_col, upFlank, doFlank, method = "bits"){
 #'
 #' @return ggplot
 #' @export
-tx_plot_metageneAtCDS <- function(txDT, geneAnnotation, colVars, CDS_align, upFlank,
-                                  doFlank, summ_fun = "mean", roll_fun = "mean", roll_n = 100,
+tx_plot_metageneAtCDS <- function(txDT, geneAnnot, colVars, CDS_align, upFlank,
+                                  doFlank, summ_fun = "mean", roll_fun = NULL, roll_n = 100,
                                   roll_align = "center", roll_fill = NA, smooth = TRUE, spar  = 0.3,
                                   na.rm = TRUE, normalize = TRUE, tick_by = NULL){
-    tmpO <- tx_get_metageneAtCDS(txDT = txDT, geneAnnotation = geneAnnotation, colVars = colVars,
+    tmpO <- tx_get_metageneAtCDS(txDT = txDT, geneAnnot = geneAnnot, colVars = colVars,
                                  CDS_align = CDS_align, upFlank = upFlank, doFlank = doFlank)
     tmpDF <- lapply(names(tmpO), function(x){
         if(summ_fun == "sum"){
@@ -257,4 +257,111 @@ tx_plot_metageneAtCDS <- function(txDT, geneAnnotation, colVars, CDS_align, upFl
             ggplot2::ggtitle("Metagene aligned at spliceSite")
     }
     tmpGG
+}
+
+
+#' Plot metagene by regions
+#'
+#' @param txDT data.table. As generated with tx_makeDT_*() functions.
+#' @param geneAnnot GRanges. Gene annotation as loaded with tx_load_bed()
+#' @param colVars character. Names of columns to be displayed in metagene plot
+#' @param nBins_5UTR
+#' @param nBins_CDS
+#' @param nBins_3UTR
+#' @param summ_fun
+#' @param smooth logical. Set to FALSE for not smoothing with spline
+#' @param spar numeric. Smoothing parameter, typically (but not necessarily) in (0,1].
+#' Check stats::smooth.spline
+#' @param nCores integer. Number of cores to use to run function.
+#' @param plot_type character. Type of plot to be output, either "lineplot" or
+#' "boxplot".
+#'
+#' @return ggplot
+#' @export
+tx_plot_metageneRegions <- function(txDT, geneAnnot, colVars, nBins_5UTR,
+                                    nBins_CDS = NULL, nBins_3UTR = NULL, summ_fun = "mean",
+                                    smooth = TRUE, spar = 0.3, nCores = 1, plot_type = "lineplot"){
+    if(!all(colVars %in% names(txDT))){
+        stop("colVars: ", paste(colVars[!colVars %in% names(txDT)],
+                                collapse = ", "), " are not present in txDT")
+    }
+    if(is.null(nBins_CDS)){nBins_CDS <- nBins_5UTR * 9}
+    if(is.null(nBins_3UTR)){nBins_3UTR <- nBins_5UTR * 9}
+    metaGeneMatrix <- tx_get_metageneRegions(txDT = txDT, geneAnnot = geneAnnot,
+                                             colVars = colVars, nBins_5UTR = nBins_5UTR,
+                                             nBins_CDS = nBins_CDS,
+                                             nBins_3UTR = nBins_3UTR, nCores = nCores)
+    hlp_plot_metageneRegions(metaGeneMatrix = metaGeneMatrix, colVars = colVars,
+                             nBins_5UTR = nBins_5UTR, nBins_CDS = nBins_CDS,
+                             nBins_3UTR = nBins_3UTR, summ_fun = summ_fun,
+                             smooth = smooth, spar = spar, plot_type = plot_type)
+}
+
+#' Plot metagene exons
+#'
+#' @param txDT
+#' @param colVars
+#' @param nBins
+#' @param geneAnnot
+#' @param rm_NArows
+#' @param nCores
+#' @param summ_fun
+#' @param smooth
+#' @param spar
+#' @param plot_type
+#' @param xLabelJump Number of bins to be skipped for label plotting
+#'
+#' @return ggplot
+#' @export
+tx_plot_metageneExons <- function(txDT, colVars, nBins, geneAnnot = NULL,
+                                  rm_NArows = TRUE, nCores = 1, summ_fun = "mean",
+                                  smooth = TRUE, spar = 0.3, plot_type = "lineplot",
+                                  xLabelJump = 10){
+    tmpMG <- tx_get_metageExons(txDT = txDT, colVars = colVars, nBins = nBins, geneAnnot = geneAnnot, nCores = nCores)
+    metageneBinNames <- paste("exonBin", seq(nBins), sep = " ")
+    metageneBinLevls <- paste("exonBin", seq(nBins), sep = "_")
+    if(plot_type == "lineplot"){
+        tmpO <- lapply(colVars, function(k){
+            tmpY <- apply(tmpMG[[k]], 2, FUN = summ_fun, na.rm = TRUE)
+            if(smooth){
+                tmpY[!is.na(tmpY)] <- stats::smooth.spline(tmpY[!is.na(tmpY)], spar = spar)$y
+            }
+            data.frame(value = tmpY,
+                       bin = factor(metageneBinNames, levels = metageneBinNames),
+                       var = k)
+        }) %>% do.call(what = "rbind") %>% magrittr::set_rownames(NULL)
+        ggplot2::ggplot(tmpO, ggplot2::aes(x = tmpO$bin, y = tmpO$value, group = tmpO$var, colour = tmpO$var)) +
+            ggplot2::geom_line(ggplot2::aes(x = tmpO$bin), size = 1) +
+            ggplot2::scale_x_discrete(limits = metageneBinNames,
+                                      breaks = metageneBinNames[c(1, seq(0, length(metageneBinNames), xLabelJump))]) +
+            ggplot2::theme_minimal() +
+            ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1)) +
+            ggplot2::xlab("Summarizing Bins") +
+            ggplot2::ylab("Value") +
+            ggplot2::geom_vline(xintercept = "CDS start", col = "black", linetype = "dashed") +
+            ggplot2::geom_vline(xintercept = "CDS end", col = "black", linetype = "dashed") +
+            ggplot2::ggtitle("Metagene exons") +
+            ggplot2::theme(legend.position="bottom")
+    }else if(plot_type == "boxplot"){
+        tmpO <- lapply(colVars, function(k){
+            tidyr::pivot_longer(data = data.frame(tmpMG[[k]]), names_to = "bin",
+                                values_to = "value", cols = dplyr::everything()) %>% cbind(var = k)
+        }) %>% do.call(what = "rbind") %>% data.frame()
+        tmpO$bin <- factor(tmpO$bin, levels = metageneBinLevls)
+        ggplot2::ggplot(tmpO, ggplot2::aes(x = tmpO$bin, y = tmpO$value, colour = tmpO$var)) +
+            ggplot2::geom_boxplot(outlier.colour = NA) +
+            ggplot2::facet_grid(tmpO$var ~ .) +
+            ggplot2::scale_x_discrete(limits = levels(tmpO$bin),
+                                      breaks = c("CDS start", "CDS end")) +
+            ggplot2::theme_bw() +
+            ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1)) +
+            ggplot2::xlab("Summarizing Bins") +
+            ggplot2::ylab("Value") +
+            ggplot2::geom_vline(xintercept = "CDS start", col = "black", linetype = "dashed") +
+            ggplot2::geom_vline(xintercept = "CDS end", col = "black", linetype = "dashed") +
+            ggplot2::ggtitle("Metagene codifying genes") +
+            ggplot2::theme(legend.position="bottom")
+    }else{
+        stop("'plot_type' argument must be either 'lineplot' or 'boxplot'")
+    }
 }

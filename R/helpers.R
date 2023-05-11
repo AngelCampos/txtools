@@ -663,6 +663,91 @@ hlp_getVectorElements <- function(x, start, end){
 }
 get_VectorElements <- Vectorize(hlp_getVectorElements, c("start", "end"), SIMPLIFY = FALSE)
 
+# Plot helpers ###############
+
+#' Plot an extracted metaGeneMatrix
+#'
+#' It plots an extracted metagene matrix from get_metageneRegions(). Useful
+#' when modifying the metagene matrix, like filtering genes out.
+#'
+#' Note It must have the same nBins arguments as the ones used to generate the
+#' metagene matrix.
+#'
+#' @param metaGeneMatrix
+#' @param colVars
+#' @param nBins_5UTR
+#' @param nBins_CDS
+#' @param nBins_3UTR
+#' @param summ_fun
+#' @param smooth
+#' @param spar
+#' @param plot_type character. Either 'lineplot' or 'boxplot'
+#' @param lwd numeric. Line width for line plot
+#'
+#' @return
+#' @export
+#'
+#' @examples
+hlp_plot_metageneRegions <- function(metaGeneMatrix, colVars, nBins_5UTR,
+                                     nBins_CDS = NULL, nBins_3UTR = NULL, summ_fun = "mean",
+                                     smooth = TRUE, spar = 0.3, plot_type = "lineplot", lwd = 1){
+    metageneBinNames <- c(paste("UTR5", seq(nBins_5UTR), sep = "_"),
+                          paste("CDS", seq(nBins_CDS), sep = "_"),
+                          paste("UTR3", seq(nBins_3UTR), sep = "_"))
+    metageneBinLevls <- c(paste("UTR5", seq(nBins_5UTR), sep = "_"), "CDS start",
+                          paste("CDS", seq(nBins_CDS), sep = "_"), "CDS end",
+                          paste("UTR3", seq(nBins_3UTR), sep = "_"))
+    if(plot_type == "lineplot"){
+        tmpO <- lapply(colVars, function(k){
+            tmpY <- apply(metaGeneMatrix[[k]], 2, FUN = summ_fun, na.rm = TRUE)
+            if(smooth){
+                tmpY[!is.na(tmpY)] <- stats::smooth.spline(tmpY[!is.na(tmpY)], spar = spar)$y
+            }
+            data.frame(value = tmpY,
+                       bin = factor(metageneBinNames, levels = metageneBinLevls),
+                       var = k)
+        }) %>% do.call(what = "rbind") %>% magrittr::set_rownames(NULL)
+
+        tmpP <- lapply(colVars, function(k){
+            data.frame(value = NA, bin = factor(c("CDS start", "CDS end"),
+                                                levels = metageneBinLevls), var = k)
+        }) %>% do.call(what = "rbind") %>% rbind(tmpO)
+
+        ggplot2::ggplot(tmpP, ggplot2::aes(x = tmpP$bin, y = tmpP$value, group = tmpP$var, colour = tmpP$var)) +
+            ggplot2::geom_line(ggplot2::aes(x = tmpP$bin), size = lwd) +
+            ggplot2::scale_x_discrete(limits = levels(tmpP$bin),
+                                      breaks = c("CDS start", "CDS end")) +
+            ggplot2::theme_minimal() +
+            ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1)) +
+            ggplot2::xlab("Summarizing Bins") +
+            ggplot2::ylab("Value") +
+            ggplot2::geom_vline(xintercept = "CDS start", col = "black", linetype = "dashed") +
+            ggplot2::geom_vline(xintercept = "CDS end", col = "black", linetype = "dashed") +
+            ggplot2::ggtitle("Metagene codifying genes") +
+            ggplot2::theme(legend.position = "bottom")
+    }else if(plot_type == "boxplot"){
+        tmpO <- lapply(colVars, function(k){
+            tidyr::pivot_longer(data = data.table::data.table(metaGeneMatrix[[k]]), names_to = "bin",
+                                values_to = "value", cols = dplyr::everything()) %>% cbind(var = k)
+        }) %>% do.call(what = "rbind") %>% data.frame()
+        tmpO$bin <- factor(tmpO$bin, levels = metageneBinLevls)
+        ggplot2::ggplot(tmpO, ggplot2::aes(x = tmpO$bin, y = tmpO$value, colour = tmpO$var)) +
+            ggplot2::geom_boxplot(outlier.colour = NA) +
+            ggplot2::facet_grid(tmpO$var ~ .) +
+            ggplot2::scale_x_discrete(limits = levels(tmpO$bin),
+                                      breaks = c("CDS start", "CDS end")) +
+            ggplot2::theme_bw() +
+            ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, hjust = 1)) +
+            ggplot2::xlab("Summarizing Bins") +
+            ggplot2::ylab("Value") +
+            ggplot2::geom_vline(xintercept = "CDS start", col = "black", linetype = "dashed") +
+            ggplot2::geom_vline(xintercept = "CDS end", col = "black", linetype = "dashed") +
+            ggplot2::ggtitle("Metagene codifying genes") +
+            ggplot2::theme(legend.position = "bottom")
+    }else{
+        stop("'plot_type' argument must be either 'lineplot' or 'boxplot'")
+    }
+}
 
 # tx_add_XXX() #################################################################
 
@@ -1132,6 +1217,11 @@ hlp_splLog <- function(iGene, GA_GR, splDT){
 
 hlp_splLog_v <- Vectorize(hlp_splLog, vectorize.args = "iGene", SIMPLIFY = FALSE)
 
+warn_nCores <- function(nCores){
+    if(nCores == 1){
+        cat("Running using 1 core.\n Consider increasing the ",
+            "'nCores' argument if function takes too long")}
+}
 
 ## usethis namespace: start
 #' @importFrom lifecycle deprecated
