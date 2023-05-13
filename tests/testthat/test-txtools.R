@@ -5,6 +5,7 @@ library(GenomicAlignments)
 library(magrittr)
 
 # Loading demo data
+NCORES <- 1
 bamFile <- system.file("extdata", "example_hg19.bam", package = "txtools")
 bedFile <- system.file("extdata", "twoUCSCgenes_hg19.bed", package = "txtools")
 reads <- txtools::tx_load_bam(bamFile, loadSeq = T, verbose = F,
@@ -14,6 +15,7 @@ txReads <- txtools::tx_reads(reads, geneAnnot, withSeq = T, verbose = F) %>%
     suppressWarnings()
 unAssigned_demo <- tx_getUnassignedAlignments()
 DTL <- txtools::tx_makeDT_covNucFreq(txReads, geneAnnot)
+
 # Tests ########################################################################
 # Length of txReads
 testthat::expect_equal(length(txReads), 2)
@@ -26,7 +28,6 @@ testthat::expect_equivalent(DTL[DTL$gene == "uc003lam.1",]$txcoor, 1:1924)
 # Test for strand of gene
 testthat::expect_identical(unique(DTL[DTL$gene == "uc003lam.1",]$strand), as.factor("-"))
 testthat::expect_identical(unique(DTL[DTL$gene == "uc010nap.1",]$strand), as.factor("-"))
-
 
 # Quick example code ###########
 
@@ -43,7 +44,7 @@ dm3_PEreads <- tx_load_bam(file = PE_BAM_file, pairedEnd = TRUE, loadSeq = T, ve
 reads_PE <- tx_reads(reads = dm3_PEreads,
                      geneAnnot = dm3_geneAnnot,
                      withSeq = T,
-                     nCores = 2,
+                     nCores = NCORES,
                      minReads = 1,
                      verbose = FALSE) %>% suppressWarnings()
 

@@ -27,29 +27,28 @@ knitr::opts_chunk$set(
 )
 ```
 
+# Introduction
+
 The following is a quick but in-depth tutorial showing all of txtools 'core' 
 functions.
 
 We will show how to:
 
-1. txtools introduction
-2. Load read-alignments data, and the genomic and transcriptomic reference 
+1. Load read-alignments data, and the genomic and transcriptomic reference 
 files into R.
-3. Assign alignments to genes.
-4. Summarize mapped-reads into different kinds of tables.
-5. Use tx_add_* functions to add useful data and calculated metrics to the 
+2. Assign alignments to genes.
+3. Summarize mapped-reads into different kinds of tables.
+4. Use tx_add_* functions to add useful data and calculated metrics to the 
 summarized tables.
-6. Plot regions and analyses results using the tx_plot_* functions family.
-7. Use tx_get_*() functions to extract non-standard information structures
+5. Plot regions and analyses results using the tx_plot_* functions family.
+6. Use tx_get_*() functions to extract non-standard information structures
 from txtools tables.
-8. Ise tx_test_*() functions to apply statiscal testing to detect 
+7. Use tx_test_*() functions to apply statiscal testing to detect 
 transcriptomics positions that have unexpected values at either continuous or
 count data variables.
 
-# Introduction
-
 The aim of txtools is to provide a versatile framework to analyze transcriptomic
-data in a quick and simple manner. To accomplish this we propose the processing 
+data in a simple manner. To accomplish this we propose the processing 
 of data in two stages:
 
 1. Transfer read-alignments from a **genomic** to a **transcriptomic**
@@ -59,17 +58,22 @@ coordinates space.
 ![Fig 1. txtools main processing workflow](../man/figures/readme_1.png)
 
 The intermediate output in Step 1 is of class `GRanges` from the 
-`r BiocStyle::Biocpkg("GenomicRanges")` package, while the second and final 
-output is a table structure.
+`r BiocStyle::Biocpkg("GenomicRanges")` package, while that of Step 2, and final 
+output of the main txtools processing pipeline, is of class `data.table` from 
+the `r CRANpkg("data.table")` package, which is an extension of the `data.frame` class.
 
-**txtool's current development has focused on the more common table structure.**
-
+> Current txtools development has favored functionality on the more common 
+table structure, as it offers extendability and versatility but at the price
+of big memory allocation. This should be considered when developing analysis 
+pipelines using txtools. Users will benefit benefit of not using the whole 
+transcriptome at early development stages, unless necessary, and instead use 
+a subset of the gene annotation while developing the analysis pipeline and only
+at late stages run over the complete transcriptome.
 
 *For this example we will use the data of the `r BiocStyle::Biocpkg("pasillaBamSubset")`
 package. A subset of reads aligned to the chromosome 4 of D. melanogaster.*
 
 ```{r}
-# devtools::load_all()
 library(txtools)
 library(pasillaBamSubset)
 ```
@@ -85,7 +89,7 @@ To work with the reads in the transcriptomic space, txtools requires a
 *that the genes in the annotation consist of a single exon block.*
 
 ```{r}
-BED_path <- tx_dm3_geneAnnot() # geneAnnotation built-in txtools
+BED_path <- tx_dm3_geneAnnot() # geneAnnot built-in txtools
 geneAnnot <- tx_load_bed(BED_path)
 ```
 
@@ -255,6 +259,8 @@ reference sequence.
 specific nucleotide with respect to a reference nucleotide. e.g. the
 rate at which 'T' was incorporated (or misread) in the RNA instead
 of a 'C'.
+- `tx_add_geneRegion()`: Adds the gene region to which the positions correspond:
+5'UTR, CDS, 3'UTR, or non-coding.
 
 *The result of using a `tx_add_()` function is the same txDT input with the*
 *difference of a new column of the desired metric, hence it is possible to*
@@ -273,7 +279,8 @@ DT_covNucFreq <- DT_covNucFreq %>%
     tx_add_nucTotal() %>% 
     tx_add_misincCount() %>% 
     tx_add_misincRate() %>% 
-    tx_add_misincRateNucSpec(refNuc = "C", misNuc = "T")
+    tx_add_misincRateNucSpec(refNuc = "C", misNuc = "T") %>% 
+    tx_add_geneRegion(geneAnnot = geneAnnot)
 ```
 
 ## Adding unique position identifier
@@ -368,16 +375,14 @@ the transcriptomic range to be plot.
 It can be used to plot the whole gene as bellow:
 
 ```{r}
-tx_plot_staEndCov(DT_covNucFreq, gene = DT_covNucFreq$gene[1],
-                  show_yLabels = FALSE, bar_border = FALSE)
+tx_plot_staEndCov(DT_covNucFreq, gene = "NM_001272152", show_yLabels = FALSE, bar_border = FALSE)
 ```
 
 Or part of the gene specifying the relative coordinates range in the `txRange`
 argument.
 
 ```{r}
-tx_plot_staEndCov(DT_covNucFreq, gene = DT_covNucFreq$gene[1], txRange = 1000:1050,
-                  show_yLabels = FALSE, bar_border = FALSE)
+tx_plot_staEndCov(DT_covNucFreq, gene = "NM_001272152", txRange = 330:360)
 ```
 
 
@@ -388,9 +393,9 @@ shows in color the nucleotides that are not matching the reference sequence.
 It is useful to visualize misincorporation rate, which can be originated due to
 a SNP, chemical treatment on RNA or (less informative) sequencing errors.
 
-*Importantly, this plot can show the coverage due to inserts, which has not been assigned
-a nucleotide sequence, but is the gap between read1 and read2 in paired-end
-libraries*
+> Importantly, this plot show the coverage due to inserts, which has not been
+assigned a nucleotide identity, as is the unsequenced gap between read1 and
+read2 in paired-end libraries
 
 
 ```{r}
@@ -424,11 +429,23 @@ tx_plot_ggseqlogo(DT_covNucFreq, logi_col = "DRACH_motif_center", upFlank = 5, d
 and the column names of the metrics to be plot.
 
 ```{r}
-tx_plot_metageneAtCDS(txDT = DT_covNucFreq, geneAnnotation = geneAnnot,
-                      colVars = c("start_5p", "end_3p", "cov"), CDS_align = "start", 
-                      upFlank = 500, doFlank = 1000, normalize = T)
+tx_plot_metageneAtCDS(txDT = DT_covNucFreq, geneAnnot = geneAnnot,
+                      colVars = c("A", "G", "C", "T"), CDS_align = "spliceSite", 
+                      upFlank = 200, doFlank = 200)
+tx_plot_metageneAtCDS(txDT = DT_covNucFreq, geneAnnot = geneAnnot,
+                      colVars = c("cov", "nucTotal"), CDS_align = "spliceSite", 
+                      upFlank = 100, doFlank = 100)
 ```
 
+```{r}
+tx_plot_metageneExons(txDT = DT_covNucFreq, colVars = c("A", "T", "G", "C"), nBins = 30, geneAnnot = geneAnnot)
+```
+
+```{r}
+tx_plot_metageneRegions(txDT = DT_covNucFreq, colVars = c("cov", "nucTotal"),
+                        geneAnnot = geneAnnot, nBins_5UTR = 40, nBins_CDS = 80,
+                        nBins_3UTR = 80, summ_fun = "mean")
+```
 
 # Get functions `tx_get_*()`
 
@@ -486,8 +503,8 @@ Bellow is an example in which we retrieve the values of coverage at the start
 of the CDS as well as upstream and downstream flanks.
 
 ```{r}
-tx_get_metageneAtCDS(txDT = DT_covNucFreq, geneAnnotation = geneAnnot,
-                      colVars = c("cov"), CDS_align = "start", 
+tx_get_metageneAtCDS(txDT = DT_covNucFreq, geneAnnot = geneAnnot,
+                      colVars = c("cov", "nucTotal"), CDS_align = "start", 
                       upFlank = 3, doFlank = 5)
 ```
 
