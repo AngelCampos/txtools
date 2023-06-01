@@ -1570,7 +1570,7 @@ tx_get_metageneRegions <- function(txDT, geneAnnot, colVars, nBins_5UTR,
     geneAnnot <- geneAnnot[geneAnnot$name %in% genesDT]
     if(!("geneRegion" %in% names(txDT))){
         cat("Gene regions are not annotated in txDT \nAnnotating gene regions\n")
-        txDT <- tx_add_geneRegions(txDT, geneAnnot, nCores = nCores)
+        txDT <- tx_add_geneRegion(txDT, geneAnnot, nCores = nCores)
     }
     # Remove genes with small regions
     tmpR <- lapply(split(txDT$geneRegion, txDT$gene), FUN = "table") %>% do.call(what = "rbind") %>% data.frame()
