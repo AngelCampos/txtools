@@ -7,8 +7,8 @@
 tx_add_siteAnnotation(DT, GRanges, colName, nCores = 1)
 }
 \arguments{
-\item{DT}{data.table. Output of txtools data.tables with coverage information
-as output of tx_coverageDT() and tx_covNucFreqDT()}
+\item{DT}{data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
+\code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.}
 
 \item{GRanges}{GRanges. Ranges of length 1, to be marked in the data.table}
 

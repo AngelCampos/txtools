@@ -7,7 +7,8 @@
 tx_add_pos(DT, sep = ":", check_uniq = T)
 }
 \arguments{
-\item{DT}{data.table.}
+\item{DT}{data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
+\code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.}
 
 \item{sep}{character. Separator between gene and txcoor, by deafult colon sign.}
 

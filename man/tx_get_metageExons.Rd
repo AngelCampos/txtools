@@ -14,10 +14,13 @@ tx_get_metageExons(
 )
 }
 \arguments{
+\item{txDT}{data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
+\code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.}
+
 \item{nCores}{}
 }
 \value{
-matrix
+list of matrices for each colVar
 }
 \description{
 Get metagene by exons

@@ -16,9 +16,8 @@ tx_add_rollingMean(
 )
 }
 \arguments{
-\item{DT}{data.table. Output of txtools data.tables with coverage information
-as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT}}
-functions.}
+\item{DT}{data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
+\code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.}
 
 \item{colName}{character. Column to which rolling mean will be applied}
 
@@ -37,6 +36,9 @@ is less then an NA is output in that position. To output all positions assign 0.
 
 \item{nCores}{integer. Number of cores to use to run function. Multicore
 capability is not available in Windows OS.}
+}
+\value{
+data.table
 }
 \description{
 Add rolling mean

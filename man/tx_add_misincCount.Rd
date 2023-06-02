@@ -7,9 +7,8 @@
 tx_add_misincCount(DT)
 }
 \arguments{
-\item{DT}{data.table. A data.table object. See
-\code{\link{tx_makeDT_coverage}}, \code{\link{tx_makeDT_nucFreq}} or
-\code{\link{tx_makeDT_covNucFreq}} functions.}
+\item{DT}{data.table. A table as output by the
+\code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.}
 }
 \value{
 data.table

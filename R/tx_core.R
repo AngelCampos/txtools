@@ -289,7 +289,7 @@ tx_reads <- function(reads, geneAnnot, minReads = 50, withSeq = FALSE,
 #' Retrieve the read mappings that were not assigned to any gene by
 #' \code{\link{tx_reads}}
 #'
-#' @return
+#' @return GAlignments
 #' @export
 #'
 tx_getUnassignedAlignments <- function(){
@@ -329,10 +329,11 @@ tx_extend_UTR <- function(GR, ext_5p = 0, ext_3p = 0){
 
 #' Cut gene annotation by txDT's genes
 #'
-#' @param txDT
+#' @param txDT data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
+#' \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.
 #' @param geneAnnot
 #'
-#' @return txDT
+#' @return data.table
 #' @export
 tx_cut_geneAnnotBytxDT <- function(txDT, geneAnnot){
     geneAnnot[match(unique(txDT$gene), geneAnnot$name)]
@@ -624,7 +625,7 @@ tx_cutEnds_DT <- function(DT, cut_5p = 0, cut_3p = 0){
 #' @param DT data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
 #' \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.
 #'
-#' @return
+#' @return data.table
 #' @export
 tx_orderDT <- function(DT){
     DT$chr <- factor(as.character(DT$chr))
@@ -694,7 +695,7 @@ tx_complete_DT <- function(DT, geneAnnot, genome = NULL, nCores = 1){
 #' @param bp
 #' @param nCores
 #'
-#' @return
+#' @return data.table
 #' @export
 tx_shift_geneWise <- function(DT, colToShift, direction, bp, nCores = 1){
     if(!colToShift %in% colnames(DT)){
@@ -725,7 +726,7 @@ tx_shift_geneWise <- function(DT, colToShift, direction, bp, nCores = 1){
 #' @param type
 #' @param nCores
 #'
-#' @return
+#' @return list
 #' @export
 tx_unifyTxDTL <- function(txDTL, geneAnnot = NULL, genome = NULL, type = "intersection", nCores = 1){
     if(!all(Reduce(intersect, lapply(txDTL, colnames)) == Reduce(union, lapply(txDTL, colnames)))){
@@ -873,12 +874,12 @@ tx_add_misincRate <- function(DT, minNucReads = 20, addMisinandTotalCols = FALSE
 #'
 #' @param DT data.table. A table as output by the
 #' \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.
-#' @param refNuc Reference nucleotide See \code{\link{tx_add_refSeq}}()
+#' @param refNuc Reference nucleotide See \code{\link{tx_add_refSeqDT}}()
 #' @param misNuc Misincorporated nucleotide
 #' @param minNucReads Minimum number of nucleotides read needed to calculate
 #' misincorporation rate
 #'
-#' @return
+#' @return data.table
 #' @export
 #'
 #' @aliases tx_add_misincorpRateNucSpec
@@ -1168,7 +1169,7 @@ tx_add_motifPresence <- function (DT, motif, nucPositions = "all",
 #' @param nCores integer. Number of cores to use to run function. Multicore
 #' capability is not available in Windows OS.
 #'
-#' @return
+#' @return data.table
 #' @export
 tx_add_rollingMean <- function(DT, colName, winSize, newColName = NULL,
                                fill = NA, align = "center", minCov = 20, nCores = 1){
@@ -1266,7 +1267,7 @@ tx_add_geneRegion <- function(txDT, geneAnnot, nCores = 1){
 #' @param nCores integer. Number of cores to use to run function. Multicore
 #' capability is not available in Windows OS.
 #'
-#' @return
+#' @return data.table
 #' @export
 #'
 #' @examples
@@ -1331,7 +1332,7 @@ tx_add_exonPlace <- function(txDT, geneAnnot, nCores = 1){
 #' \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.
 #' @param round_dig
 #'
-#' @return txDT
+#' @return data.table
 #' @export
 tx_add_relTxPos <- function(txDT, round_dig = 3){
     # TODO: Check txDT integrity
@@ -1392,7 +1393,7 @@ tx_get_flanksFromLogicAnnot <- function(DT, logi_col, values_col, upFlank, doFla
 #' @param doFlank
 #' @param addNames
 #'
-#' @return
+#' @return character
 #' @export
 tx_get_flankSequence <- function(DT, logi_col, upFlank, doFlank, addNames = FALSE){
     if(!is.logical(DT[[logi_col]])){stop("column ", logi_col, " must be of class 'logical'.")}
@@ -1438,12 +1439,12 @@ tx_get_geneLengths <- function(DT){
 #' @param txDT data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
 #' \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.
 #' @param geneAnnot
-#' @param colVars
+#' @param colVars character. Names of columns for which values will be extracted
 #' @param CDS_align
 #' @param upFlank
 #' @param doFlank
 #'
-#' @return
+#' @return list of matrices for each colVar
 #' @export
 tx_get_metageneAtCDS <- function(txDT, geneAnnot, colVars, CDS_align, upFlank, doFlank){
     check_GA_txDT_compat(txDT, geneAnnot)
@@ -1508,7 +1509,7 @@ tx_get_metageneAtCDS <- function(txDT, geneAnnot, colVars, CDS_align, upFlank, d
 #' @param outFile
 #' @param nCores
 #'
-#' @return
+#' @return character
 #' @export
 tx_get_transcriptSeqs <- function(genome, geneAnnot, outFile = NULL, nCores = 1){
     check_GA_genome_chrCompat(geneAnnot, genome)
@@ -1549,10 +1550,8 @@ tx_get_transcriptSeqs <- function(genome, geneAnnot, outFile = NULL, nCores = 1)
 #' @param nBins_3UTR
 #' @param nCores
 #'
-#' @return
+#' @return list of matrices for each colVar
 #' @export
-#'
-#' @examples
 tx_get_metageneRegions <- function(txDT, geneAnnot, colVars, nBins_5UTR,
                                    nBins_CDS = NULL, nBins_3UTR = NULL,
                                    nCores = 1){
@@ -1613,7 +1612,7 @@ tx_get_metageneRegions <- function(txDT, geneAnnot, colVars, nBins_5UTR,
 #' @param rm_NArows
 #' @param nCores
 #'
-#' @return matrix
+#' @return list of matrices for each colVar
 #' @export
 tx_get_metageExons <- function(txDT, colVars, nBins, geneAnnot = NULL, rm_NArows = TRUE, nCores = 1){
     if(!"exonNumber" %in% names(txDT)){
@@ -1653,7 +1652,7 @@ tx_get_metageExons <- function(txDT, colVars, nBins, geneAnnot = NULL, rm_NArows
 #' @param test_groups
 #' @param minTrials
 #'
-#' @return
+#' @return data.table
 #' @export
 tx_test_LRTedgeR <- function(DTL, tVar, sVar, test_groups, minTrials = 50){
     DTL <- tx_unifyTxDTL(DTL)
@@ -1737,7 +1736,7 @@ tx_test_LRTedgeR <- function(DTL, tVar, sVar, test_groups, minTrials = 50){
 #' @param test_na.rm
 #' @param ...
 #'
-#' @return
+#' @return data.table
 #' @export
 tx_test_ttest <- function(DTL, cont_var, test_groups, test_na.rm = FALSE, ...){
     sapply(DTL, function(x) check_DThasCol(x, cont_var))
@@ -1805,7 +1804,7 @@ tx_dm3_geneAnnot <- function(){
 
 #' Load data - Case study #2
 #'
-#' @return
+#' @return character
 #' @export
 #'
 tx_data_caseStudy2 <- function(){
@@ -1819,7 +1818,7 @@ tx_data_caseStudy2 <- function(){
 #'
 #' Sk1 genome. Source Schwartz et al., 2013 https://doi.org/10.1016/j.cell.2013.10.047
 #'
-#' @return
+#' @return character
 #' @export
 #'
 sc_faGenome <- function(){
@@ -1835,7 +1834,7 @@ sc_faGenome <- function(){
 #' Thermococcus kodakarensis complete genome
 #' Source: https://www.ncbi.nlm.nih.gov/assembly/GCF_000009965.1/
 #'
-#' @return
+#' @return character
 #' @export
 tk_faGenome <- function(){
     tmpF <- tempfile()
@@ -1849,7 +1848,7 @@ tk_faGenome <- function(){
 #'
 #' Download rRNA gene annotation of Saccharomyces cerevisae strain SK1 to temporary file
 #'
-#' @return
+#' @return character
 #' @export
 sc_geneAnnot <- function(){
     tmpF <- tempfile()
@@ -1866,7 +1865,7 @@ sc_geneAnnot <- function(){
 #'
 #' Source: UCSC genes https://genome.ucsc.edu/cgi-bin/hgTables
 #'
-#' @return
+#' @return character
 #' @export
 mm_geneAnnot <- function(){
     tmpF <- tempfile()
@@ -1880,7 +1879,7 @@ mm_geneAnnot <- function(){
 #'
 #' Download T. kodakarensis rRNA gene annotation to temporary file
 #' Source:
-#' @return
+#' @return character
 #' @export
 tk_geneAnnot <- function(){
     tmpF <- tempfile()

@@ -7,7 +7,8 @@
 tx_add_misincRate(DT, minNucReads = 20, addMisinandTotalCols = FALSE)
 }
 \arguments{
-\item{DT}{data.table}
+\item{DT}{data.table. A table as output by the
+\code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.}
 
 \item{minNucReads}{Minimum number of nucleotides read needed to calculate
 misincorporation rate}

@@ -6,6 +6,9 @@
 \usage{
 tk_geneAnnot()
 }
+\value{
+character
+}
 \description{
 Download T. kodakarensis rRNA gene annotation to temporary file
 Source:

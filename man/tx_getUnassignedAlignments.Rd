@@ -6,6 +6,9 @@
 \usage{
 tx_getUnassignedAlignments()
 }
+\value{
+GAlignments
+}
 \description{
 Retrieve the read mappings that were not assigned to any gene by
 \code{\link{tx_reads}}

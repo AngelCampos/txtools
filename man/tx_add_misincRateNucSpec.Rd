@@ -8,12 +8,18 @@
 tx_add_misincRateNucSpec(DT, refNuc, misNuc, minNucReads = 20)
 }
 \arguments{
-\item{refNuc}{Reference nucleotide}
+\item{DT}{data.table. A table as output by the
+\code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.}
+
+\item{refNuc}{Reference nucleotide See \code{\link{tx_add_refSeqDT}}()}
 
 \item{misNuc}{Misincorporated nucleotide}
 
 \item{minNucReads}{Minimum number of nucleotides read needed to calculate
 misincorporation rate}
+}
+\value{
+data.table
 }
 \description{
 Calculates the misincorporation rate from a \bold{ref}erence nucleotide to an

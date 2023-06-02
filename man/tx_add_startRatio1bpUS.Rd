@@ -7,7 +7,8 @@
 tx_add_startRatio1bpUS(DT, minCov = 50)
 }
 \arguments{
-\item{DT}{data.table. As generated with tx_makeDT_*() functions.}
+\item{DT}{data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
+\code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.}
 
 \item{minCov}{numeric. Minimum coverage required to output ratio. If coverage
 is less then an NA is output in that position.}

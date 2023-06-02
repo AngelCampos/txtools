@@ -7,7 +7,13 @@
 tx_shift_geneWise(DT, colToShift, direction, bp, nCores = 1)
 }
 \arguments{
+\item{DT}{data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
+\code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.}
+
 \item{nCores}{}
+}
+\value{
+data.table
 }
 \description{
 Shift column in txDT

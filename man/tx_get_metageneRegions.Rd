@@ -15,7 +15,13 @@ tx_get_metageneRegions(
 )
 }
 \arguments{
+\item{txDT}{data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
+\code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.}
+
 \item{nCores}{}
+}
+\value{
+list of matrices for each colVar
 }
 \description{
 Summarizes the values of a column(s) into a selected number of bins per

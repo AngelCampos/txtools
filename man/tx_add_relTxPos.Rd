@@ -7,10 +7,13 @@
 tx_add_relTxPos(txDT, round_dig = 3)
 }
 \arguments{
+\item{txDT}{data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
+\code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.}
+
 \item{round_dig}{}
 }
 \value{
-txDT
+data.table
 }
 \description{
 Adds a numeric variable which represents the relative position of the

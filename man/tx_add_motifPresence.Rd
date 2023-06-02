@@ -14,9 +14,8 @@ tx_add_motifPresence(
 )
 }
 \arguments{
-\item{DT}{data.table. Output of txtools data.tables with coverage information
-as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT}}
-functions.}
+\item{DT}{data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
+\code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.}
 
 \item{motif}{character. A word which depicts a DNA sequence motif to annotate.
 The function allows IUPAC ambiguity codes, e.g. R={A|G}.}

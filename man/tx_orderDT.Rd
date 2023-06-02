@@ -7,7 +7,11 @@
 tx_orderDT(DT)
 }
 \arguments{
-\item{DT}{}
+\item{DT}{data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
+\code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.}
+}
+\value{
+data.table
 }
 \description{
 Orders a txDT by gene name and transcriptomic coordinate (txcoor).

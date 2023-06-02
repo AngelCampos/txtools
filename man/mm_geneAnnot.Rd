@@ -6,6 +6,9 @@
 \usage{
 mm_geneAnnot()
 }
+\value{
+character
+}
 \description{
 Download mm9 gene annotation to temporary file.
 Selected genes (toy example).

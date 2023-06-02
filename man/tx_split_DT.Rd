@@ -7,7 +7,8 @@
 tx_split_DT(DT, dropEmpty = TRUE)
 }
 \arguments{
-\item{DT}{data.table. Merged data.table as output by tx_merge_DT()}
+\item{DT}{data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
+\code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.}
 
 \item{dropEmpty}{logical. Drops empty list elements, which occurs when data
 of genes have been entirely removed, but kept listed in the x$gene factor levels.}

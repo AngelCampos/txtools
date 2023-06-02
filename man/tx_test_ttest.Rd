@@ -9,6 +9,9 @@ tx_test_ttest(DTL, cont_var, test_groups, test_na.rm = FALSE, ...)
 \arguments{
 \item{...}{}
 }
+\value{
+data.table
+}
 \description{
 Apply a t-test per nucleotide position separating by groups over a txDT list.
 At least 2 samples in each group are needed.

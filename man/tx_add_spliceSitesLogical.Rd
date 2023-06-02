@@ -7,9 +7,8 @@
 tx_add_spliceSitesLogical(txDT, geneAnnot)
 }
 \arguments{
-\item{txDT}{data.table. Output of txtools data.tables with coverage information
-as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT}}
-functions.}
+\item{txDT}{data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
+\code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.}
 
 \item{geneAnnot}{GenomicRanges. Gene annotation loaded via the tx_load_bed()}
 }

@@ -7,9 +7,8 @@
 tx_add_endRatio1bpUS(DT, minCov = 50)
 }
 \arguments{
-\item{DT}{data.table. Output of txtools data.tables with coverage information
-as output of \code{\link{tx_coverageDT}} \code{\link{tx_covNucFreqDT}}
-functions}
+\item{DT}{data.table. A table as output by the \code{\link{tx_makeDT_coverage}}()
+or \code{\link{tx_makeDT_covNucFreq}}() functions.}
 
 \item{minCov}{numeric. Minimum coverage required to output ratio. If coverage
 is less then an NA is output in that position. To output all positions assign 0.}

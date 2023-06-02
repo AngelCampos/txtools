@@ -7,10 +7,13 @@
 tx_cut_geneAnnotBytxDT(txDT, geneAnnot)
 }
 \arguments{
+\item{txDT}{data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
+\code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.}
+
 \item{geneAnnot}{}
 }
 \value{
-txDT
+data.table
 }
 \description{
 Cut gene annotation by txDT's genes

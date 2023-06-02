@@ -9,6 +9,9 @@ tx_test_LRTedgeR(DTL, tVar, sVar, test_groups, minTrials = 50)
 \arguments{
 \item{minTrials}{}
 }
+\value{
+data.table
+}
 \description{
 Likelihood Ratio Test
 }

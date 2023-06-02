@@ -7,7 +7,8 @@
 tx_complete_DT(DT, geneAnnot, genome = NULL, nCores = 1)
 }
 \arguments{
-\item{DT}{data.table}
+\item{DT}{data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
+\code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.}
 
 \item{geneAnnot}{GRanges. Gene annotation, gene models, as loaded using the
 \code{\link{tx_load_bed}} function.}

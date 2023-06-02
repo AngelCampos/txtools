@@ -16,9 +16,14 @@ read (nucTotal) and different to reference nucleotide (diffToRef) columns.}
 data.table
 }
 \description{
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
+
+tx_add_diffNucToRefRatio() was renamed to tx_add_misincRate()
+
 Add a column to DT of the ratio of different nucleotides to the total of
 meaningfuk nucleotide reads not counting undetermined 'N' and inserts '.'.
 }
 \seealso{
 \code{\link{tx_add_diffNucToRef}} and \code{\link{tx_add_nucTotal}}
 }
+\keyword{internal}

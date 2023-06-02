@@ -7,7 +7,15 @@
 tx_get_metageneAtCDS(txDT, geneAnnot, colVars, CDS_align, upFlank, doFlank)
 }
 \arguments{
+\item{txDT}{data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
+\code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.}
+
+\item{colVars}{character. Names of columns for which values will be extracted}
+
 \item{doFlank}{}
+}
+\value{
+list of matrices for each colVar
 }
 \description{
 Get metagene at CDS

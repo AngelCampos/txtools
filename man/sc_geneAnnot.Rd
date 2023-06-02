@@ -6,6 +6,9 @@
 \usage{
 sc_geneAnnot()
 }
+\value{
+character
+}
 \description{
 Download rRNA gene annotation of Saccharomyces cerevisae strain SK1 to temporary file
 }

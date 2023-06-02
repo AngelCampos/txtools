@@ -30,7 +30,10 @@ tx_reads_mc <- function(reads, geneAnnot, minReads = 50, withSeq = FALSE, verbos
 
 #' Add number of nucleotide reads different to the reference genome
 #'
+#' @description
 #' `r lifecycle::badge("deprecated")`
+#'
+#' tx_add_diffNucToRef() was renamed to tx_add_misincCount()
 #'
 #' Add a column to DT of the sum of nucleotide frequency different to the
 #' reference sequence counting deletions, without considering 'N's nor inserts
@@ -42,6 +45,7 @@ tx_reads_mc <- function(reads, geneAnnot, minReads = 50, withSeq = FALSE, verbos
 #'
 #' @return data.table
 #' @export
+#' @keywords internal
 tx_add_diffNucToRef <- function(DT){
     lifecycle::deprecate_warn("0.0.7", "tx_add_diffNucToRef()", "tx_add_misincCount()")
     DT <- check_DT(DT) %>% hlp_removeColumnIfPresent("diffToRef")
@@ -58,6 +62,11 @@ tx_add_diffNucToRef <- function(DT){
 
 #' Add different nucleotide reads to total ratio
 #'
+#' @description
+#' `r lifecycle::badge("deprecated")`
+#'
+#' tx_add_diffNucToRefRatio() was renamed to tx_add_misincRate()
+#'
 #' Add a column to DT of the ratio of different nucleotides to the total of
 #' meaningfuk nucleotide reads not counting undetermined 'N' and inserts '.'.
 #'
@@ -67,6 +76,7 @@ tx_add_diffNucToRef <- function(DT){
 #'
 #' @return data.table
 #' @export
+#' @keywords internal
 #'
 #' @seealso \code{\link{tx_add_diffNucToRef}} and \code{\link{tx_add_nucTotal}}
 tx_add_diffNucToRefRatio <- function(DT, addDiffandTotalCols = FALSE){
