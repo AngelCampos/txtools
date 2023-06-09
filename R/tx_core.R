@@ -192,12 +192,12 @@ tx_load_rdsDT <- function(file){
 #' To retrieve unassigned alignments use the function tx_getUnassignedAlignments()
 #'
 #' @param reads GAlignments or GAlignmentPairs. Genomic alignments to be processed
-#' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed()
+#' @param geneAnnot GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}()
 #' @param minReads integer. Minimum number of alignments required to overlap a gene
 #' @param withSeq logical. Set to TRUE if sequence should be preserved; 'reads'
 #' object should contain sequences.
 #' @param verbose logical. Set to FALSE to show less information.
-#' @param nCores integer. Number of cores to use to run function. Multi-core
+#' @param nCores integer. Number of cores to run the function with. Multi-core
 #' capability not available in Windows OS.
 #'
 #' @aliases tx_reads_mc
@@ -331,7 +331,7 @@ tx_extend_UTR <- function(GR, ext_5p = 0, ext_3p = 0){
 #'
 #' @param txDT data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
 #' \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.
-#' @param geneAnnot
+#' @param geneAnnot GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}()
 #'
 #' @return data.table
 #' @export
@@ -346,7 +346,7 @@ tx_cut_geneAnnotBytxDT <- function(txDT, geneAnnot){
 #' @param x CompressedGRangesList. Genomic Ranges list containing genomic
 #' alignments data by gene. Constructed via tx_reads().
 #' @param thr integer. Threshold for maximum width size allowed on output.
-#' @param nCores integer. Number of cores to use to run function. Multicore
+#' @param nCores integer. Number of cores to run the function with. Multicore
 #' capability is not available in Windows OS.
 #'
 #' @return CompressedGRangesList
@@ -376,7 +376,7 @@ tx_filter_maxWidth <- function(x, thr, nCores = 1){
 #' @param x CompressedGRangesList. A list containing alignments, meant to be used
 #' for the output of the \code{\link{tx_reads}} function.
 #' @param p Probabilty for each read to be sampled.
-#' @param nCores integer. Number of cores to use to run function. Multicore
+#' @param nCores integer. Number of cores to run the function with. Multicore
 #' capability not available in Windows OS.
 #'
 #' @return CompressedGRangesList.
@@ -403,13 +403,13 @@ tx_sample_GRList <- function(x, p, nCores = 1){
 #' @param x CompressedGRangesList. Genomic Ranges list containing genomic
 #' alignments data by gene. Constructed via the \code{\link{tx_reads}}
 #' function.
-#' @param geneAnnot GenomicRanges. Gene annotation loaded via the \code{\link{tx_load_bed}}
-#' @param genome list. The full reference genome sequences, as prepackaged
-#' by BSgenome, See ?BSgenome::available.genomes(); or loaded by \code{\link{tx_load_genome}}
+#' @param geneAnnot GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}()
+#' @param genome list. The full reference genome sequences, as loaded by 
+#' \code{\link{tx_load_genome}}() or prepackaged by BSgenome, see ?BSgenome::available.genomes
 #' @param fullDT logical. Set to TRUE if it is desired to output a data.table
 #' with all genes and in the same order as 'geneAnnot' object.
-#' @param nCores integer. Number of cores to use to run function.
-#'
+#' @param nCores integer. Number of cores to run the function with. Multicore
+#' capability not available in Windows OS.
 #' @return data.table
 #' @export
 #'
@@ -454,9 +454,9 @@ tx_makeDT_coverage <- function(x, geneAnnot, genome = NULL, fullDT = FALSE,
 #'
 #' @param x CompressedGRangesList. Genomic Ranges list containing genomic
 #' alignments data by gene. Constructed via the \code{\link{tx_reads}} function.
-#' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed()
-#' @param genome list. The full reference genome sequences, as prepackaged
-#' by BSgenome, See ?BSgenome::available.genomes(); or loaded by \code{\link{tx_load_genome}}
+#' @param geneAnnot GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}()
+#' @param genome list. The full reference genome sequences, as loaded by 
+#' \code{\link{tx_load_genome}}() or prepackaged by BSgenome, see ?BSgenome::available.genomes
 #' @param simplify_IUPAC string. Available options are :
 #' \itemize{
 #' \item "not": Will output the complete nucleotide frequency table including
@@ -471,8 +471,8 @@ tx_makeDT_coverage <- function(x, geneAnnot, genome = NULL, fullDT = FALSE,
 #' }
 #' @param fullDT logical. Set to TRUE if it is desired to output a data.table
 #' with all genes and in the same order as 'geneAnnot' object.
-#' @param nCores integer. Number of cores to use to run function.
-#'
+#' @param nCores integer. Number of cores to run the function with. Multicore
+#' capability not available in Windows OS.
 #' @return data.table
 #' @export
 #'
@@ -521,10 +521,10 @@ tx_makeDT_nucFreq <- function(x, geneAnnot, genome = NULL,
 #'
 #' @param x CompressedGRangesList. Genomic Ranges list containing genomic
 #' alignments data by gene. Constructed via tx_reads().
-#' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed()
+#' @param geneAnnot GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}()
 #' function.
-#' @param genome list. The full reference genome sequences, as prepackaged
-#' by BSgenome, See ?BSgenome::available.genomes(); or loaded by \code{\link{tx_load_genome}}
+#' @param genome list. The full reference genome sequences, as loaded by 
+#' \code{\link{tx_load_genome}}() or prepackaged by BSgenome, see ?BSgenome::available.genomes
 #' @param simplify_IUPAC string. Available options are :
 #' \itemize{
 #' \item "not": Will output the complete nucleotide frequency table including
@@ -538,8 +538,8 @@ tx_makeDT_nucFreq <- function(x, geneAnnot, genome = NULL,
 #' }
 #' @param fullDT logical. Set to TRUE if it is desired to output a data.table
 #' with all genes and in the same order as 'geneAnnot' object.
-#' @param nCores integer. Number of cores to use to run function.
-#'
+#' @param nCores integer. Number of cores to run the function with. Multicore
+#' capability not available in Windows OS.
 #' @return data.table
 #' @export
 #'
@@ -646,12 +646,11 @@ tx_orderDT <- function(DT){
 #'
 #' @param DT data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
 #' \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.
-#' @param geneAnnot GRanges. Gene annotation, gene models, as loaded using the
-#' \code{\link{tx_load_bed}} function.
-#' @param genome list. The full reference genome sequences, as loaded by
-#' \code{\link{tx_load_genome}}; or prepackaged by BSgenome, see
-#' \code{\link[BSgenome]{available.genomes}}
-#' @param nCores numeric
+#' @param geneAnnot GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().
+#' @param genome list. The full reference genome sequences, as loaded by 
+#' \code{\link{tx_load_genome}}() or prepackaged by BSgenome, see ?BSgenome::available.genomes
+#' @param nCores integer. Number of cores to run the function with. Multicore
+#' capability not available in Windows OS.
 #'
 #' @return data.table
 #' @export
@@ -690,11 +689,11 @@ tx_complete_DT <- function(DT, geneAnnot, genome = NULL, nCores = 1){
 #'
 #' @param DT data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
 #' \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.
-#' @param colToShift
-#' @param direction
-#' @param bp
-#' @param nCores
-#'
+#' @param colToShift character. Name of column to be shifted
+#' @param direction character. Direction of shift, either 'downstream' or 'upstream'.
+#' @param bp integer. Number of nucleotides to shift data to
+#' @param nCores integer. Number of cores to run the function with. Multicore
+#' capability not available in Windows OS. 
 #' @return data.table
 #' @export
 tx_shift_geneWise <- function(DT, colToShift, direction, bp, nCores = 1){
@@ -720,12 +719,14 @@ tx_shift_geneWise <- function(DT, colToShift, direction, bp, nCores = 1){
 
 #' Unify lists of txDTs
 #'
-#' @param txDTL
-#' @param geneAnnot
-#' @param genome
-#' @param type
-#' @param nCores
-#'
+#' @param txDTL list. A list of txDTs
+#' @param geneAnnot GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().
+#' @param genome list. The full reference genome sequences, as loaded by 
+#' \code{\link{tx_load_genome}}() or prepackaged by BSgenome, see ?BSgenome::available.genomes
+#' @param type character. Set function to apply to genes in the list of txDTs, either
+#' 'union' or 'intersection'.
+#' @param nCores integer. Number of cores to run the function with. Multicore
+#' capability not available in Windows OS. 
 #' @return list
 #' @export
 tx_unifyTxDTL <- function(txDTL, geneAnnot = NULL, genome = NULL, type = "intersection", nCores = 1){
@@ -776,11 +777,10 @@ tx_sampleByGenes <- function(txDT, size){
 #'
 #' @param DT data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
 #' \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.
-#' @param genome list. The full reference genome sequences, as prepackaged
-#' by BSgenome, See ?BSgenome::available.genomes(); or loaded by \code{\link{tx_load_genome}}
-#' @param geneAnnot GRanges. Gene annotation loaded as a GenomicRanges object,
-#'  see tx_load_bed().
-#' @param nCores integer. Number of cores to use to run function. Multicore
+#' @param genome list. The full reference genome sequences, as loaded by 
+#' \code{\link{tx_load_genome}}() or prepackaged by BSgenome, see ?BSgenome::available.genomes
+#' @param geneAnnot GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().
+#' @param nCores integer. Number of cores to run the function with. Multicore
 #' capability not available in Windows OS.
 #'
 #' @return data.table
@@ -1066,7 +1066,7 @@ tx_add_pos <- function(DT, sep = ":", check_uniq = T){
 #' \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.
 #' @param GRanges GRanges. Ranges of length 1, to be marked in the data.table
 #' @param colName character. Name of the new column to be added.
-#' @param nCores integer. Number of cores to use to run function. Multicore
+#' @param nCores integer. Number of cores to run the function with. Multicore
 #' capability not available in Windows OS.
 #'
 #' @return data.table
@@ -1107,7 +1107,7 @@ tx_add_siteAnnotation <- function (DT, GRanges, colName, nCores = 1){
 #' @param mask_N logical. If set to FALSE, 'N' nucleotides are left as is,
 #' therefore matching motifs. i.e. A consecutive sequence of NNNNN will match
 #' any 5 letter motif as 'DRACH'; generally not desired.
-#' @param nCores integer. Number of cores to use to run function. Multicore
+#' @param nCores integer. Number of cores to run the function with. Multicore
 #' capability is not available in Windows OS.
 #'
 #' @return data.table
@@ -1166,7 +1166,7 @@ tx_add_motifPresence <- function (DT, motif, nucPositions = "all",
 #' @param align character. Align windows on the "left", "center" or "right".
 #' @param minCov numeric. Minimum coverage required to output ratio. If coverage
 #' is less then an NA is output in that position. To output all positions assign 0.
-#' @param nCores integer. Number of cores to use to run function. Multicore
+#' @param nCores integer. Number of cores to run the function with. Multicore
 #' capability is not available in Windows OS.
 #'
 #' @return data.table
@@ -1188,7 +1188,7 @@ tx_add_rollingMean <- function(DT, colName, winSize, newColName = NULL,
 #'
 #' @param txDT data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
 #' \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.
-#' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed()
+#' @param geneAnnot GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().
 #'
 #' @return data.table
 #' @export
@@ -1202,8 +1202,8 @@ tx_add_spliceSitesLogical <- function(txDT, geneAnnot){
 #'
 #' @param txDT data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
 #' \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.
-#' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed().
-#' @param nCores integer. Number of cores to use to run function. Multicore
+#' @param geneAnnot GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().
+#' @param nCores integer. Number of cores to run the function with. Multicore
 #' capability is not available in Windows OS.
 #'
 #' @return data.table
@@ -1263,8 +1263,8 @@ tx_add_geneRegion <- function(txDT, geneAnnot, nCores = 1){
 #'
 #' @param txDT data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
 #' \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.
-#' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed().
-#' @param nCores integer. Number of cores to use to run function. Multicore
+#' @param geneAnnot GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().
+#' @param nCores integer. Number of cores to run the function with. Multicore
 #' capability is not available in Windows OS.
 #'
 #' @return data.table
@@ -1297,8 +1297,8 @@ tx_add_exonNumber <- function(txDT, geneAnnot, nCores = 1){
 #'
 #' @param txDT data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
 #' \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.
-#' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed().
-#' @param nCores integer. Number of cores to use to run function. Multicore
+#' @param geneAnnot GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().
+#' @param nCores integer. Number of cores to run the function with. Multicore
 #' capability is not available in Windows OS.
 #'
 #' @return data.table
@@ -1330,7 +1330,7 @@ tx_add_exonPlace <- function(txDT, geneAnnot, nCores = 1){
 #'
 #' @param txDT data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
 #' \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.
-#' @param round_dig
+#' @param round_dig integer. Decimal places for output to be round to.
 #'
 #' @return data.table
 #' @export
@@ -1353,12 +1353,13 @@ tx_add_relTxPos <- function(txDT, round_dig = 3){
 #'
 #' @param DT data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
 #' \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.
-#' @param logi_col
-#' @param values_col
-#' @param upFlank
-#' @param doFlank
-#' @param addRowNames
-#' functions.
+#' @param logi_col character. Name of column of logical class, which indicates queried sites
+#' @param values_col character 
+#' @param upFlank numeric. Up-stream flank length
+#' @param doFlank numeric. Down-stream flank length
+#' @param addRowNames logical. Set to TRUE to add rownames in format "gene:txcoor".
+#' Default is FALSE.
+#' 
 #' @return matrix
 #' @export
 tx_get_flanksFromLogicAnnot <- function(DT, logi_col, values_col, upFlank, doFlank, addRowNames = TRUE){
@@ -1388,10 +1389,11 @@ tx_get_flanksFromLogicAnnot <- function(DT, logi_col, values_col, upFlank, doFla
 #'
 #' @param DT data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
 #' \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.
-#' @param logi_col
-#' @param upFlank
-#' @param doFlank
-#' @param addNames
+#' @param logi_col character. Name of column of logical class, which indicates queried sites
+#' @param upFlank numeric. Up-stream flank length
+#' @param doFlank numeric. Down-stream flank length
+#' @param addNames logical. Set to TRUE to add names for each sequence in format
+#' "gene:txcoor". Default is FALSE.
 #'
 #' @return character
 #' @export
@@ -1438,11 +1440,12 @@ tx_get_geneLengths <- function(DT){
 #'
 #' @param txDT data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
 #' \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.
-#' @param geneAnnot
+#' @param geneAnnot GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().
 #' @param colVars character. Names of columns for which values will be extracted
-#' @param CDS_align
-#' @param upFlank
-#' @param doFlank
+#' @param CDS_align character. Either "start", "end", or "spliceSite" depending on the desired
+#' alignment, either to CDS start, CDS end, or splicing sites, respectively.
+#' @param upFlank numeric. Up-stream flank length
+#' @param doFlank numeric. Down-stream flank length
 #'
 #' @return list of matrices for each colVar
 #' @export
@@ -1504,10 +1507,13 @@ tx_get_metageneAtCDS <- function(txDT, geneAnnot, colVars, CDS_align, upFlank, d
 
 #' Get transcriptome sequences
 #'
-#' @param genome
-#' @param geneAnnot
-#' @param outFile
-#' @param nCores
+#' @param genome list. The full reference genome sequences, as loaded by 
+#' \code{\link{tx_load_genome}}() or prepackaged by BSgenome, see ?BSgenome::available.genomes
+#' @param geneAnnot GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().
+#' @param outFile character. If specified, sequences will be written to this filename.
+#' Otherwise a character vector will be output 
+#' @param nCores integer. Number of cores to run the function with. Multicore
+#' capability not available in Windows OS. 
 #'
 #' @return character
 #' @export
@@ -1543,12 +1549,13 @@ tx_get_transcriptSeqs <- function(genome, geneAnnot, outFile = NULL, nCores = 1)
 #'
 #' @param txDT data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
 #' \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.
-#' @param geneAnnot
-#' @param colVars
-#' @param nBins_5UTR
-#' @param nBins_CDS
-#' @param nBins_3UTR
-#' @param nCores
+#' @param geneAnnot GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().
+#' @param colVars character. Names of columns for which values will be extracted
+#' @param nBins_5UTR integer. Number of bins into which allocate data on 5'UTR regions
+#' @param nBins_CDS integer. Number of bins into which allocate data on CDS regions
+#' @param nBins_3UTR  integer. Number of bins into which allocate data on 3'UTR regions
+#' @param nCores integer. Number of cores to run the function with. Multicore
+#' capability not available in Windows OS. 
 #'
 #' @return list of matrices for each colVar
 #' @export
@@ -1606,12 +1613,13 @@ tx_get_metageneRegions <- function(txDT, geneAnnot, colVars, nBins_5UTR,
 #'
 #' @param txDT data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
 #' \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.
-#' @param colVars
-#' @param nBins
-#' @param geneAnnot
-#' @param rm_NArows
-#' @param nCores
-#'
+#' @param colVars character. Names of columns for which values will be extracted
+#' @param nBins integer. Number of bins into which exon data will be allocated.
+#' @param geneAnnot GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().
+#' @param rm_NArows logical. Remove rows of final matrix which consist of all NA values.
+#' @param nCores integer. Number of cores to run the function with. Multicore
+#' capability not available in Windows OS.
+#' 
 #' @return list of matrices for each colVar
 #' @export
 tx_get_metageExons <- function(txDT, colVars, nBins, geneAnnot = NULL, rm_NArows = TRUE, nCores = 1){
@@ -1646,11 +1654,11 @@ tx_get_metageExons <- function(txDT, colVars, nBins, geneAnnot = NULL, rm_NArows
 
 #' Likelihood Ratio Test
 #'
-#' @param DTL
-#' @param tVar
-#' @param sVar
-#' @param test_groups
-#' @param minTrials
+#' @param DTL list. List of txDT, into which each element represents a replicate of an experimental dataset.
+#' @param tVar character. Variable that represents number of trials, e.g. coverage
+#' @param sVar character. Variable that represents number of successes, e.g. start_5p
+#' @param test_groups factor. Factor specifying the "WT" and "KO" samples.
+#' @param minTrials integer. Minimum number of trials in position to be considered in the statistical testing.
 #'
 #' @return data.table
 #' @export
@@ -1690,7 +1698,7 @@ tx_test_LRTedgeR <- function(DTL, tVar, sVar, test_groups, minTrials = 50){
     design <- edgeR::modelMatrixMeth(designSL)
     # Estimate dispersion
     cat("Estimating data dispersion and fitting GNB model\n")
-    y1 <- edgeR::estimateDisp(y, design=design, trend = "none", )
+    y1 <- edgeR::estimateDisp(y, design=design, trend = "none")
     # Fitting Negative Binomial Generalized Linear Models
     fit <- edgeR::glmFit(y1, design)
     #Contrast
@@ -1730,11 +1738,12 @@ tx_test_LRTedgeR <- function(DTL, tVar, sVar, test_groups, minTrials = 50){
 #' Apply a t-test per nucleotide position separating by groups over a txDT list.
 #' At least 2 samples in each group are needed.
 #'
-#' @param DTL
-#' @param cont_var
-#' @param test_groups
-#' @param test_na.rm
-#' @param ...
+#' @param DTL list. List of txDT, into which each element represents a replicate of an experimental dataset.
+#' @param cont_var character. Name of column, specifying the continuous variable
+#' to be used in test.
+#' @param test_groups factor. Factor specifying the "WT" and "KO" samples.
+#' @param test_na.rm logical. Remove NAs from tests
+#' @param ... For use by \code{\link[genefilter]{rowttests}}
 #'
 #' @return data.table
 #' @export
@@ -1760,12 +1769,13 @@ tx_test_ttest <- function(DTL, cont_var, test_groups, test_na.rm = FALSE, ...){
 #' Centered numeric sequence
 #'
 #' Creates a numerical sequence which is centered in the first argument and
-#' is of length twice the second argument plus one.
+#' extends in leght of the second argument into both positive and negative 
+#' directions.
 #'
-#' @param position numeric
-#' @param windowLength numeric
+#' @param position integer. Center of sequence
+#' @param windowLength integer. Length of both downstream and upstream flanks
 #'
-#' @return numeric
+#' @return integer
 #' @export
 #'
 #' @examples

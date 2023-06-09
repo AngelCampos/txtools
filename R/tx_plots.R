@@ -165,9 +165,9 @@ tx_plot_staEndCov <- function(
 #' vector in a
 #'
 #' @param DT
-#' @param logi_col
-#' @param upFlank
-#' @param doFlank
+#' @param logi_col character. Name of column of logical class, which indicates queried sites
+#' @param upFlank numeric. Up-stream flank length
+#' @param doFlank numeric. Down-stream flank length
 #' @param method
 #'
 #' @return ggplot
@@ -186,25 +186,27 @@ tx_plot_ggseqlogo <- function(DT, logi_col, upFlank, doFlank, method = "bits"){
 
 #' Plot metagene at CDS
 #'
-#' @param txDT data.table. As generated with tx_makeDT_*() functions.
-#' @param geneAnnot GRanges. Gene annotation as loaded with tx_load_bed()
-#' @param colVars character. Names of columns to be displayed in metagene plot
+#' @param txDT data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
+#' \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.
+#' @param geneAnnot GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().
+#' @param colVars character. Names of columns for which values will be extracted
 #' @param CDS_align character. Either "start", "end", or "spliceSite" depending on the desired
-#' alignment to CDS start, CDS end, or splicing sites, respectively.
-#' @param upFlank numeric. Up-stream flank
-#' @param doFlank numeric. Down-stream flank
-#' @param summ_fun character. Summing function either "sum" or "mean". Default: "sum"
-#' @param roll_fun character. Rolling function either "sum" or "mean". Default: "sum"
+#' alignment, either to CDS start, CDS end, or splicing sites, respectively.
+#' @param upFlank numeric. Up-stream flank length
+#' @param doFlank numeric. Down-stream flank length
+#' @param summ_fun character. Summing function either "sum" or "mean". Default: "mean"
+#' @param roll_fun character. Rolling function either "sum" or "mean". Default: NULL
 #' @param roll_n numeric. Window size for rolling function
 #' @param roll_align character. Either "center" (default), "left" or "right"
 #' @param roll_fill vector. Either an empty vector (no fill), or a vector
 #' (recycled to) length 3 giving left, middle and right fills. NA by default
-#' @param smooth logical. Set to FALSE for not smoothing with spline
+#' @param smooth logical. Set to FALSE for not smoothing line.
 #' @param spar numeric. Smoothing parameter, typically (but not necessarily) in (0,1].
-#' Check stats::smooth.spline
 #' @param na.rm logical. Omit all NAs from computations. Default: TRUE
 #' @param normalize logical. Makes all areas under the curve equivalent to 100. Default: TRUE
 #' @param tick_by numeric. Distance between ticks in plot. Default: upFlank/2
+#'
+#' @seealso Smoothing function: \code{\link[stats]{smooth.spline}}().
 #'
 #' @return ggplot
 #' @export
@@ -262,18 +264,18 @@ tx_plot_metageneAtCDS <- function(txDT, geneAnnot, colVars, CDS_align, upFlank,
 
 #' Plot metagene by regions
 #'
-#' @param txDT data.table. As generated with tx_makeDT_*() functions.
-#' @param geneAnnot GRanges. Gene annotation as loaded with tx_load_bed()
-#' @param colVars character. Names of columns to be displayed in metagene plot
-#' @param nBins_5UTR
-#' @param nBins_CDS
-#' @param nBins_3UTR
-#' @param summ_fun
-#' @param smooth logical. Set to FALSE for not smoothing with spline
+#' @param txDT data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
+#' \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.
+#' @param geneAnnot GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().
+#' @param colVars character. Names of columns for which values will be extracted
+#' @param nBins_5UTR integer. Number of bins into which allocate data on 5'UTR regions
+#' @param nBins_CDS integer. Number of bins into which allocate data on CDS regions
+#' @param nBins_3UTR  integer. Number of bins into which allocate data on 3'UTR regions
+#' @param summ_fun character. Summarizing function either "sum" or "mean". Default: "mean"
+#' @param smooth logical. Set to FALSE for not smoothing line.
 #' @param spar numeric. Smoothing parameter, typically (but not necessarily) in (0,1].
-#' Check stats::smooth.spline
-#' @param nCores integer. Number of cores to use to run function.
-#' @param plot_type character. Type of plot to be output, either "lineplot" or
+#' @param nCores integer. Number of cores to run the function with. Multicore
+#' capability not available in Windows OS. @param plot_type character. Type of plot to be output, either "lineplot" or
 #' "boxplot".
 #'
 #' @return ggplot
@@ -299,22 +301,21 @@ tx_plot_metageneRegions <- function(txDT, geneAnnot, colVars, nBins_5UTR,
 
 #' Plot metagene exons
 #'
-#' @param txDT
-#' @param colVars
-#' @param nBins
-#' @param geneAnnot
-#' @param rm_NArows
-#' @param nCores
-#' @param summ_fun
-#' @param smooth
-#' @param spar
-#' @param plot_type
+#' @param txDT data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
+#' \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.
+#' @param colVars character. Names of columns for which values will be extracted
+#' @param nBins integer. Number of bins into which exon data will be allocated.
+#' @param geneAnnot GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().
+#' @param nCores integer. Number of cores to run the function with. @param summ_fun
+#' @param smooth logical. Set to FALSE for not smoothing line.
+#' @param spar numeric. Smoothing parameter, typically (but not necessarily) in (0,1].
+#' @param plot_type character. Type of plot to be output, either "lineplot" or "boxplot".
 #' @param xLabelJump Number of bins to be skipped for label plotting
 #'
 #' @return ggplot
 #' @export
 tx_plot_metageneExons <- function(txDT, colVars, nBins, geneAnnot = NULL,
-                                  rm_NArows = TRUE, nCores = 1, summ_fun = "mean",
+                                  nCores = 1, summ_fun = "mean",
                                   smooth = TRUE, spar = 0.3, plot_type = "lineplot",
                                   xLabelJump = 10){
     tmpMG <- tx_get_metageExons(txDT = txDT, colVars = colVars, nBins = nBins, geneAnnot = geneAnnot, nCores = nCores)
@@ -370,21 +371,21 @@ tx_plot_metageneExons <- function(txDT, colVars, nBins, geneAnnot = NULL,
 
 #' Plot an extracted metaGeneMatrix
 #'
-#' It plots an extracted metagene matrix from get_metageneRegions(). Useful
+#' It plots an extracted metagene matrix from tx_get_metageneRegions(). Useful
 #' when modifying the metagene matrix, like filtering genes out.
 #'
 #' Note It must have the same nBins arguments as the ones used to generate the
 #' metagene matrix.
 #'
-#' @param metaGeneMatrix
-#' @param colVars
-#' @param nBins_5UTR
-#' @param nBins_CDS
-#' @param nBins_3UTR
-#' @param summ_fun
-#' @param smooth
-#' @param spar
-#' @param plot_type
+#' @param metaGeneMatrix matrix. As obtained by \code{\link{tx_get_metageneRegions}}()
+#' @param colVars character. Names of columns for which values will be extracted
+#' @param nBins_5UTR integer. Number of bins into which allocate data on 5'UTR regions
+#' @param nBins_CDS integer. Number of bins into which allocate data on CDS regions
+#' @param nBins_3UTR  integer. Number of bins into which allocate data on 3'UTR regions
+#' @param summ_fun character. Summarizing function either "sum" or "mean". Default: "mean"
+#' @param smooth logical. Set to FALSE for not smoothing line.
+#' @param spar numeric. Smoothing parameter, typically (but not necessarily) in (0,1].
+#' @param plot_type character. Type of plot to be output, either "lineplot" or "boxplot".
 #'
 #' @return
 #' @export

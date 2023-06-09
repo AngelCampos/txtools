@@ -359,7 +359,8 @@ hlp_coverageTab <- function(x){
 #'
 #' @param x CompressedGRangesList. Genomic Ranges list containing genomic
 #' alignments data by gene. Constructed via tx_reads().
-#' @param nCores integer. Number of cores to use to run function.
+#' @param nCores integer. Number of cores to run the function with. Multicore
+#' capability not available in Windows OS.
 #'
 #' @return data.table
 #' @export
@@ -437,8 +438,8 @@ hlp_nucFreqTab <- function(x, simplify_IUPAC = "not"){
 #' fractions of reads assigned.
 #' 3) "splitForceInt": Ambiguous reads will be divided in half, but forced to be
 #' integers, unassigned fraction of reads will be summed and assigned as 'N'.
-#' @param nCores integer. Number of cores to use to run function.
-#'
+#' @param nCores integer. Number of cores to run the function with. Multicore
+#' capability not available in Windows OS.
 #' @return data.table
 #' @export
 hlp_nucFreqTab_mc <- function(x, simplify_IUPAC = "not", nCores){
@@ -461,7 +462,7 @@ hlp_nucFreqTab_mc <- function(x, simplify_IUPAC = "not", nCores){
 #'
 #' @param x CompressedGRangesList. Genomic Ranges list containing genomic
 #' alignments data by gene. Constructed via tx_reads().
-#' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed()
+#' @param geneAnnot GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().
 #'
 #' @return data.table
 #' @export
@@ -496,9 +497,9 @@ hlp_genCoorTab <- function(x, geneAnnot){
 #'
 #' @param x CompressedGRangesList. Genomic Ranges list containing genomic
 #' alignments data by gene. Constructed via tx_reads().
-#' @param geneAnnot GenomicRanges. Gene annotation loaded via the tx_load_bed()
-#' @param nCores integer. Number of cores to use to run function.
-#'
+#' @param geneAnnot GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().
+#' @param nCores integer. Number of cores to run the function with. Multicore
+#' capability not available in Windows OS.
 #' @return data.table
 #' @export
 hlp_genCoorTab_mc <- function(x, geneAnnot, nCores){
@@ -1080,18 +1081,22 @@ rowMeansColG <- function(DF, colGroups, na.rm = T){
 
 #' Generate single-end FASTQ file
 #'
-#' Generate single-end FASTQ file form genome and gene annotation.
-#' Distribution of reads is randomly selected following a negative binomial distribution with
+#' Simulates a single-end FASTQ file from a genome and a gene annotation.
+#' The distribution of reads is randomly selected following a negative binomial 
+#' distribution.
 #'
-#' @param genome
-#' @param geneAnnot
-#' @param readLen
-#' @param libSize
-#' @param fileName
-#' @param NB_r
-#' @param NB_mu
-#' @param nCores
-#'
+#' @param genome list. The full reference genome sequences, as loaded by 
+#' \code{\link{tx_load_genome}}() or prepackaged by BSgenome, see ?BSgenome::available.genomes
+#' @param geneAnnot GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().
+#' @param readLen integer. Length of simulated reads
+#' @param libSize integer. Size of simulated FASTQ file
+#' @param fileName character. Name of output file.
+#' @param NB_r numeric. Target r dispersion parameter. Bigger values of r tend 
+#' to generate a normal distribution. See ?stats::rnbinom()
+#' @param NB_mu numeric. Target mean of the resulting distribution
+#' @param nCores integer. Number of cores to run the function with. Multicore
+#' capability not available in Windows OS. 
+#' 
 #' @return Writes FASTQ fileName
 tx_generateSingleEndFASTQ <- function(genome, geneAnnot, readLen, libSize,
                                       fileName, NB_r = 5, NB_mu = 500, nCores){
