@@ -18,7 +18,18 @@ tx_get_metageneRegions(
 \item{txDT}{data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
 \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.}
 
-\item{nCores}{}
+\item{geneAnnot}{GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().}
+
+\item{colVars}{character. Names of columns for which values will be extracted}
+
+\item{nBins_5UTR}{integer. Number of bins into which allocate data on 5'UTR regions}
+
+\item{nBins_CDS}{integer. Number of bins into which allocate data on CDS regions}
+
+\item{nBins_3UTR}{integer. Number of bins into which allocate data on 3'UTR regions}
+
+\item{nCores}{integer. Number of cores to run the function with. Multicore
+capability not available in Windows OS.}
 }
 \value{
 list of matrices for each colVar

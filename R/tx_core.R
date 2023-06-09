@@ -45,6 +45,7 @@ NULL
 #' \item 1 (default): Strand of the pair is that of its **first** alignment: Directional Illumina (Ligation), Standard SOLiD. (Single-end No change in strand)
 #' \item 2: strand of the pair is strand of its **last** alignment: dUTP, NSR, NNSR, Illumina stranded TruSeq PE protocol. (Single-end: Change to inverse strand)
 #' \item 0: strand of the pair is set to '*' (unspecified), works as both "+" and "-".} More info: \code{\link[GenomicAlignments]{GAlignmentPairs-class}}.
+#' @param verbose logical. Set to FALSE to show less information.
 #'
 #' @return GRanges
 #' @export
@@ -404,7 +405,7 @@ tx_sample_GRList <- function(x, p, nCores = 1){
 #' alignments data by gene. Constructed via the \code{\link{tx_reads}}
 #' function.
 #' @param geneAnnot GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}()
-#' @param genome list. The full reference genome sequences, as loaded by 
+#' @param genome list. The full reference genome sequences, as loaded by
 #' \code{\link{tx_load_genome}}() or prepackaged by BSgenome, see ?BSgenome::available.genomes
 #' @param fullDT logical. Set to TRUE if it is desired to output a data.table
 #' with all genes and in the same order as 'geneAnnot' object.
@@ -455,7 +456,7 @@ tx_makeDT_coverage <- function(x, geneAnnot, genome = NULL, fullDT = FALSE,
 #' @param x CompressedGRangesList. Genomic Ranges list containing genomic
 #' alignments data by gene. Constructed via the \code{\link{tx_reads}} function.
 #' @param geneAnnot GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}()
-#' @param genome list. The full reference genome sequences, as loaded by 
+#' @param genome list. The full reference genome sequences, as loaded by
 #' \code{\link{tx_load_genome}}() or prepackaged by BSgenome, see ?BSgenome::available.genomes
 #' @param simplify_IUPAC string. Available options are :
 #' \itemize{
@@ -523,7 +524,7 @@ tx_makeDT_nucFreq <- function(x, geneAnnot, genome = NULL,
 #' alignments data by gene. Constructed via tx_reads().
 #' @param geneAnnot GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}()
 #' function.
-#' @param genome list. The full reference genome sequences, as loaded by 
+#' @param genome list. The full reference genome sequences, as loaded by
 #' \code{\link{tx_load_genome}}() or prepackaged by BSgenome, see ?BSgenome::available.genomes
 #' @param simplify_IUPAC string. Available options are :
 #' \itemize{
@@ -647,7 +648,7 @@ tx_orderDT <- function(DT){
 #' @param DT data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
 #' \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.
 #' @param geneAnnot GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().
-#' @param genome list. The full reference genome sequences, as loaded by 
+#' @param genome list. The full reference genome sequences, as loaded by
 #' \code{\link{tx_load_genome}}() or prepackaged by BSgenome, see ?BSgenome::available.genomes
 #' @param nCores integer. Number of cores to run the function with. Multicore
 #' capability not available in Windows OS.
@@ -693,7 +694,7 @@ tx_complete_DT <- function(DT, geneAnnot, genome = NULL, nCores = 1){
 #' @param direction character. Direction of shift, either 'downstream' or 'upstream'.
 #' @param bp integer. Number of nucleotides to shift data to
 #' @param nCores integer. Number of cores to run the function with. Multicore
-#' capability not available in Windows OS. 
+#' capability not available in Windows OS.
 #' @return data.table
 #' @export
 tx_shift_geneWise <- function(DT, colToShift, direction, bp, nCores = 1){
@@ -721,12 +722,12 @@ tx_shift_geneWise <- function(DT, colToShift, direction, bp, nCores = 1){
 #'
 #' @param txDTL list. A list of txDTs
 #' @param geneAnnot GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().
-#' @param genome list. The full reference genome sequences, as loaded by 
+#' @param genome list. The full reference genome sequences, as loaded by
 #' \code{\link{tx_load_genome}}() or prepackaged by BSgenome, see ?BSgenome::available.genomes
 #' @param type character. Set function to apply to genes in the list of txDTs, either
 #' 'union' or 'intersection'.
 #' @param nCores integer. Number of cores to run the function with. Multicore
-#' capability not available in Windows OS. 
+#' capability not available in Windows OS.
 #' @return list
 #' @export
 tx_unifyTxDTL <- function(txDTL, geneAnnot = NULL, genome = NULL, type = "intersection", nCores = 1){
@@ -777,7 +778,7 @@ tx_sampleByGenes <- function(txDT, size){
 #'
 #' @param DT data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
 #' \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.
-#' @param genome list. The full reference genome sequences, as loaded by 
+#' @param genome list. The full reference genome sequences, as loaded by
 #' \code{\link{tx_load_genome}}() or prepackaged by BSgenome, see ?BSgenome::available.genomes
 #' @param geneAnnot GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().
 #' @param nCores integer. Number of cores to run the function with. Multicore
@@ -1270,7 +1271,6 @@ tx_add_geneRegion <- function(txDT, geneAnnot, nCores = 1){
 #' @return data.table
 #' @export
 #'
-#' @examples
 tx_add_exonNumber <- function(txDT, geneAnnot, nCores = 1){
     # TODO: Check table integrity
     geneAnnot <- tx_cut_geneAnnotBytxDT(txDT, geneAnnot)
@@ -1354,12 +1354,12 @@ tx_add_relTxPos <- function(txDT, round_dig = 3){
 #' @param DT data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
 #' \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.
 #' @param logi_col character. Name of column of logical class, which indicates queried sites
-#' @param values_col character 
+#' @param values_col character
 #' @param upFlank numeric. Up-stream flank length
 #' @param doFlank numeric. Down-stream flank length
 #' @param addRowNames logical. Set to TRUE to add rownames in format "gene:txcoor".
 #' Default is FALSE.
-#' 
+#'
 #' @return matrix
 #' @export
 tx_get_flanksFromLogicAnnot <- function(DT, logi_col, values_col, upFlank, doFlank, addRowNames = TRUE){
@@ -1507,13 +1507,13 @@ tx_get_metageneAtCDS <- function(txDT, geneAnnot, colVars, CDS_align, upFlank, d
 
 #' Get transcriptome sequences
 #'
-#' @param genome list. The full reference genome sequences, as loaded by 
+#' @param genome list. The full reference genome sequences, as loaded by
 #' \code{\link{tx_load_genome}}() or prepackaged by BSgenome, see ?BSgenome::available.genomes
 #' @param geneAnnot GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().
 #' @param outFile character. If specified, sequences will be written to this filename.
-#' Otherwise a character vector will be output 
+#' Otherwise a character vector will be output
 #' @param nCores integer. Number of cores to run the function with. Multicore
-#' capability not available in Windows OS. 
+#' capability not available in Windows OS.
 #'
 #' @return character
 #' @export
@@ -1555,7 +1555,7 @@ tx_get_transcriptSeqs <- function(genome, geneAnnot, outFile = NULL, nCores = 1)
 #' @param nBins_CDS integer. Number of bins into which allocate data on CDS regions
 #' @param nBins_3UTR  integer. Number of bins into which allocate data on 3'UTR regions
 #' @param nCores integer. Number of cores to run the function with. Multicore
-#' capability not available in Windows OS. 
+#' capability not available in Windows OS.
 #'
 #' @return list of matrices for each colVar
 #' @export
@@ -1619,7 +1619,7 @@ tx_get_metageneRegions <- function(txDT, geneAnnot, colVars, nBins_5UTR,
 #' @param rm_NArows logical. Remove rows of final matrix which consist of all NA values.
 #' @param nCores integer. Number of cores to run the function with. Multicore
 #' capability not available in Windows OS.
-#' 
+#'
 #' @return list of matrices for each colVar
 #' @export
 tx_get_metageExons <- function(txDT, colVars, nBins, geneAnnot = NULL, rm_NArows = TRUE, nCores = 1){
@@ -1769,7 +1769,7 @@ tx_test_ttest <- function(DTL, cont_var, test_groups, test_na.rm = FALSE, ...){
 #' Centered numeric sequence
 #'
 #' Creates a numerical sequence which is centered in the first argument and
-#' extends in leght of the second argument into both positive and negative 
+#' extends in leght of the second argument into both positive and negative
 #' directions.
 #'
 #' @param position integer. Center of sequence

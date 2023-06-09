@@ -93,7 +93,8 @@ tx_plot_nucFreq <- function(DT,
 
 #' Transcript coverage plot highlighting read-starts and read-ends counts
 #'
-#' @param DT data.table or data.frame. Input data from which to generate the plot
+#' @param DT data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
+#' \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.
 #' @param gene character. Name of the gene in DT which wants to be plotted.
 #' @param txRange integer. Range in data to be used, 'txcoor' column is used to
 #' delimit this range in the data.table.
@@ -164,11 +165,12 @@ tx_plot_staEndCov <- function(
 #' Plots a motif of the sequence surrounding sites marked as TRUE in a logical
 #' vector in a
 #'
-#' @param DT
+#' @param DT data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
+#' \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.
 #' @param logi_col character. Name of column of logical class, which indicates queried sites
 #' @param upFlank numeric. Up-stream flank length
 #' @param doFlank numeric. Down-stream flank length
-#' @param method
+#' @param method character. Height method, can be either "bits" or "probability". Default = "bits".
 #'
 #' @return ggplot
 #' @export
@@ -277,6 +279,7 @@ tx_plot_metageneAtCDS <- function(txDT, geneAnnot, colVars, CDS_align, upFlank,
 #' @param nCores integer. Number of cores to run the function with. Multicore
 #' capability not available in Windows OS. @param plot_type character. Type of plot to be output, either "lineplot" or
 #' "boxplot".
+#' @param plot_type character. Type of plot to be output, either "lineplot" or "boxplot".
 #'
 #' @return ggplot
 #' @export
@@ -306,7 +309,8 @@ tx_plot_metageneRegions <- function(txDT, geneAnnot, colVars, nBins_5UTR,
 #' @param colVars character. Names of columns for which values will be extracted
 #' @param nBins integer. Number of bins into which exon data will be allocated.
 #' @param geneAnnot GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().
-#' @param nCores integer. Number of cores to run the function with. @param summ_fun
+#' @param nCores integer. Number of cores to run the function with.
+#' @param summ_fun character. Summarizing function either "sum" or "mean". Default: "mean".
 #' @param smooth logical. Set to FALSE for not smoothing line.
 #' @param spar numeric. Smoothing parameter, typically (but not necessarily) in (0,1].
 #' @param plot_type character. Type of plot to be output, either "lineplot" or "boxplot".
@@ -387,10 +391,9 @@ tx_plot_metageneExons <- function(txDT, colVars, nBins, geneAnnot = NULL,
 #' @param spar numeric. Smoothing parameter, typically (but not necessarily) in (0,1].
 #' @param plot_type character. Type of plot to be output, either "lineplot" or "boxplot".
 #'
-#' @return
+#' @return ggplot
 #' @export
 #'
-#' @examples
 hlp_plot_metageneRegions <- function(metaGeneMatrix, colVars, nBins_5UTR,
                                      nBins_CDS = NULL, nBins_3UTR = NULL, summ_fun = "mean",
                                      smooth = TRUE, spar = 0.3, plot_type = "lineplot"){

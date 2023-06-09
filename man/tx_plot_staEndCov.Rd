@@ -15,7 +15,8 @@ tx_plot_staEndCov(
 )
 }
 \arguments{
-\item{DT}{data.table or data.frame. Input data from which to generate the plot}
+\item{DT}{data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
+\code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.}
 
 \item{gene}{character. Name of the gene in DT which wants to be plotted.}
 

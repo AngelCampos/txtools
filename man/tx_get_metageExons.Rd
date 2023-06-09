@@ -17,7 +17,16 @@ tx_get_metageExons(
 \item{txDT}{data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
 \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.}
 
-\item{nCores}{}
+\item{colVars}{character. Names of columns for which values will be extracted}
+
+\item{nBins}{integer. Number of bins into which exon data will be allocated.}
+
+\item{geneAnnot}{GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().}
+
+\item{rm_NArows}{logical. Remove rows of final matrix which consist of all NA values.}
+
+\item{nCores}{integer. Number of cores to run the function with. Multicore
+capability not available in Windows OS.}
 }
 \value{
 list of matrices for each colVar

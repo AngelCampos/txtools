@@ -10,9 +10,10 @@ hlp_genCoorTab_mc(x, geneAnnot, nCores)
 \item{x}{CompressedGRangesList. Genomic Ranges list containing genomic
 alignments data by gene. Constructed via tx_reads().}
 
-\item{geneAnnot}{GenomicRanges. Gene annotation loaded via the tx_load_bed()}
+\item{geneAnnot}{GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().}
 
-\item{nCores}{integer. Number of cores to use to run function.}
+\item{nCores}{integer. Number of cores to run the function with. Multicore
+capability not available in Windows OS.}
 }
 \value{
 data.table

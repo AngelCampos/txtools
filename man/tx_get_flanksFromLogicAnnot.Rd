@@ -17,7 +17,16 @@ tx_get_flanksFromLogicAnnot(
 \item{DT}{data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
 \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.}
 
-\item{addRowNames}{functions.}
+\item{logi_col}{character. Name of column of logical class, which indicates queried sites}
+
+\item{values_col}{character}
+
+\item{upFlank}{numeric. Up-stream flank length}
+
+\item{doFlank}{numeric. Down-stream flank length}
+
+\item{addRowNames}{logical. Set to TRUE to add rownames in format "gene:txcoor".
+Default is FALSE.}
 }
 \value{
 matrix

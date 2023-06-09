@@ -7,7 +7,15 @@
 tx_test_LRTedgeR(DTL, tVar, sVar, test_groups, minTrials = 50)
 }
 \arguments{
-\item{minTrials}{}
+\item{DTL}{list. List of txDT, into which each element represents a replicate of an experimental dataset.}
+
+\item{tVar}{character. Variable that represents number of trials, e.g. coverage}
+
+\item{sVar}{character. Variable that represents number of successes, e.g. start_5p}
+
+\item{test_groups}{factor. Factor specifying the "WT" and "KO" samples.}
+
+\item{minTrials}{integer. Minimum number of trials in position to be considered in the statistical testing.}
 }
 \value{
 data.table

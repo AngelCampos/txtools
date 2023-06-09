@@ -10,7 +10,14 @@ tx_shift_geneWise(DT, colToShift, direction, bp, nCores = 1)
 \item{DT}{data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
 \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.}
 
-\item{nCores}{}
+\item{colToShift}{character. Name of column to be shifted}
+
+\item{direction}{character. Direction of shift, either 'downstream' or 'upstream'.}
+
+\item{bp}{integer. Number of nucleotides to shift data to}
+
+\item{nCores}{integer. Number of cores to run the function with. Multicore
+capability not available in Windows OS.}
 }
 \value{
 data.table

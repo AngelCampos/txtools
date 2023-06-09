@@ -10,9 +10,9 @@ tx_add_exonNumber(txDT, geneAnnot, nCores = 1)
 \item{txDT}{data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
 \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.}
 
-\item{geneAnnot}{GenomicRanges. Gene annotation loaded via the tx_load_bed().}
+\item{geneAnnot}{GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().}
 
-\item{nCores}{integer. Number of cores to use to run function. Multicore
+\item{nCores}{integer. Number of cores to run the function with. Multicore
 capability is not available in Windows OS.}
 }
 \value{

@@ -12,7 +12,7 @@ for the output of the \code{\link{tx_reads}} function.}
 
 \item{p}{Probabilty for each read to be sampled.}
 
-\item{nCores}{integer. Number of cores to use to run function. Multicore
+\item{nCores}{integer. Number of cores to run the function with. Multicore
 capability not available in Windows OS.}
 }
 \value{

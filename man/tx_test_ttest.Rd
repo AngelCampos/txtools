@@ -7,7 +7,16 @@
 tx_test_ttest(DTL, cont_var, test_groups, test_na.rm = FALSE, ...)
 }
 \arguments{
-\item{...}{}
+\item{DTL}{list. List of txDT, into which each element represents a replicate of an experimental dataset.}
+
+\item{cont_var}{character. Name of column, specifying the continuous variable
+to be used in test.}
+
+\item{test_groups}{factor. Factor specifying the "WT" and "KO" samples.}
+
+\item{test_na.rm}{logical. Remove NAs from tests}
+
+\item{...}{For use by \code{\link[genefilter]{rowttests}}}
 }
 \value{
 data.table

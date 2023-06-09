@@ -34,7 +34,7 @@ length 3 giving left, middle and right fills. By default NA.}
 \item{minCov}{numeric. Minimum coverage required to output ratio. If coverage
 is less then an NA is output in that position. To output all positions assign 0.}
 
-\item{nCores}{integer. Number of cores to use to run function. Multicore
+\item{nCores}{integer. Number of cores to run the function with. Multicore
 capability is not available in Windows OS.}
 }
 \value{

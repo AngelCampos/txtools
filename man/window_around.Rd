@@ -7,16 +7,17 @@
 window_around(position, windowLength)
 }
 \arguments{
-\item{position}{numeric}
+\item{position}{integer. Center of sequence}
 
-\item{windowLength}{numeric}
+\item{windowLength}{integer. Length of both downstream and upstream flanks}
 }
 \value{
-numeric
+integer
 }
 \description{
 Creates a numerical sequence which is centered in the first argument and
-is of length twice the second argument plus one.
+extends in leght of the second argument into both positive and negative
+directions.
 }
 \examples{
 # Numeric interval centered in 10, with 5 closest negative

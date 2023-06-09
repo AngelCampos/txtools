@@ -14,7 +14,7 @@ tx_add_siteAnnotation(DT, GRanges, colName, nCores = 1)
 
 \item{colName}{character. Name of the new column to be added.}
 
-\item{nCores}{integer. Number of cores to use to run function. Multicore
+\item{nCores}{integer. Number of cores to run the function with. Multicore
 capability not available in Windows OS.}
 }
 \value{

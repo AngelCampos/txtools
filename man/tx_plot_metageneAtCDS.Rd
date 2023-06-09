@@ -24,22 +24,23 @@ tx_plot_metageneAtCDS(
 )
 }
 \arguments{
-\item{txDT}{data.table. As generated with tx_makeDT_*() functions.}
+\item{txDT}{data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
+\code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.}
 
-\item{geneAnnot}{GRanges. Gene annotation as loaded with tx_load_bed()}
+\item{geneAnnot}{GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().}
 
-\item{colVars}{character. Names of columns to be displayed in metagene plot}
+\item{colVars}{character. Names of columns for which values will be extracted}
 
 \item{CDS_align}{character. Either "start", "end", or "spliceSite" depending on the desired
-alignment to CDS start, CDS end, or splicing sites, respectively.}
+alignment, either to CDS start, CDS end, or splicing sites, respectively.}
 
-\item{upFlank}{numeric. Up-stream flank}
+\item{upFlank}{numeric. Up-stream flank length}
 
-\item{doFlank}{numeric. Down-stream flank}
+\item{doFlank}{numeric. Down-stream flank length}
 
-\item{summ_fun}{character. Summing function either "sum" or "mean". Default: "sum"}
+\item{summ_fun}{character. Summing function either "sum" or "mean". Default: "mean"}
 
-\item{roll_fun}{character. Rolling function either "sum" or "mean". Default: "sum"}
+\item{roll_fun}{character. Rolling function either "sum" or "mean". Default: NULL}
 
 \item{roll_n}{numeric. Window size for rolling function}
 
@@ -48,10 +49,9 @@ alignment to CDS start, CDS end, or splicing sites, respectively.}
 \item{roll_fill}{vector. Either an empty vector (no fill), or a vector
 (recycled to) length 3 giving left, middle and right fills. NA by default}
 
-\item{smooth}{logical. Set to FALSE for not smoothing with spline}
+\item{smooth}{logical. Set to FALSE for not smoothing line.}
 
-\item{spar}{numeric. Smoothing parameter, typically (but not necessarily) in (0,1].
-Check stats::smooth.spline}
+\item{spar}{numeric. Smoothing parameter, typically (but not necessarily) in (0,1].}
 
 \item{na.rm}{logical. Omit all NAs from computations. Default: TRUE}
 
@@ -64,4 +64,7 @@ ggplot
 }
 \description{
 Plot metagene at CDS
+}
+\seealso{
+Smoothing function: \code{\link[stats]{smooth.spline}}().
 }

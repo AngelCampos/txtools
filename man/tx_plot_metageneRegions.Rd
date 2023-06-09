@@ -19,21 +19,30 @@ tx_plot_metageneRegions(
 )
 }
 \arguments{
-\item{txDT}{data.table. As generated with tx_makeDT_*() functions.}
+\item{txDT}{data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
+\code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.}
 
-\item{geneAnnot}{GRanges. Gene annotation as loaded with tx_load_bed()}
+\item{geneAnnot}{GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().}
 
-\item{colVars}{character. Names of columns to be displayed in metagene plot}
+\item{colVars}{character. Names of columns for which values will be extracted}
 
-\item{smooth}{logical. Set to FALSE for not smoothing with spline}
+\item{nBins_5UTR}{integer. Number of bins into which allocate data on 5'UTR regions}
 
-\item{spar}{numeric. Smoothing parameter, typically (but not necessarily) in (0,1].
-Check stats::smooth.spline}
+\item{nBins_CDS}{integer. Number of bins into which allocate data on CDS regions}
 
-\item{nCores}{integer. Number of cores to use to run function.}
+\item{nBins_3UTR}{integer. Number of bins into which allocate data on 3'UTR regions}
 
-\item{plot_type}{character. Type of plot to be output, either "lineplot" or
+\item{summ_fun}{character. Summarizing function either "sum" or "mean". Default: "mean"}
+
+\item{smooth}{logical. Set to FALSE for not smoothing line.}
+
+\item{spar}{numeric. Smoothing parameter, typically (but not necessarily) in (0,1].}
+
+\item{nCores}{integer. Number of cores to run the function with. Multicore
+capability not available in Windows OS. @param plot_type character. Type of plot to be output, either "lineplot" or
 "boxplot".}
+
+\item{plot_type}{character. Type of plot to be output, either "lineplot" or "boxplot".}
 }
 \value{
 ggplot

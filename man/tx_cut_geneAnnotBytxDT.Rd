@@ -10,7 +10,7 @@ tx_cut_geneAnnotBytxDT(txDT, geneAnnot)
 \item{txDT}{data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
 \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.}
 
-\item{geneAnnot}{}
+\item{geneAnnot}{GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}()}
 }
 \value{
 data.table

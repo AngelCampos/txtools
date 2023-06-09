@@ -18,11 +18,11 @@ tx_makeDT_covNucFreq(
 \item{x}{CompressedGRangesList. Genomic Ranges list containing genomic
 alignments data by gene. Constructed via tx_reads().}
 
-\item{geneAnnot}{GenomicRanges. Gene annotation loaded via the tx_load_bed()
+\item{geneAnnot}{GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}()
 function.}
 
-\item{genome}{list. The full reference genome sequences, as prepackaged
-by BSgenome, See ?BSgenome::available.genomes(); or loaded by \code{\link{tx_load_genome}}}
+\item{genome}{list. The full reference genome sequences, as loaded by
+\code{\link{tx_load_genome}}() or prepackaged by BSgenome, see ?BSgenome::available.genomes}
 
 \item{simplify_IUPAC}{string. Available options are :
 \itemize{
@@ -39,7 +39,8 @@ non-integer frequencies.
 \item{fullDT}{logical. Set to TRUE if it is desired to output a data.table
 with all genes and in the same order as 'geneAnnot' object.}
 
-\item{nCores}{integer. Number of cores to use to run function.}
+\item{nCores}{integer. Number of cores to run the function with. Multicore
+capability not available in Windows OS.}
 }
 \value{
 data.table

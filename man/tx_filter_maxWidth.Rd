@@ -13,7 +13,7 @@ alignments data by gene. Constructed via tx_reads().}
 
 \item{thr}{integer. Threshold for maximum width size allowed on output.}
 
-\item{nCores}{integer. Number of cores to use to run function. Multicore
+\item{nCores}{integer. Number of cores to run the function with. Multicore
 capability is not available in Windows OS.}
 }
 \value{

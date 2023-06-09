@@ -12,15 +12,16 @@ tx_makeDT_coverage(x, geneAnnot, genome = NULL, fullDT = FALSE, nCores = 1)
 alignments data by gene. Constructed via the \code{\link{tx_reads}}
 function.}
 
-\item{geneAnnot}{GenomicRanges. Gene annotation loaded via the \code{\link{tx_load_bed}}}
+\item{geneAnnot}{GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}()}
 
-\item{genome}{list. The full reference genome sequences, as prepackaged
-by BSgenome, See ?BSgenome::available.genomes(); or loaded by \code{\link{tx_load_genome}}}
+\item{genome}{list. The full reference genome sequences, as loaded by
+\code{\link{tx_load_genome}}() or prepackaged by BSgenome, see ?BSgenome::available.genomes}
 
 \item{fullDT}{logical. Set to TRUE if it is desired to output a data.table
 with all genes and in the same order as 'geneAnnot' object.}
 
-\item{nCores}{integer. Number of cores to use to run function.}
+\item{nCores}{integer. Number of cores to run the function with. Multicore
+capability not available in Windows OS.}
 }
 \value{
 data.table

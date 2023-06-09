@@ -13,7 +13,18 @@ tx_unifyTxDTL(
 )
 }
 \arguments{
-\item{nCores}{}
+\item{txDTL}{list. A list of txDTs}
+
+\item{geneAnnot}{GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().}
+
+\item{genome}{list. The full reference genome sequences, as loaded by
+\code{\link{tx_load_genome}}() or prepackaged by BSgenome, see ?BSgenome::available.genomes}
+
+\item{type}{character. Set function to apply to genes in the list of txDTs, either
+'union' or 'intersection'.}
+
+\item{nCores}{integer. Number of cores to run the function with. Multicore
+capability not available in Windows OS.}
 }
 \value{
 list

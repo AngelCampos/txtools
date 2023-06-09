@@ -10,14 +10,13 @@ tx_complete_DT(DT, geneAnnot, genome = NULL, nCores = 1)
 \item{DT}{data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
 \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.}
 
-\item{geneAnnot}{GRanges. Gene annotation, gene models, as loaded using the
-\code{\link{tx_load_bed}} function.}
+\item{geneAnnot}{GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().}
 
 \item{genome}{list. The full reference genome sequences, as loaded by
-\code{\link{tx_load_genome}}; or prepackaged by BSgenome, see
-\code{\link[BSgenome]{available.genomes}}}
+\code{\link{tx_load_genome}}() or prepackaged by BSgenome, see ?BSgenome::available.genomes}
 
-\item{nCores}{numeric}
+\item{nCores}{integer. Number of cores to run the function with. Multicore
+capability not available in Windows OS.}
 }
 \value{
 data.table

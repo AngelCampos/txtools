@@ -16,12 +16,30 @@ tx_generateSingleEndFASTQ(
 )
 }
 \arguments{
-\item{nCores}{}
+\item{genome}{list. The full reference genome sequences, as loaded by
+\code{\link{tx_load_genome}}() or prepackaged by BSgenome, see ?BSgenome::available.genomes}
+
+\item{geneAnnot}{GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().}
+
+\item{readLen}{integer. Length of simulated reads}
+
+\item{libSize}{integer. Size of simulated FASTQ file}
+
+\item{fileName}{character. Name of output file.}
+
+\item{NB_r}{numeric. Target r dispersion parameter. Bigger values of r tend
+to generate a normal distribution. See ?stats::rnbinom()}
+
+\item{NB_mu}{numeric. Target mean of the resulting distribution}
+
+\item{nCores}{integer. Number of cores to run the function with. Multicore
+capability not available in Windows OS.}
 }
 \value{
 Writes FASTQ fileName
 }
 \description{
-Generate single-end FASTQ file form genome and gene annotation.
-Distribution of reads is randomly selected following a negative binomial distribution with
+Simulates a single-end FASTQ file from a genome and a gene annotation.
+The distribution of reads is randomly selected following a negative binomial
+distribution.
 }

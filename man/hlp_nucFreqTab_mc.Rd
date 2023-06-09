@@ -20,7 +20,8 @@ fractions of reads assigned.
 integers, unassigned fraction of reads will be summed and assigned as 'N'.
 }}
 
-\item{nCores}{integer. Number of cores to use to run function.}
+\item{nCores}{integer. Number of cores to run the function with. Multicore
+capability not available in Windows OS.}
 }
 \value{
 data.table

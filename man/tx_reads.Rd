@@ -18,7 +18,7 @@ tx_reads(
 \arguments{
 \item{reads}{GAlignments or GAlignmentPairs. Genomic alignments to be processed}
 
-\item{geneAnnot}{GenomicRanges. Gene annotation loaded via the tx_load_bed()}
+\item{geneAnnot}{GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}()}
 
 \item{minReads}{integer. Minimum number of alignments required to overlap a gene}
 
@@ -27,7 +27,7 @@ object should contain sequences.}
 
 \item{verbose}{logical. Set to FALSE to show less information.}
 
-\item{nCores}{integer. Number of cores to use to run function. Multi-core
+\item{nCores}{integer. Number of cores to run the function with. Multi-core
 capability not available in Windows OS.}
 }
 \value{

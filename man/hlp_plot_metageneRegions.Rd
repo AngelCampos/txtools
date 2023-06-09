@@ -17,10 +17,29 @@ hlp_plot_metageneRegions(
 )
 }
 \arguments{
-\item{plot_type}{}
+\item{metaGeneMatrix}{matrix. As obtained by \code{\link{tx_get_metageneRegions}}()}
+
+\item{colVars}{character. Names of columns for which values will be extracted}
+
+\item{nBins_5UTR}{integer. Number of bins into which allocate data on 5'UTR regions}
+
+\item{nBins_CDS}{integer. Number of bins into which allocate data on CDS regions}
+
+\item{nBins_3UTR}{integer. Number of bins into which allocate data on 3'UTR regions}
+
+\item{summ_fun}{character. Summarizing function either "sum" or "mean". Default: "mean"}
+
+\item{smooth}{logical. Set to FALSE for not smoothing line.}
+
+\item{spar}{numeric. Smoothing parameter, typically (but not necessarily) in (0,1].}
+
+\item{plot_type}{character. Type of plot to be output, either "lineplot" or "boxplot".}
+}
+\value{
+ggplot
 }
 \description{
-It plots an extracted metagene matrix from get_metageneRegions(). Useful
+It plots an extracted metagene matrix from tx_get_metageneRegions(). Useful
 when modifying the metagene matrix, like filtering genes out.
 }
 \details{

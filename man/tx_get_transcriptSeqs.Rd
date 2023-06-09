@@ -7,7 +7,16 @@
 tx_get_transcriptSeqs(genome, geneAnnot, outFile = NULL, nCores = 1)
 }
 \arguments{
-\item{nCores}{}
+\item{genome}{list. The full reference genome sequences, as loaded by
+\code{\link{tx_load_genome}}() or prepackaged by BSgenome, see ?BSgenome::available.genomes}
+
+\item{geneAnnot}{GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().}
+
+\item{outFile}{character. If specified, sequences will be written to this filename.
+Otherwise a character vector will be output}
+
+\item{nCores}{integer. Number of cores to run the function with. Multicore
+capability not available in Windows OS.}
 }
 \value{
 character

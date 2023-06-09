@@ -10,7 +10,7 @@ tx_add_relTxPos(txDT, round_dig = 3)
 \item{txDT}{data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
 \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.}
 
-\item{round_dig}{}
+\item{round_dig}{integer. Decimal places for output to be round to.}
 }
 \value{
 data.table

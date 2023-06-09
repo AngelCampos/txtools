@@ -11,7 +11,8 @@ hlp_coverageTab_mc(x, nCores)
 \item{x}{CompressedGRangesList. Genomic Ranges list containing genomic
 alignments data by gene. Constructed via tx_reads().}
 
-\item{nCores}{integer. Number of cores to use to run function.}
+\item{nCores}{integer. Number of cores to run the function with. Multicore
+capability not available in Windows OS.}
 }
 \value{
 data.table

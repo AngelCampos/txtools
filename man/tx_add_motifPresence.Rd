@@ -37,7 +37,7 @@ input motif and nucPositions arguments.}
 therefore matching motifs. i.e. A consecutive sequence of NNNNN will match
 any 5 letter motif as 'DRACH'; generally not desired.}
 
-\item{nCores}{integer. Number of cores to use to run function. Multicore
+\item{nCores}{integer. Number of cores to run the function with. Multicore
 capability is not available in Windows OS.}
 }
 \value{
