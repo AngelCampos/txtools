@@ -983,6 +983,23 @@ check_DThasCol <- function(DT, colName){
     if(!colName %in% colnames(DT)){stop("DT does not contain '", colName, "' column.")}
 }
 
+# Make a table of functions from other packages used in .R files in path
+check_funsPkg <- function(path = "R", pattern = ".R$"){
+    scripts <- list.files(path = path, pattern = pattern, full.names = TRUE)
+    pkg_fun <- lapply(scripts, function(script_i){
+        tmpF <- readLines(script_i)
+        tmpD <- stringr::str_extract_all(tmpF, pattern = "([[:alnum:]]+)::([[:alnum:]]+)") %>%
+            unlist() %>%
+            lapply(function(x){
+                data.table::data.table(stringr::str_split(x, pattern = "::", simplify = TRUE))
+            }) %>% do.call(what = "rbind")
+        if(!is.null(tmpD)){tmpD$script <- script_i}
+        tmpD
+    }) %>% do.call(what = "rbind")
+    colnames(pkg_fun) <- c("package", "function", "script")
+    pkg_fun
+}
+
 # "Hidden" functions (to decide if they'll be incorporated) ###################
 #' Merge lists of data.tables
 #'
@@ -1082,21 +1099,21 @@ rowMeansColG <- function(DF, colGroups, na.rm = T){
 #' Generate single-end FASTQ file
 #'
 #' Simulates a single-end FASTQ file from a genome and a gene annotation.
-#' The distribution of reads is randomly selected following a negative binomial 
+#' The distribution of reads is randomly selected following a negative binomial
 #' distribution.
 #'
-#' @param genome list. The full reference genome sequences, as loaded by 
+#' @param genome list. The full reference genome sequences, as loaded by
 #' \code{\link{tx_load_genome}}() or prepackaged by BSgenome, see ?BSgenome::available.genomes
 #' @param geneAnnot GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().
 #' @param readLen integer. Length of simulated reads
 #' @param libSize integer. Size of simulated FASTQ file
 #' @param fileName character. Name of output file.
-#' @param NB_r numeric. Target r dispersion parameter. Bigger values of r tend 
+#' @param NB_r numeric. Target r dispersion parameter. Bigger values of r tend
 #' to generate a normal distribution. See ?stats::rnbinom()
 #' @param NB_mu numeric. Target mean of the resulting distribution
 #' @param nCores integer. Number of cores to run the function with. Multicore
-#' capability not available in Windows OS. 
-#' 
+#' capability not available in Windows OS.
+#'
 #' @return Writes FASTQ fileName
 tx_generateSingleEndFASTQ <- function(genome, geneAnnot, readLen, libSize,
                                       fileName, NB_r = 5, NB_mu = 500, nCores){
