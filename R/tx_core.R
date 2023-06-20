@@ -190,7 +190,7 @@ tx_load_rdsDT <- function(file){
 #' It also stitches together paired-end aligned reads into a single sequence
 #' in which dots '.' separate Read1 and Read2 by their corresponding insert.
 #'
-#' To retrieve unassigned alignments use the function tx_getUnassignedAlignments()
+#' To retrieve unassigned alignments use the function tx_get_unassignedAlignments()
 #'
 #' @param reads GAlignments or GAlignmentPairs. Genomic alignments to be processed
 #' @param geneAnnot GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}()
@@ -279,7 +279,7 @@ tx_reads <- function(reads, geneAnnot, minReads = 50, withSeq = FALSE,
     # Dump not assigned alignments into dump environment
     if(length(setdiff(names(reads), unique(unlist(lapply(OUT, names))))) > 1L){
         warning("Some alignments were not assigned to any gene, you can ",
-                "retrieve them using the tx_getUnassignedAlignments() function.")
+                "retrieve them using the tx_get_unassignedAlignments() function.")
         hlp_dump_notAssigned(reads, OUT)
     }
     return(OUT)
@@ -293,7 +293,7 @@ tx_reads <- function(reads, geneAnnot, minReads = 50, withSeq = FALSE,
 #' @return GAlignments
 #' @export
 #'
-tx_getUnassignedAlignments <- function(){
+tx_get_unassignedAlignments <- function(){
     objnames <- ls(envir = .dumpEnvirTxtools())
     do.call(c, unname(mget(objnames, envir = .dumpEnvirTxtools())))
 }

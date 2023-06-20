@@ -40,5 +40,5 @@ It also stitches together paired-end aligned reads into a single sequence
 in which dots '.' separate Read1 and Read2 by their corresponding insert.
 }
 \details{
-To retrieve unassigned alignments use the function tx_getUnassignedAlignments()
+To retrieve unassigned alignments use the function tx_get_unassignedAlignments()
 }

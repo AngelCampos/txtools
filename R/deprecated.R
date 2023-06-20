@@ -93,3 +93,10 @@ tx_add_misincorpRateNucSpec <- function(DT, refNuc, misNuc, minNucReads = 20){
     lifecycle::deprecate_warn("0.0.7", "tx_add_misincorpRateNucSpec()", "tx_add_misincRateNucSpec()")
     tx_add_misincRateNucSpec(DT, refNuc, misNuc, minNucReads = minNucReads)
 }
+
+#' @export
+tx_getUnassignedAlignments <- function(){
+    lifecycle::deprecate_warn("1.0.0", "tx_getUnassignedAlignments()", "tx_get_unassignedAlignments()")
+    tx_get_unassignedAlignments()
+}
+
