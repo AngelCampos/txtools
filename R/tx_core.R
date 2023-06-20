@@ -1623,7 +1623,7 @@ tx_get_metageneRegions <- function(txDT, geneAnnot, colVars, nBins_5UTR,
 #'
 #' @return list of matrices for each colVar
 #' @export
-tx_get_metageExons <- function(txDT, colVars, nBins, geneAnnot = NULL, rm_NArows = TRUE, nCores = 1){
+tx_get_metageneExons <- function(txDT, colVars, nBins, geneAnnot = NULL, rm_NArows = TRUE, nCores = 1){
     if(!"exonNumber" %in% names(txDT)){
         warning("exonNumber is needed in txDT to extract exons, this function ",
                 "calculates it but discards it everytime. If you want to keep ",

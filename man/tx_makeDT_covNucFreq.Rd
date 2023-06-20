@@ -27,8 +27,9 @@ function.}
 \item{simplify_IUPAC}{string. Available options are :
 \itemize{
 \item "not": Will output the complete nucleotide frequency table including
-ambiguous reads using the IUPAC ambiguity code. Check: ?Biostrings::IUPAC_CODE_MAP
-\item "splitForceInt": Will force an integers split in which ambiguous codes
+ambiguous reads using the IUPAC ambiguity code.
+See: \code{\link[Biostrings]{IUPAC_CODE_MAP}}
+\item "splitForceInt" (Default): Will force an integers split in which ambiguous codes
 will be split and assigned half the frequency into their respective nucleotides,
 if the frequency is an odd number the uneven count will be assigned as "N".
 \item "splitHalf": Ambiguous nucleotide frequencies will be split in half to
