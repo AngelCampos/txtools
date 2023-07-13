@@ -593,11 +593,7 @@ tx_merge_DT <- function(DTL){
 #' @return list
 #' @export
 tx_split_DT <- function(DT, dropEmpty = TRUE){
-    tmp <- split(DT, f = DT$gene, drop = dropEmpty)
-    # lapply(tmp, function(y) {
-    #     y[order(y$txcoor), ]
-    # })
-    tmp
+    split(DT, f = DT$gene, drop = dropEmpty)
 }
 
 #' Cutting 5' and 3' ends of data.table using txcoors
