@@ -13,7 +13,7 @@ reads <- txtools::tx_load_bam(bamFile, loadSeq = T, verbose = F,
 geneAnnot <- txtools::tx_load_bed(bedFile) # plyranges read_bed function
 txReads <- txtools::tx_reads(reads, geneAnnot, withSeq = T, verbose = F) %>%
     suppressWarnings()
-unAssigned_demo <- tx_getUnassignedAlignments()
+unAssigned_demo <- tx_get_unassignedAlignments()
 DTL <- txtools::tx_makeDT_covNucFreq(txReads, geneAnnot)
 
 # Tests ########################################################################
