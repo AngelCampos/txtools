@@ -55,7 +55,8 @@ alignment, either to CDS start, CDS end, or splicing sites, respectively.}
 
 \item{na.rm}{logical. Omit all NAs from computations. Default: TRUE}
 
-\item{normalize}{logical. Makes all areas under the curve equivalent to 100. Default: TRUE}
+\item{normalize}{logical. If set to TRUE, values are normalized so that the
+area bellow the curve approximates to 1 for each variable.}
 
 \item{tick_by}{numeric. Distance between ticks in plot. Default: upFlank/2}
 }

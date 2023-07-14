@@ -12,9 +12,10 @@ tx_plot_metageneExons(
   nCores = 1,
   summ_fun = "mean",
   smooth = TRUE,
-  spar = 0.3,
+  spar = 0.5,
   plot_type = "lineplot",
-  xLabelJump = 10
+  xLabelJump = 10,
+  normalize = FALSE
 )
 }
 \arguments{
@@ -38,6 +39,9 @@ tx_plot_metageneExons(
 \item{plot_type}{character. Type of plot to be output, either "lineplot" or "boxplot".}
 
 \item{xLabelJump}{Number of bins to be skipped for label plotting}
+
+\item{normalize}{logical. If set to TRUE, values are normalized so that the
+area bellow the curve approximates to 1 for each variable.}
 }
 \value{
 ggplot

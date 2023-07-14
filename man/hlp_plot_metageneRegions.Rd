@@ -8,12 +8,13 @@ hlp_plot_metageneRegions(
   metaGeneMatrix,
   colVars,
   nBins_5UTR,
-  nBins_CDS = NULL,
-  nBins_3UTR = NULL,
+  nBins_CDS,
+  nBins_3UTR,
   summ_fun = "mean",
   smooth = TRUE,
-  spar = 0.3,
-  plot_type = "lineplot"
+  spar = 0.5,
+  plot_type = "lineplot",
+  normalize = FALSE
 )
 }
 \arguments{
@@ -34,6 +35,9 @@ hlp_plot_metageneRegions(
 \item{spar}{numeric. Smoothing parameter, typically (but not necessarily) in (0,1].}
 
 \item{plot_type}{character. Type of plot to be output, either "lineplot" or "boxplot".}
+
+\item{normalize}{logical. If set to TRUE, values are normalized so that the
+area bellow the curve approximates to 1 for each variable.}
 }
 \value{
 ggplot

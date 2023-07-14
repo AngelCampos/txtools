@@ -13,9 +13,10 @@ tx_plot_metageneRegions(
   nBins_3UTR = NULL,
   summ_fun = "mean",
   smooth = TRUE,
-  spar = 0.3,
+  spar = 0.5,
   nCores = 1,
-  plot_type = "lineplot"
+  plot_type = "lineplot",
+  normalize = FALSE
 )
 }
 \arguments{
@@ -43,6 +44,9 @@ capability not available in Windows OS. @param plot_type character. Type of plot
 "boxplot".}
 
 \item{plot_type}{character. Type of plot to be output, either "lineplot" or "boxplot".}
+
+\item{normalize}{logical. If set to TRUE, values are normalized so that the
+area bellow the curve approximates to 1 for each variable.}
 }
 \value{
 ggplot

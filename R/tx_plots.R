@@ -205,7 +205,8 @@ tx_plot_ggseqlogo <- function(DT, logi_col, upFlank, doFlank, method = "bits"){
 #' @param smooth logical. Set to FALSE for not smoothing line.
 #' @param spar numeric. Smoothing parameter, typically (but not necessarily) in (0,1].
 #' @param na.rm logical. Omit all NAs from computations. Default: TRUE
-#' @param normalize logical. Makes all areas under the curve equivalent to 100. Default: TRUE
+#' @param normalize logical. If set to TRUE, values are normalized so that the
+#' area bellow the curve approximates to 1 for each variable.
 #' @param tick_by numeric. Distance between ticks in plot. Default: upFlank/2
 #'
 #' @seealso Smoothing function: \code{\link[stats]{smooth.spline}}().
@@ -236,7 +237,7 @@ tx_plot_metageneAtCDS <- function(txDT, geneAnnot, colVars, CDS_align, upFlank,
             tmpDF[!is.na(tmpDF$value), ]$value <- stats::smooth.spline(tmpDF[!is.na(tmpDF$value), ]$value, spar = spar)$y
         }
         if(normalize){
-            tmpDF$value <- (tmpDF$value / sum(tmpDF$value, na.rm = TRUE)) * 100
+            tmpDF$value <- tmpDF$value / sum(tmpDF$value, na.rm = TRUE) * sum(upFlank, doFlank, 1)
         }
         tmpDF
     }) %>% do.call(what = "rbind") %>% data.table::data.table()
@@ -280,18 +281,21 @@ tx_plot_metageneAtCDS <- function(txDT, geneAnnot, colVars, CDS_align, upFlank,
 #' capability not available in Windows OS. @param plot_type character. Type of plot to be output, either "lineplot" or
 #' "boxplot".
 #' @param plot_type character. Type of plot to be output, either "lineplot" or "boxplot".
+#' @param normalize logical. If set to TRUE, values are normalized so that the
+#' area bellow the curve approximates to 1 for each variable.
 #'
 #' @return ggplot
 #' @export
 tx_plot_metageneRegions <- function(txDT, geneAnnot, colVars, nBins_5UTR,
                                     nBins_CDS = NULL, nBins_3UTR = NULL, summ_fun = "mean",
-                                    smooth = TRUE, spar = 0.3, nCores = 1, plot_type = "lineplot"){
+                                    smooth = TRUE, spar = 0.5, nCores = 1, plot_type = "lineplot",
+                                    normalize = FALSE){
     if(!all(colVars %in% names(txDT))){
         stop("colVars: ", paste(colVars[!colVars %in% names(txDT)],
                                 collapse = ", "), " are not present in txDT")
     }
-    if(is.null(nBins_CDS)){nBins_CDS <- nBins_5UTR * 9}
-    if(is.null(nBins_3UTR)){nBins_3UTR <- nBins_5UTR * 9}
+    if(is.null(nBins_CDS)){nBins_CDS <- nBins_5UTR * 3}
+    if(is.null(nBins_3UTR)){nBins_3UTR <- nBins_5UTR * 3}
     metaGeneMatrix <- tx_get_metageneRegions(txDT = txDT, geneAnnot = geneAnnot,
                                              colVars = colVars, nBins_5UTR = nBins_5UTR,
                                              nBins_CDS = nBins_CDS,
@@ -299,7 +303,8 @@ tx_plot_metageneRegions <- function(txDT, geneAnnot, colVars, nBins_5UTR,
     hlp_plot_metageneRegions(metaGeneMatrix = metaGeneMatrix, colVars = colVars,
                              nBins_5UTR = nBins_5UTR, nBins_CDS = nBins_CDS,
                              nBins_3UTR = nBins_3UTR, summ_fun = summ_fun,
-                             smooth = smooth, spar = spar, plot_type = plot_type)
+                             smooth = smooth, spar = spar, plot_type = plot_type,
+                             normalize = normalize)
 }
 
 #' Plot metagene exons
@@ -315,14 +320,16 @@ tx_plot_metageneRegions <- function(txDT, geneAnnot, colVars, nBins_5UTR,
 #' @param spar numeric. Smoothing parameter, typically (but not necessarily) in (0,1].
 #' @param plot_type character. Type of plot to be output, either "lineplot" or "boxplot".
 #' @param xLabelJump Number of bins to be skipped for label plotting
+#' @param normalize logical. If set to TRUE, values are normalized so that the
+#' area bellow the curve approximates to 1 for each variable.
 #'
 #' @return ggplot
 #' @export
 tx_plot_metageneExons <- function(txDT, colVars, nBins, geneAnnot = NULL,
                                   nCores = 1, summ_fun = "mean",
-                                  smooth = TRUE, spar = 0.3, plot_type = "lineplot",
-                                  xLabelJump = 10){
-    tmpMG <- tx_get_metageExons(txDT = txDT, colVars = colVars, nBins = nBins, geneAnnot = geneAnnot, nCores = nCores)
+                                  smooth = TRUE, spar = 0.5, plot_type = "lineplot",
+                                  xLabelJump = 10, normalize = FALSE){
+    tmpMG <- tx_get_metageneExons(txDT = txDT, colVars = colVars, nBins = nBins, geneAnnot = geneAnnot, nCores = nCores)
     metageneBinNames <- paste("exonBin", seq(nBins), sep = " ")
     metageneBinLevls <- paste("exonBin", seq(nBins), sep = "_")
     if(plot_type == "lineplot"){
@@ -330,6 +337,9 @@ tx_plot_metageneExons <- function(txDT, colVars, nBins, geneAnnot = NULL,
             tmpY <- apply(tmpMG[[k]], 2, FUN = summ_fun, na.rm = TRUE)
             if(smooth){
                 tmpY[!is.na(tmpY)] <- stats::smooth.spline(tmpY[!is.na(tmpY)], spar = spar)$y
+            }
+            if(normalize){
+                tmpY <- tmpY / sum(tmpY, na.rm = TRUE) * nBins
             }
             data.frame(value = tmpY,
                        bin = factor(metageneBinNames, levels = metageneBinNames),
@@ -390,13 +400,16 @@ tx_plot_metageneExons <- function(txDT, colVars, nBins, geneAnnot = NULL,
 #' @param smooth logical. Set to FALSE for not smoothing line.
 #' @param spar numeric. Smoothing parameter, typically (but not necessarily) in (0,1].
 #' @param plot_type character. Type of plot to be output, either "lineplot" or "boxplot".
+#' @param normalize logical. If set to TRUE, values are normalized so that the
+#' area bellow the curve approximates to 1 for each variable.
 #'
 #' @return ggplot
 #' @export
 #'
 hlp_plot_metageneRegions <- function(metaGeneMatrix, colVars, nBins_5UTR,
-                                     nBins_CDS = NULL, nBins_3UTR = NULL, summ_fun = "mean",
-                                     smooth = TRUE, spar = 0.3, plot_type = "lineplot"){
+                                     nBins_CDS, nBins_3UTR, summ_fun = "mean",
+                                     smooth = TRUE, spar = 0.5, plot_type = "lineplot",
+                                     normalize = FALSE){
     metageneBinNames <- c(paste("UTR5", seq(nBins_5UTR), sep = "_"),
                           paste("CDS", seq(nBins_CDS), sep = "_"),
                           paste("UTR3", seq(nBins_3UTR), sep = "_"))
@@ -408,6 +421,9 @@ hlp_plot_metageneRegions <- function(metaGeneMatrix, colVars, nBins_5UTR,
             tmpY <- apply(metaGeneMatrix[[k]], 2, FUN = summ_fun, na.rm = TRUE)
             if(smooth){
                 tmpY[!is.na(tmpY)] <- stats::smooth.spline(tmpY[!is.na(tmpY)], spar = spar)$y
+            }
+            if(normalize){
+                tmpY <- tmpY / sum(tmpY, na.rm = TRUE) * sum(nBins_5UTR, nBins_CDS, nBins_3UTR)
             }
             data.frame(value = tmpY,
                        bin = factor(metageneBinNames, levels = metageneBinLevls),
