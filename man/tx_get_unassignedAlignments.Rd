@@ -2,6 +2,7 @@
 % Please edit documentation in R/tx_core.R
 \name{tx_get_unassignedAlignments}
 \alias{tx_get_unassignedAlignments}
+\alias{tx_getUnassignedAlignments}
 \title{Retrieve dumped alignments}
 \usage{
 tx_get_unassignedAlignments()

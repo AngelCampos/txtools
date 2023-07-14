@@ -8,9 +8,9 @@ library(magrittr)
 NCORES <- 1
 bamFile <- system.file("extdata", "example_hg19.bam", package = "txtools")
 bedFile <- system.file("extdata", "twoUCSCgenes_hg19.bed", package = "txtools")
+geneAnnot <- txtools::tx_load_bed(bedFile)
 reads <- txtools::tx_load_bam(bamFile, loadSeq = T, verbose = F,
                               yieldSize = 1000, pairedEnd = T)
-geneAnnot <- txtools::tx_load_bed(bedFile) # plyranges read_bed function
 txReads <- txtools::tx_reads(reads, geneAnnot, withSeq = T, verbose = F) %>%
     suppressWarnings()
 unAssigned_demo <- tx_get_unassignedAlignments()
@@ -28,7 +28,6 @@ testthat::expect_equivalent(DTL[DTL$gene == "uc003lam.1",]$txcoor, 1:1924)
 # Test for strand of gene
 testthat::expect_identical(unique(DTL[DTL$gene == "uc003lam.1",]$strand), as.factor("-"))
 testthat::expect_identical(unique(DTL[DTL$gene == "uc010nap.1",]$strand), as.factor("-"))
-
 # Quick example code ###########
 
 # Getting paths to files
@@ -49,8 +48,8 @@ reads_PE <- tx_reads(reads = dm3_PEreads,
                      verbose = FALSE) %>% suppressWarnings()
 
 DT <- tx_makeDT_covNucFreq(reads_PE, geneAnnot = dm3_geneAnnot, genome = dm3_genome)
-DT <- tx_add_misincRate(DT, addMisinandTotalCols = TRUE)
-
+DT <- tx_add_misincRate(DT, addCounts = TRUE, minNucReads = 10)
+DT <- tx_add_geneRegion(DT, dm3_geneAnnot, NCORES)
 # Tests
 testthat::expect_equal(as.character(class(reads_PE[[1]])), "GRanges")
 
@@ -61,10 +60,10 @@ assigned_aligns <- tx_reads(bam_sk1, gA_sk1, minReads = 1, withSeq = TRUE, verbo
     suppressWarnings()
 
 # Retrieving and flushing unassigned alignments
-unAssigned <- tx_getUnassignedAlignments()
+unAssigned <- tx_get_unassignedAlignments()
 testthat::expect_equal(length(unAssigned),  104L)
 tx_flushUnassigned()
-testthat::expect_equal(tx_getUnassignedAlignments(), NULL)
+testthat::expect_equal(tx_get_unassignedAlignments(), NULL)
 
 # # Dissect unassigned
 # # Overlapping

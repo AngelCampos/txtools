@@ -4,7 +4,7 @@
 \alias{tx_add_misincRate}
 \title{Add misincorporation to total nucleotide reads ratio}
 \usage{
-tx_add_misincRate(DT, minNucReads = 20, addMisinandTotalCols = FALSE)
+tx_add_misincRate(DT, minNucReads = 20, addCounts = FALSE)
 }
 \arguments{
 \item{DT}{data.table. A table as output by the
@@ -13,7 +13,7 @@ tx_add_misincRate(DT, minNucReads = 20, addMisinandTotalCols = FALSE)
 \item{minNucReads}{Minimum number of nucleotides read needed to calculate
 misincorporation rate}
 
-\item{addMisinandTotalCols}{Set to TRUE to add counts of total nucleotides
+\item{addCounts}{Set to TRUE to add counts of total nucleotides
 read (nucTotal) and different to reference nucleotide (misincCount) columns.}
 }
 \value{

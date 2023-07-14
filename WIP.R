@@ -1,5 +1,6 @@
 # TODO:
 # - Functions examples
+# - Remove most tx_split_DT() occurrences inside txtools' functions
 
 # DONE:
 # - Meta-analysis functions

@@ -293,6 +293,7 @@ tx_reads <- function(reads, geneAnnot, minReads = 50, withSeq = FALSE,
 #' @return GAlignments
 #' @export
 #'
+#' @aliases tx_getUnassignedAlignments
 tx_get_unassignedAlignments <- function(){
     objnames <- ls(envir = .dumpEnvirTxtools())
     do.call(c, unname(mget(objnames, envir = .dumpEnvirTxtools())))
@@ -847,7 +848,7 @@ tx_add_nucTotal <- function(DT){
 #'
 #' @param DT data.table. A table as output by the
 #' \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.
-#' @param addMisinandTotalCols Set to TRUE to add counts of total nucleotides
+#' @param addCounts Set to TRUE to add counts of total nucleotides
 #' read (nucTotal) and different to reference nucleotide (misincCount) columns.
 #' @param minNucReads Minimum number of nucleotides read needed to calculate
 #' misincorporation rate
@@ -856,12 +857,12 @@ tx_add_nucTotal <- function(DT){
 #' @export
 #'
 #' @seealso \code{\link{tx_add_diffNucToRef}} and \code{\link{tx_add_nucTotal}}
-tx_add_misincRate <- function(DT, minNucReads = 20, addMisinandTotalCols = FALSE){
+tx_add_misincRate <- function(DT, minNucReads = 20, addCounts = FALSE){
     DT <- check_DT(DT) %>% hlp_removeColumnIfPresent("misincRate")
     tmpDT <- tx_add_misincCount(DT) %>% tx_add_nucTotal()
     tmp <- round(tmpDT$misincCount / tmpDT$nucTotal, 6)
     tmp[tmpDT$nucTotal < minNucReads] <- NA
-    if(addMisinandTotalCols){DT <- tmpDT}
+    if(addCounts){DT <- tmpDT}
     tibble::add_column(DT, misincRate = tmp)
 }
 #' Nucleotide specific misincorporation rate
