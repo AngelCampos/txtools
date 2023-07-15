@@ -176,3 +176,122 @@ tx_combineTxReadsList <- function(txReadsList){
 # tx_bin_function <- function(x, bins = 100, fun = mean){
 #     tapply(X = x, INDEX = cut_interval(1:length(x), bins), FUN = fun) %>% set_names(c())
 # }
+
+
+#' Generate paired-end FASTQ file
+#'
+#' Simulates a paired-end FASTQ files from a genome and a gene annotation.
+#' The distribution of reads is randomly selected following a negative binomial
+#' distribution.
+#'
+#' @param genome list. The full reference genome sequences, as loaded by
+#' \code{\link{tx_load_genome}}() or prepackaged by BSgenome, see ?BSgenome::available.genomes
+#' @param geneAnnot GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().
+#' @param readLen_1 integer. Length of simulated reads1
+#' @param readLen_2 integer. Length of simulated reads2
+#' @param insertSize  integer. Length of simulated insert (gap between reads)
+#' @param libSize integer. Size of simulated FASTQ file
+#' @param NB_r numeric. Target r dispersion parameter. Bigger values of r tend
+#' to generate a normal distribution. See ?stats::rnbinom()
+#' @param NB_mu numeric. Target mean of the resulting distribution
+#' @param nCores integer. Number of cores to run the function with. Multicore
+#' capability not available in Windows OS.
+#' @param fileName_r1  character. Name of output file reads1.
+#' @param fileName_r2  character. Name of output file reads2.
+#'
+#' @return Writes FASTQ files fileName_r1 and fileName_r2
+#'
+tx_generatePairedEndFASTQ <- function(genome, geneAnnot, readLen_1, readLen_2,
+                                      insertSize, libSize,
+                                      fileName_r1, fileName_r2, NB_r = 5, NB_mu = 500, nCores){
+    # filter transcripts by size
+    totReadLen <- (readLen_1 + readLen_2 + insertSize)
+    txOME_seqs <- tx_get_transcriptSeqs(genome = genome, geneAnnot = geneAnnot,
+                                        nCores = nCores)
+    txOME_seqs <- txOME_seqs[BiocGenerics::width(txOME_seqs) >= totReadLen]
+    # Random starts
+    metaTX <- list(seqs = txOME_seqs, width = BiocGenerics::width(txOME_seqs))
+    metaTX$TPM <- stats::rnbinom(n = length(metaTX$seqs), size = NB_r, mu = NB_mu)
+    metaTX$TPM <- round(metaTX$TPM * (libSize / sum(metaTX$TPM)))
+    metaTX$range1 <- metaTX$width - (totReadLen) + 1
+    metaTX$starts_1 <- lapply(seq_along(metaTX$TPM), function(i){
+        sample(seq(1, metaTX$range1[i]), size = metaTX$TPM[i], replace = TRUE)
+    })
+    #Extract sequences
+    metaTX$reads1 <- lapply(seq_along(metaTX$seqs), function(i){
+        stringr::str_sub(metaTX$seqs[i], metaTX$starts_1[[i]],
+                         metaTX$starts_1[[i]] + readLen_1 - 1) %>%
+            Biostrings::DNAStringSet()
+    }) %>% do.call(what = "c")
+    metaTX$reads2 <- lapply(seq_along(metaTX$seqs), function(i){
+        stringr::str_sub(metaTX$seqs[i], metaTX$starts_1[[i]] + readLen_1 + insertSize,
+                         metaTX$starts_1[[i]] + totReadLen - 1) %>%
+            Biostrings::DNAStringSet() %>% Biostrings::reverseComplement()
+    }) %>% do.call(what = "c")
+    names(metaTX$reads1) <- paste0("R1_", 1:length(metaTX$reads1))
+    names(metaTX$reads2) <- paste0("R2_", 1:length(metaTX$reads2))
+    qualStr_1 <- paste(rep("H", readLen_1), collapse = "")
+    qualStr_2 <- paste(rep("H", readLen_2), collapse = "")
+    # Writing FASTQS
+    Biostrings::writeXStringSet(x = metaTX$reads1,
+                                quali = Biostrings::BStringSet(
+                                    rep(qualStr_1, each = length(metaTX$reads1))),
+                                filepath = fileName_r1,
+                                format = "fastq",
+                                compress = TRUE)
+    Biostrings::writeXStringSet(x = metaTX$reads2,
+                                quali = Biostrings::BStringSet(
+                                    rep(qualStr_2, each = length(metaTX$reads2))),
+                                filepath = fileName_r2,
+                                format = "fastq",
+                                compress = TRUE)
+}
+
+#' Generate single-end FASTQ file
+#'
+#' Simulates a single-end FASTQ file from a genome and a gene annotation.
+#' The distribution of reads is randomly selected following a negative binomial
+#' distribution.
+#'
+#' @param genome list. The full reference genome sequences, as loaded by
+#' \code{\link{tx_load_genome}}() or prepackaged by BSgenome, see ?BSgenome::available.genomes
+#' @param geneAnnot GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().
+#' @param readLen integer. Length of simulated reads
+#' @param libSize integer. Size of simulated FASTQ file
+#' @param fileName character. Name of output file.
+#' @param NB_r numeric. Target r dispersion parameter. Bigger values of r tend
+#' to generate a normal distribution. See ?stats::rnbinom()
+#' @param NB_mu numeric. Target mean of the resulting distribution
+#' @param nCores integer. Number of cores to run the function with. Multicore
+#' capability not available in Windows OS.
+#'
+#' @return Writes FASTQ fileName
+tx_generateSingleEndFASTQ <- function(genome, geneAnnot, readLen, libSize,
+                                      fileName, NB_r = 5, NB_mu = 500, nCores){
+    # filter transcripts by size
+    txOME_seqs <- tx_get_transcriptSeqs(genome = genome, geneAnnot = geneAnnot,
+                                        nCores = nCores)
+    txOME_seqs <- txOME_seqs[BiocGenerics::width(txOME_seqs) >= readLen]
+    # Random starts
+    metaTX <- list(seqs = txOME_seqs, width = BiocGenerics::width(txOME_seqs))
+    metaTX$TPM <- stats::rnbinom(n = length(txOME_seqs), size = NB_r, mu = NB_mu)
+    metaTX$TPM <- round(metaTX$TPM * (libSize / sum(metaTX$TPM)))
+    metaTX$range1 <- metaTX$width - readLen + 1
+    metaTX$starts_1 <- lapply(seq_along(metaTX$TPM), function(i){
+        sample(seq(1, metaTX$range1[i]), size = metaTX$TPM[i], replace = TRUE)
+    })
+    #Extract sequences
+    metaTX$reads1 <- lapply(seq_along(metaTX$seqs), function(i){
+        stringr::str_sub(metaTX$seqs[i], metaTX$starts_1[[i]],
+                         metaTX$starts_1[[i]] + readLen - 1) %>%
+            Biostrings::DNAStringSet()
+    }) %>% do.call(what = "c")
+    names(metaTX$reads1) <- paste0("R1_", 1:length(metaTX$reads1))
+    qualStr <- paste(rep("H", readLen), collapse = "")
+    # Writing FASTQ
+    Biostrings::writeXStringSet(x = metaTX$reads1,
+                                quali = Biostrings::BStringSet(
+                                    rep(qualStr, each = length(metaTX$reads1))),
+                                filepath = fileName, format = "fastq",
+                                compress = TRUE)
+}

@@ -9,6 +9,9 @@ option_list = list(
     make_option(c("-i", "--BAMfile"), type = "character", default = NULL,
                 help="Input Paired-end reads alignment file in BAM format",
                 metavar="character"),
+    make_option(c("-o", "--outFile"), type = "character", default = "auto",
+                help="Output file name. By default automatically sets it to the same path as BAMfile but with extension *.txDT.rds instead of *.bam",
+                metavar="character"),
     make_option(c("-p", "--pairedEnd"), type = "logical", default = TRUE,
                 help="Set to 'FALSE' for loading single-end reads alignments [default = %default]",
                 metavar="logical"),
@@ -48,6 +51,7 @@ opt_parser <- OptionParser(option_list=option_list);
 opt <- parse_args(opt_parser)
 
 BAMfile <- opt$BAMfile
+outName <- opt$outFile
 paired <- opt$pairedEnd
 geneAnnot <- opt$BEDfile_geneAnnot
 genome <- opt$FASTAfile
@@ -91,10 +95,9 @@ if(dtType == "cov"){
 # Check yieldSize to be integer
 txtools:::check_integer_arg(ySize, "ySize")
 # Set OUTPUT filename
-outName <- "auto"
 if(outName == "auto"){
-    outName <- strsplit(BAMfile, split = "/") %>% unlist %>% tail(1) %>% 
-        gsub(x = ., pattern = ".bam$", replacement = ".txDT.rds", perl = T)
+    if(!grepl(pattern = ".bam$", x = BAMfile)){stop("BAMfile, doesn't include extension .bam")}
+    outName <- gsub(x = BAMfile, pattern = ".bam$", replacement = ".txDT.rds", perl = TRUE)
 }
 
 # Output all genes even with no reads overlapping
