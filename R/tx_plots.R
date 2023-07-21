@@ -160,6 +160,102 @@ tx_plot_staEndCov <- function(
     }
 }
 
+#' Numeric plot
+#'
+#' Plot numeric variables in a txDT by gene and in a specified range
+#'
+#' If the range exceeds 250 bp the labels in the x-axis are not shown by default
+#' unless force_xAxis is set to TRUE.
+#'
+#' @param DT data.table. Input data from which to generate the plot
+#' @param gene character
+#' @param colVars character. Names of columns for which values will be extracted
+#' @param txRange integer. Range in data to be used, 'txcoor' column is used to
+#' delimit this range in the data.table.
+#' @param plot_type character. Type of plot to be output, either "lineplot" or "boxplot".
+#' @param lwd numeric. Width of line (lineplot)
+#' @param addPoints logical. Add points to line (lineplot)
+#' @param scales character. Scales the y axis accordingly. Either 'fixed',
+#'  by default, or 'free_y' (barplot)
+#' @param show_yLabels logical. If set to FALSE hides the y axis labels.
+#' @param showLegend logical. If set to FALSE does not renger a legend.
+#'
+#' @return ggplot
+#' @export
+#'
+#' @examples
+#' # Barplot using data from the Use-case-#3
+#' tx_plot_numeric(DT = sc_txDTL[[1]], gene = "18s", txRange = 100:150,
+#' colVars = c("start_5p", "end_3p", "cov"), plot_type = "barplot", scales = "free")
+#'
+#' # Lineplot using data from the Use-case-#3
+#' tx_plot_numeric(DT = sc_txDTL[[1]], gene = "18s", txRange = 100:150,
+#' colVars = c("start_5p", "end_3p", "cov"), plot_type = "lineplot")
+tx_plot_numeric <- function(DT, gene, colVars, txRange = 1:nrow(DT),
+                            plot_type = "lineplot", lwd = 1, addPoints = TRUE,
+                            scales = "fixed", show_yLabels = TRUE, showLegend = TRUE){
+    check_refSeq(DT)
+    DT <- check_DT(DT)
+    DT <- as.data.frame(DT)
+    isNum <- apply(DT[,colVars], 2, "is.numeric")
+    if(!all(isNum)){
+        stop("Selected column(s): ", paste(colVars[!isNum], collapse = ", ") ," are not numeric")
+    }
+    if(!(gene %in% DT$gene)){stop("gene not found in DT object")}
+    DT <- DT[DT$gene == gene, ]
+    DT <- DT[DT$txcoor %in% txRange,]
+    DT$pos <- paste(DT$txcoor, DT$refSeq, sep = "-")
+    DT$pos <- factor(DT$pos, levels = DT$pos)
+    tmpData <- tidyr::pivot_longer(DT, cols = tidyr::all_of(colVars),
+                                   values_to = "counts",
+                                   names_to = "variable") %>%
+        data.table::data.table()
+    tmpData$variable <- factor(tmpData$variable, levels = colVars)
+    if(plot_type == "barplot"){
+        tmpGG <- ggplot2::ggplot(tmpData,
+                                 ggplot2::aes(x = tmpData$pos,
+                                              y = tmpData$counts,
+                                              fill = tmpData$variable)) +
+            ggplot2::geom_bar(stat = "identity") +
+            ggplot2::guides(fill = ggplot2::guide_legend(nrow = 1, byrow = TRUE, title = "")) +
+            ggplot2::facet_grid(.data$variable~., scales = scales) +
+            ggplot2::scale_fill_brewer(palette = "Set1")
+    }else if(plot_type == "lineplot"){
+        tmpGG <- ggplot2::ggplot(tmpData,
+                                 ggplot2::aes(x = tmpData$pos,
+                                              y = tmpData$counts,
+                                              colour = tmpData$variable,
+                                              group = tmpData$variable)) +
+            ggplot2::geom_line(lwd = lwd) +
+            ggplot2::guides(color = ggplot2::guide_legend(nrow = 1, byrow = TRUE, title = ""))
+        ggplot2::scale_color_brewer(palette = "Set1")
+        if(addPoints){tmpGG <- tmpGG + ggplot2::geom_point(alpha = 0.5)}
+    }else{stop("plot_type must be either lineplot or barplot")}
+    tmpGG <- tmpGG +
+        ggplot2::theme_bw() +
+        ggplot2::xlab("Transcriptome coordinate") +
+        ggplot2::theme(legend.position="top") +
+        ggplot2::ggtitle(gene) +
+        ggplot2::ylab("Value")
+    if(show_yLabels & length(txRange) < 250){
+        nucCols <- txBrowser_pal()(6)[-1:-2][as.numeric(factor(DT$refSeq))]
+        tmpGG <- suppressWarnings(
+            tmpGG +
+                ggplot2::theme(axis.text.x =
+                                   ggplot2::element_text(angle = 90,
+                                                         hjust = 1,
+                                                         vjust = 0.5,
+                                                         colour = nucCols,
+                                                         face = "bold")))
+    }else{
+        tmpGG <- tmpGG + ggplot2::theme(axis.text.x = ggplot2::element_blank())
+    }
+    if(!showLegend){
+        tmpGG <- tmpGG + ggplot2::theme(legend.position = "none")
+    }
+    tmpGG
+}
+
 #' Plot motif centered in logical annotation
 #'
 #' Plots a motif of the sequence surrounding sites marked as TRUE in a logical

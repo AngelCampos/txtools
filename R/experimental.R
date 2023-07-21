@@ -31,7 +31,8 @@ tx_plot_metaGeneByBins <- function(DT, colName, nBins = 100, FUN = "mean", minTx
             ggplot2::geom_line() + ggplot2::theme_classic() +
             ggplot2::ggtitle(plotTitle, plotSub) + ggplot2::ylab(Y_axis)
     }else{
-        ggplot2::ggplot(DF, ggplot2::aes(x = DF$bins, y = DF$score)) + ggplot2::geom_line() + ggplot2::theme_classic() +
+        ggplot2::ggplot(DF, ggplot2::aes(x = DF$bins, y = DF$score)) +
+            ggplot2::geom_line() + ggplot2::theme_classic() +
             ggplot2::ggtitle(plotTitle, plotSub) + ggplot2::ylab(Y_axis)
     }
 }
@@ -72,90 +73,7 @@ tx_plot_metaGeneByBins <- function(DT, colName, nBins = 100, FUN = "mean", minTx
 #     }
 # }
 
-# Plot one numeric variable
-tx_plot_oneNumeric <- function(DTL, gene, txRange = 1:nrow(DTL[[1]]), columnName,
-                               show_yLabels = TRUE, bar_border = TRUE,
-                               showLegend = TRUE, col = "#c2c2c2"){
-    if(all(methods::is(DTL) %in% methods::is(list()))){
-        lapply(DTL, function(x) check_refSeq(x))
-        DTL <- lapply(DTL, function(x) check_DT(x))
-        if(!all(unlist(lapply(DTL, function(x) gene %in% x$gene)))){stop("gene not found in DT object")}
-        if(is.null(names(DTL))){names(DTL) <- seq_along(DTL)}
-        tmpData <- lapply(seq_along(DTL), function(i){
-            DT <- DTL[[i]]
-            DT <- DT[DT$gene == gene, ]
-            DT <- DT[DT$txcoor %in% txRange,]
-            DT$pos <- paste(DT$txcoor, DT$refSeq, sep = "-")
-            DT$pos <- factor(DT$pos, levels = DT$pos)
-            tmpData <- tidyr::pivot_longer(DT, cols = tidyr::all_of(columnName),
-                                           values_to = "counts",
-                                           names_to = "coverage") %>%
-                data.table::data.table()
-            tmpData$coverage <- factor(tmpData$coverage, levels = columnName)
-            tmpData$sample <- names(DTL)[i]
-            tmpData
-        }) %>% do.call(what = "rbind")
-    }else{
-        DT <- DTL
-        DT <- check_refSeq(DT)
-        DT <- check_DT(DT)
-        DT <- as.data.frame(DT)
-        if(!(gene %in% DT$gene)){stop("gene not found in DT object")}
-        DT <- DT[DT$gene == gene, ]
-        DT <- DT[DT$txcoor %in% txRange,]
-        DT$pos <- paste(DT$txcoor, DT$refSeq, sep = "-")
-        DT$pos <- factor(DT$pos, levels = DT$pos)
-        tmpData <- tidyr::pivot_longer(DT, cols = tidyr::all_of(columnName),
-                                       values_to = "counts",
-                                       names_to = "coverage") %>%
-            data.table::data.table()
-        tmpData$coverage <- factor(tmpData$coverage, levels = columnName)
-    }
-    tmpGG <- ggplot2::ggplot(tmpData,
-                             ggplot2::aes(x = tmpData$pos,
-                                          y = tmpData$counts,
-                                          fill = tmpData$coverage)) +
-        ggplot2::theme_minimal() +
-        ggplot2::scale_fill_manual(values = col) +
-        ggplot2::ylab(columnName) + ggplot2::xlab("Transcriptome coordinate") +
-        ggplot2::theme(legend.position="none") +
-        ggplot2::guides(fill = ggplot2::guide_legend(nrow=1, byrow=TRUE, title = "")) +
-        ggplot2::ggtitle(gene)
-    if(bar_border){
-        tmpGG <- tmpGG + ggplot2::geom_bar(stat = "identity",
-                                           colour = "black",
-                                           size = 0.3)
-    }else{
-        tmpGG <- tmpGG + ggplot2::geom_bar(stat = "identity")
-    }
-    if(show_yLabels){
-        if(all(methods::is(DTL) == methods::is(list()))){
-            tmpDT <- DTL[[1]]
-            nucCols <- txBrowser_pal()(6)[-1:-2][as.numeric(
-                factor(tmpDT[tmpDT$gene == gene & tmpDT$txcoor %in% txRange, ]$refSeq))]
-        }else{
-            nucCols <- txBrowser_pal()(6)[-1:-2][as.numeric(factor(DTL$refSeq))]
-        }
-        tmpGG <- suppressWarnings(
-            tmpGG +
-                ggplot2::theme(axis.text.x =
-                                   ggplot2::element_text(angle = 90,
-                                                         hjust = 1,
-                                                         vjust = 0.5,
-                                                         colour = nucCols,
-                                                         face = "bold")))
-    }else{
-        tmpGG <- tmpGG + ggplot2::theme(axis.text.x = ggplot2::element_blank())
-    }
-    if(!showLegend){
-        tmpGG <- tmpGG + ggplot2::theme(legend.position="none")
-    }
-    if(all(methods::is(DTL) == methods::is(list()))){
-        tmpGG <- tmpGG + ggplot2::facet_wrap(sample~.)
-    }else{
-        tmpGG
-    }
-}
+# load_all()
 
 # Combine lists of transcript reads processed by tx_reads
 tx_combineTxReadsList <- function(txReadsList){
