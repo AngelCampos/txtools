@@ -172,7 +172,7 @@ tx_plot_staEndCov <- function(
 #' @param colVars character. Names of columns for which values will be extracted
 #' @param txRange integer. Range in data to be used, 'txcoor' column is used to
 #' delimit this range in the data.table.
-#' @param plot_type character. Type of plot to be output, either "lineplot" or "boxplot".
+#' @param plot_type character. Type of plot to be output, either "lineplot" or "barplot".
 #' @param lwd numeric. Width of line (lineplot)
 #' @param addPoints logical. Add points to line (lineplot)
 #' @param scales character. Scales the y axis accordingly. Either 'fixed',
@@ -197,7 +197,7 @@ tx_plot_numeric <- function(DT, gene, colVars, txRange = 1:nrow(DT),
     check_refSeq(DT)
     DT <- check_DT(DT)
     DT <- as.data.frame(DT)
-    isNum <- apply(DT[,colVars], 2, "is.numeric")
+    isNum <- unlist(lapply(colVars, function(x) is.numeric(DT[[x]])))
     if(!all(isNum)){
         stop("Selected column(s): ", paste(colVars[!isNum], collapse = ", ") ," are not numeric")
     }
