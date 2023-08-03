@@ -109,6 +109,8 @@ tx_combineTxReadsList <- function(txReadsList){
 #' @param readLen_2 integer. Length of simulated reads2
 #' @param insertSize  integer. Length of simulated insert (gap between reads)
 #' @param libSize integer. Size of simulated FASTQ file
+#' @param TPM numeric. Proportion of reads per gene in gene annotation.
+#' Overrides negative binomial distribution generation.
 #' @param NB_r numeric. Target r dispersion parameter. Bigger values of r tend
 #' to generate a normal distribution. See ?stats::rnbinom()
 #' @param NB_mu numeric. Target mean of the resulting distribution
@@ -120,17 +122,30 @@ tx_combineTxReadsList <- function(txReadsList){
 #' @return Writes FASTQ files fileName_r1 and fileName_r2
 #'
 tx_generatePairedEndFASTQ <- function(genome, geneAnnot, readLen_1, readLen_2,
-                                      insertSize, libSize,
-                                      fileName_r1, fileName_r2, NB_r = 5, NB_mu = 500, nCores){
+                                      insertSize, libSize, fileName_r1,
+                                      fileName_r2, TPM = NULL, NB_r = 5, NB_mu = 500, nCores){
     # filter transcripts by size
     totReadLen <- (readLen_1 + readLen_2 + insertSize)
     txOME_seqs <- tx_get_transcriptSeqs(genome = genome, geneAnnot = geneAnnot,
                                         nCores = nCores)
     txOME_seqs <- txOME_seqs[BiocGenerics::width(txOME_seqs) >= totReadLen]
+    if(length(txOME_seqs) != length(geneAnnot)){
+        stop("Some genes in gene annotation are shorter than total read length\n")
+    }
+    if(!is.null(TPM)){
+        if(length(TPM) != length(geneAnnot)){
+            stop("If TPM is provided, its length must be equal to geneAnnot's length")
+        }
+    }
     # Random starts
     metaTX <- list(seqs = txOME_seqs, width = BiocGenerics::width(txOME_seqs))
-    metaTX$TPM <- stats::rnbinom(n = length(metaTX$seqs), size = NB_r, mu = NB_mu)
-    metaTX$TPM <- round(metaTX$TPM * (libSize / sum(metaTX$TPM)))
+    if(is.null(TPM)){
+        metaTX$TPM <- stats::rnbinom(n = length(txOME_seqs), size = NB_r, mu = NB_mu)
+        metaTX$TPM <- round(metaTX$TPM * (libSize / sum(metaTX$TPM)))
+    }else{
+        metaTX$TPM <- TPM
+        metaTX$TPM <- round(metaTX$TPM * (libSize / sum(metaTX$TPM)))
+    }
     metaTX$range1 <- metaTX$width - (totReadLen) + 1
     metaTX$starts_1 <- lapply(seq_along(metaTX$TPM), function(i){
         sample(seq(1, metaTX$range1[i]), size = metaTX$TPM[i], replace = TRUE)
@@ -177,6 +192,7 @@ tx_generatePairedEndFASTQ <- function(genome, geneAnnot, readLen_1, readLen_2,
 #' @param readLen integer. Length of simulated reads
 #' @param libSize integer. Size of simulated FASTQ file
 #' @param fileName character. Name of output file.
+#' @param TPM numeric. Proportion of reads per gene in gene annotation
 #' @param NB_r numeric. Target r dispersion parameter. Bigger values of r tend
 #' to generate a normal distribution. See ?stats::rnbinom()
 #' @param NB_mu numeric. Target mean of the resulting distribution
@@ -185,15 +201,29 @@ tx_generatePairedEndFASTQ <- function(genome, geneAnnot, readLen_1, readLen_2,
 #'
 #' @return Writes FASTQ fileName
 tx_generateSingleEndFASTQ <- function(genome, geneAnnot, readLen, libSize,
-                                      fileName, NB_r = 5, NB_mu = 500, nCores){
+                                      fileName, TPM = NULL, NB_r = 5, NB_mu = 500, nCores){
     # filter transcripts by size
     txOME_seqs <- tx_get_transcriptSeqs(genome = genome, geneAnnot = geneAnnot,
                                         nCores = nCores)
     txOME_seqs <- txOME_seqs[BiocGenerics::width(txOME_seqs) >= readLen]
+    if(length(txOME_seqs) != length(geneAnnot)){
+        stop("Some genes in gene annotation are shorter than total read length\n")
+    }
+    if(!is.null(TPM)){
+        if(length(TPM) != length(geneAnnot)){
+            stop("If TPM is provided, its length must be equal to geneAnnot's length")
+        }
+    }
     # Random starts
     metaTX <- list(seqs = txOME_seqs, width = BiocGenerics::width(txOME_seqs))
-    metaTX$TPM <- stats::rnbinom(n = length(txOME_seqs), size = NB_r, mu = NB_mu)
-    metaTX$TPM <- round(metaTX$TPM * (libSize / sum(metaTX$TPM)))
+    if(is.null(TPM)){
+        metaTX$TPM <- stats::rnbinom(n = length(txOME_seqs), size = NB_r, mu = NB_mu)
+        metaTX$TPM <- round(metaTX$TPM * (libSize / sum(metaTX$TPM)))
+    }else{
+        metaTX$TPM <- TPM
+        metaTX$TPM <- round(metaTX$TPM * (libSize / sum(metaTX$TPM)))
+    }
+
     metaTX$range1 <- metaTX$width - readLen + 1
     metaTX$starts_1 <- lapply(seq_along(metaTX$TPM), function(i){
         sample(seq(1, metaTX$range1[i]), size = metaTX$TPM[i], replace = TRUE)
