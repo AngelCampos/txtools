@@ -208,7 +208,7 @@ tx_load_rdsDT <- function(file){
 #' @return GRanges
 #' @export
 tx_reads <- function(reads, geneAnnot, minReads = 50, withSeq = FALSE,
-                     verbose = TRUE, nCores = 1){
+                     verbose = TRUE, ignore.strand = FALSE, nCores = 1){
     # Checks
     tx_flushUnassigned()
     check_mc_windows(nCores)
@@ -231,10 +231,12 @@ tx_reads <- function(reads, geneAnnot, minReads = 50, withSeq = FALSE,
     # Spliting reads by gene
     overlapType <-  "within"
     split_i <- switch(class(reads),
-                      GAlignmentPairs = hlpr_splitReadsByGenes(reads, geneAnnot,
-                                                               overlapType, minReads),
-                      GAlignments = hlpr_splitReadsByGenes_singleEnd(reads, geneAnnot,
-                                                                     overlapType, minReads))
+                      GAlignmentPairs = hlpr_splitReadsByGenes(
+                          reads = reads, bedR = geneAnnot, overlapType = overlapType,
+                          minReads = minReads, ignore.strand = ignore.strand),
+                      GAlignments = hlpr_splitReadsByGenes_singleEnd(
+                          reads = reads, bedR = geneAnnot, overlapType = overlapType,
+                          minReads = minReads, ignore.strand = ignore.strand))
     geneAnnot <- geneAnnot[which(geneAnnot$name %in% names(split_i))]
     if(length(geneAnnot) > 0){
         if(verbose){
@@ -258,7 +260,8 @@ tx_reads <- function(reads, geneAnnot, minReads = 50, withSeq = FALSE,
                              split_i = split_i,
                              allExons = allExons,
                              withSeq = withSeq,
-                             minReads = minReads)
+                             minReads = minReads,
+                             ignore.strand = ignore.strand)
         })
     }else if(!pairedEnd){
         OUT <- parallel::mclapply(mc.cores = nCores, geneAnnot$name, function(iGene){
