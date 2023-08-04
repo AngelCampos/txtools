@@ -56,7 +56,8 @@ NULL
 #' hg19_bam <- tx_load_bam(bamFile, pairedEnd = TRUE, loadSeq = TRUE, verbose = TRUE)
 #' summary(hg19_bam)
 tx_load_bam <- function(file, pairedEnd, yieldSize = 100000,
-                        scanFlag = "default", loadSeq = FALSE, strandMode = 1, verbose = TRUE){
+                        scanFlag = "default", loadSeq = FALSE, strandMode = 1,
+                        verbose = TRUE){
     if(!is.logical(pairedEnd)){stop("Argument 'pairedEnd' must be of class logical")}
     if(!is.logical(loadSeq)){stop("Argument 'loadSeq' must be of class logical")}
     if(verbose){cat("Reading number of records in file \n")}
@@ -215,8 +216,9 @@ tx_reads <- function(reads, geneAnnot, minReads = 50, withSeq = FALSE,
     check_GA_reads_compatibility(reads, geneAnnot)
     if(withSeq){check_BAM_has_seq(reads)}
     if(!class(reads) %in% c("GAlignmentPairs", "GAlignments")){
-        stop("reads argument should be of class GAlignmentPairs. \n")
+        stop("reads argument should be of class GAlignmentPairs or GAlignments. \n")
     }
+    reads <- rmAmbigStrandAligns(reads)
     if(class(geneAnnot) != "GRanges"){
         stop("geneAnnot argument should be of class GRanges. \n")
     }
