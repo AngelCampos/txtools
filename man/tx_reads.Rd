@@ -12,6 +12,7 @@ tx_reads(
   minReads = 50,
   withSeq = FALSE,
   verbose = TRUE,
+  ignore.strand = FALSE,
   nCores = 1
 )
 }
@@ -26,6 +27,9 @@ tx_reads(
 object should contain sequences.}
 
 \item{verbose}{logical. Set to FALSE to show less information.}
+
+\item{ignore.strand}{logical. Set to TRUE to allow alignments in a gene
+ignoring the strand of the alignment. False by default.}
 
 \item{nCores}{integer. Number of cores to run the function with. Multi-core
 capability not available in Windows OS.}

@@ -201,6 +201,8 @@ tx_load_rdsDT <- function(file){
 #' @param verbose logical. Set to FALSE to show less information.
 #' @param nCores integer. Number of cores to run the function with. Multi-core
 #' capability not available in Windows OS.
+#' @param ignore.strand logical. Set to TRUE to allow alignments in a gene
+#' ignoring the strand of the alignment. False by default.
 #'
 #' @aliases tx_reads_mc
 #' @aliases tx_flushUnassigned
