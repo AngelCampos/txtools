@@ -47,8 +47,10 @@ exonBlockGen <- function(iGene, geneAnnot_GR){
 # Reads overlapping gene models
 hlpr_splitReadsByGenes <- function(reads, bedR, overlapType, minReads){
     #IgnoreStrand feature missing
-    allOver_1 <- GenomicRanges::findOverlaps(GenomicAlignments::first(reads, real.strand = TRUE), bedR, type = overlapType)
-    allOver_2 <- GenomicRanges::findOverlaps(GenomicAlignments::last(reads, real.strand = TRUE), bedR, type = overlapType)
+    # allOver_1 <- GenomicRanges::findOverlaps(GenomicAlignments::first(reads, real.strand = TRUE), bedR, type = overlapType)
+    # allOver_2 <- GenomicRanges::findOverlaps(GenomicAlignments::last(reads, real.strand = TRUE), bedR, type = overlapType)
+    allOver_1 <- GenomicRanges::findOverlaps(GenomicAlignments::first(reads, real.strand = TRUE), bedR, type = overlapType, ignore.strand = TRUE)
+    allOver_2 <- GenomicRanges::findOverlaps(GenomicAlignments::last(reads, real.strand = TRUE), bedR, type = overlapType, ignore.strand = TRUE)
     split_1 <- split(allOver_1@from, allOver_1@to)
     split_2 <- split(allOver_2@from, allOver_2@to)
     names(split_1) <- bedR[names(split_1) %>% as.numeric()]$name
@@ -76,13 +78,34 @@ hlpr_splitReadsByGenes_singleEnd <- function(reads, bedR, overlapType, minReads)
 
 # Process reads into transcripts
 hlpr_ReadsInGene <- function(reads, iGene, geneAnnot, split_i, allExons, minReads, withSeq){
-    iStrand <- geneAnnot[which(geneAnnot$name == iGene)] %>%
-        GenomicRanges::strand() %>% as.character()
+    iStrand <- as.character(GenomicRanges::strand(geneAnnot[which(geneAnnot$name == iGene)]))
     iExon <- exonBlockGen(iGene = iGene, geneAnnot_GR = geneAnnot)
     selReadsbyPair <- split_i[[iGene]]
     # Selecting paired reads to merge
     iReads_r1 <- GenomicAlignments::first(reads, real.strand = TRUE)[selReadsbyPair]
     iReads_r2 <- GenomicAlignments::last(reads, real.strand = TRUE)[selReadsbyPair]
+    r1Strand <- as.logical(GenomicRanges::strand(iReads_r1) == iStrand)
+    if(TRUE){
+        # reversing sequence
+        newR1 <- c(iReads_r1[r1Strand], iReads_r2[!r1Strand])
+        newR2 <- c(iReads_r2[r1Strand], iReads_r1[!r1Strand])
+        iReads_r1 <- newR1; rm(newR1)
+        iReads_r2 <- newR2; rm(newR2)
+        # GenomicRanges::strand(iReads_r1) <- iStrand
+        # GenomicRanges::strand(iReads_r2) <- oppStrand(iStrand)
+    }
+    # iReads_r2 <- iReads_r2[start(iReads_r1) == 142987843]
+    # iReads_r1 <- iReads_r1[start(iReads_r1) == 142987843]
+    # r1Strand <- as.logical(GenomicRanges::strand(iReads_r1) == "+")
+    # r2Strand <- as.logical(GenomicRanges::strand(iReads_r2) == "+")
+    # if(TRUE){
+    #     mcols(iReads_r1)$seq %>% table
+    #     mcols(iReads_r2)$seq %>% table
+    #
+    #     mcols(iReads_r2[r2Strand ])$seq
+    #     mcols(iReads_r2[!r2Strand])$seq
+    #     table(r1Strand)
+    # }
     # Filtering reads strictly inside exons
     # Both ends of both reads fall into the gene model
     stEndTable <- as.matrix(data.frame(r1_S = GenomicRanges::start(iReads_r1),
@@ -93,14 +116,14 @@ hlpr_ReadsInGene <- function(reads, iGene, geneAnnot, split_i, allExons, minRead
         rowSums %>% magrittr::equals(4) %>% which()
     if(length(pass) < minReads){return(GenomicRanges::GRanges())} # No reads Return empty GA
     # Reads cover consecutive exons
-    tmp <- GenomicRanges::findOverlaps(iReads_r1[pass], allExons[[iGene]])
-    passPos <- split(tmp@to, tmp@from) %>% lapply(diff) %>%
-        lapply(function(x) all(x == 1)) %>% unlist %>% which
-    tmp <- GenomicRanges::findOverlaps(iReads_r2[pass], allExons[[iGene]])
-    passNeg <- split(tmp@to, tmp@from) %>% lapply(diff) %>%
-        lapply(function(x) all(x == 1)) %>% unlist %>% which
-    pass <- pass[as.numeric(intersect(passNeg, passPos))]
-    if(length(pass) < minReads){return(GenomicRanges::GRanges())} # No reads Return empty GA
+    # tmp <- GenomicRanges::findOverlaps(iReads_r1[pass], allExons[[iGene]])
+    # passPos <- split(tmp@to, tmp@from) %>% lapply(diff) %>%
+    #     lapply(function(x) all(x == 1)) %>% unlist %>% which
+    # tmp <- GenomicRanges::findOverlaps(iReads_r2[pass], allExons[[iGene]])
+    # passNeg <- split(tmp@to, tmp@from) %>% lapply(diff) %>%
+    #     lapply(function(x) all(x == 1)) %>% unlist %>% which
+    # pass <- pass[as.numeric(intersect(passNeg, passPos))]
+    # if(length(pass) < minReads){return(GenomicRanges::GRanges())} # No reads Return empty GA
     # Check gaps match intron-exon junction structure
     which_N <- GenomicAlignments::njunc(iReads_r1[pass]) > 0 |
         GenomicAlignments::njunc(iReads_r2[pass]) > 0
@@ -128,15 +151,18 @@ hlpr_ReadsInGene <- function(reads, iGene, geneAnnot, split_i, allExons, minRead
     if(iStrand == "+"){
         tReads <- data.frame(start    = match(GenomicRanges::start(iReads_r1[pass]), iExon),
                              end      = match(GenomicRanges::end(iReads_r2[pass]), iExon),
-                             strand   = GenomicRanges::strand(iReads_r1[pass]),
+                             strand   = iStrand,
                              seqnames = iGene)
     }else if(iStrand == "-"){
         tReads <- data.frame(start    = match(GenomicRanges::end(iReads_r1[pass]), iExon),
                              end      = match(GenomicRanges::start(iReads_r2[pass]), iExon),
-                             strand   = GenomicRanges::strand(iReads_r1[pass]),
+                             strand   = iStrand,
                              seqnames = iGene)
     }
     pass <- pass[tReads$end >= (tReads$start -1)]
+    # boxplot( tReads$end - (tReads$start -1) ~ as.character(strand(iReads_r1)))
+    # table(tReads$end >= (tReads$start -1), strand(iReads_r1))
+    if(length(pass) < minReads){return(GenomicRanges::GRanges())} # No reads Return empty GA
     tReads <- check_DFforGRanges(tReads) %>% plyranges::as_granges()
     names(tReads) <- names(reads)[selReadsbyPair][pass]
     GenomeInfoDb::seqlengths(tReads) <- length(iExon)
@@ -145,30 +171,30 @@ hlpr_ReadsInGene <- function(reads, iGene, geneAnnot, split_i, allExons, minRead
         return(tReads)
     }
     # Merging sequences
-    tReads$start_r1 <- GenomicRanges::start(iReads_r1[pass])
-    tReads$end_r1 <- GenomicRanges::end(iReads_r1[pass])
-    tReads$start_r2 <- GenomicRanges::start(iReads_r2[pass])
-    tReads$end_r2 <- GenomicRanges::end(iReads_r2[pass])
-    tReads$strand_r1 <- GenomicRanges::strand(iReads_r1[pass])
-    tReads$cigar_r1 <- GenomicAlignments::cigar(iReads_r1[pass])
-    tReads$cigar_r2 <- GenomicAlignments::cigar(iReads_r2[pass])
-    tReads$seq_r1 <- S4Vectors::mcols(iReads_r1[pass])$seq
-    tReads$seq_r2 <- S4Vectors::mcols(iReads_r2[pass])$seq
+    # tReads$start_r1 <- GenomicRanges::start(iReads_r1[pass])
+    # tReads$end_r1 <- GenomicRanges::end(iReads_r1[pass])
+    # tReads$start_r2 <- GenomicRanges::start(iReads_r2[pass])
+    # tReads$end_r2 <- GenomicRanges::end(iReads_r2[pass])
+    # tReads$strand_r1 <- GenomicRanges::strand(iReads_r1[pass])
+    # tReads$cigar_r1 <- GenomicAlignments::cigar(iReads_r1[pass])
+    # tReads$cigar_r2 <- GenomicAlignments::cigar(iReads_r2[pass])
+    # tReads$seq_r1 <- S4Vectors::mcols(iReads_r1[pass])$seq
+    # tReads$seq_r2 <- S4Vectors::mcols(iReads_r2[pass])$seq
     # Constructing the merged read sequence
     if(iStrand == "+"){
-        tReads$seq1 <- GenomicAlignments::sequenceLayer(S4Vectors::mcols(tReads)$seq_r1,
-                                                        S4Vectors::mcols(tReads)$cigar_r1,
+        tReads$seq1 <- GenomicAlignments::sequenceLayer(S4Vectors::mcols(iReads_r1[pass])$seq,
+                                                        GenomicAlignments::cigar(iReads_r1[pass]),
                                                         to = "reference-N-regions-removed")
-        tReads$seq2 <- GenomicAlignments::sequenceLayer(S4Vectors::mcols(tReads)$seq_r2,
-                                                        S4Vectors::mcols(tReads)$cigar_r2,
+        tReads$seq2 <- GenomicAlignments::sequenceLayer(S4Vectors::mcols(iReads_r2[pass])$seq,
+                                                        GenomicAlignments::cigar(iReads_r2[pass]),
                                                         to = "reference-N-regions-removed")
     }else if(iStrand == "-"){
-        tReads$seq1 <- GenomicAlignments::sequenceLayer(S4Vectors::mcols(tReads)$seq_r1,
-                                                        S4Vectors::mcols(tReads)$cigar_r1,
+        tReads$seq1 <- GenomicAlignments::sequenceLayer(S4Vectors::mcols(iReads_r1[pass])$seq,
+                                                        GenomicAlignments::cigar(iReads_r1[pass]),
                                                         to = "reference-N-regions-removed") %>%
             Biostrings::reverseComplement()
-        tReads$seq2 <- GenomicAlignments::sequenceLayer(S4Vectors::mcols(tReads)$seq_r2,
-                                                        S4Vectors::mcols(tReads)$cigar_r2,
+        tReads$seq2 <- GenomicAlignments::sequenceLayer(S4Vectors::mcols(iReads_r2[pass])$seq,
+                                                        GenomicAlignments::cigar(iReads_r2[pass]),
                                                         to = "reference-N-regions-removed") %>%
             Biostrings::reverseComplement()
     }
@@ -284,20 +310,20 @@ hlpr_ReadsInGene_SingleEnd <- function(reads, iGene, geneAnnot, split_i,
         return(tReads)
     }
     # Merging sequences
-    tReads$start_r1 <- GenomicRanges::start(iReads_r1[pass])
-    tReads$end_r1 <- GenomicRanges::end(iReads_r1[pass])
-    tReads$strand_r1 <- GenomicRanges::strand(iReads_r1[pass])
-    tReads$cigar_r1 <- GenomicAlignments::cigar(iReads_r1[pass])
-    tReads$seq_r1 <- S4Vectors::mcols(iReads_r1[pass])$seq
+    # tReads$start_r1 <- GenomicRanges::start(iReads_r1[pass])
+    # tReads$end_r1 <- GenomicRanges::end(iReads_r1[pass])
+    # tReads$strand_r1 <- GenomicRanges::strand(iReads_r1[pass])
+    # tReads$cigar_r1 <- GenomicAlignments::cigar(iReads_r1[pass])
+    # tReads$seq_r1 <- S4Vectors::mcols(iReads_r1[pass])$seq
     # Constructing the merged read sequence
     if(iStrand == "+"){
-        tReads$seq1 <- GenomicAlignments::sequenceLayer(S4Vectors::mcols(tReads)$seq_r1,
-                                                        S4Vectors::mcols(tReads)$cigar_r1,
+        tReads$seq1 <- GenomicAlignments::sequenceLayer(GenomicAlignments::cigar(iReads_r1[pass]),
+                                                        S4Vectors::mcols(iReads_r1[pass])$seq,
                                                         to = "reference-N-regions-removed")
     }else if(iStrand == "-"){
         tReads$seq1 <- Biostrings::reverseComplement(
-            GenomicAlignments::sequenceLayer(S4Vectors::mcols(tReads)$seq_r1,
-                                             S4Vectors::mcols(tReads)$cigar_r1,
+            GenomicAlignments::sequenceLayer(GenomicAlignments::cigar(iReads_r1[pass]),
+                                             S4Vectors::mcols(iReads_r1[pass])$seq,
                                              to = "reference-N-regions-removed"))
 
     }
@@ -404,40 +430,6 @@ hlp_coverageTab_mc <- function(x, nCores){
 #' fractions of reads assigned.
 #' 3) "splitForceInt": Ambiguous reads will be divided in half, but forced to be
 #' integers, unassigned fraction of reads will be summed and assigned as 'N'.
-#'
-#' @return data.table
-#' @export
-hlp_nucFreqTab <- function(x, simplify_IUPAC = "not"){
-    if(!all(simplify_IUPAC %in% c("not", "splitHalf", "splitForceInt"))){
-        stop("simplify_IUPAC argument must be either: 'not', 'splitHalf' or ",
-             "'splitForceInt'.")
-    }
-    iGenes <- names(x)
-    lapply(iGenes, function(iGene){
-        y <- Biostrings::consensusMatrix(x = x[[iGene]]$seq,
-                                         shift = GenomicRanges::start(x[[iGene]]) -1,
-                                         width = GenomeInfoDb::seqlengths(x[[iGene]])[iGene])
-        if(simplify_IUPAC == "not"){
-            hlp_addMissingNucs(y) %>% t %>% data.table::data.table()
-        }else if(simplify_IUPAC == "splitHalf"){
-            hlp_splitNucsHalf(y) %>% t %>% data.table::data.table()
-        }else if(simplify_IUPAC == "splitForceInt"){
-            hlp_splitNucsForceInt(y) %>% t %>% data.table::data.table()
-        }
-    }) %>% magrittr::set_names(names(x))
-}
-
-#' Calculate nucleotide frequency pileup for all gene models
-#'
-#' @param x CompressedGRangesList. Genomic Ranges list containing genomic
-#' alignments data by gene. Constructed via tx_reads().
-#' @param simplify_IUPAC character. Method to simplify ambiguous reads:
-#' 1) 'not': Ambiguous reads will be left as their IUPAC_ambiguous code, e.g.
-#' for positions in which a 'G' and and 'A' where read an 'R' will note this.
-#' 2) "splitHalf': Ambiguous reads will be divided in half, in odd cases having
-#' fractions of reads assigned.
-#' 3) "splitForceInt": Ambiguous reads will be divided in half, but forced to be
-#' integers, unassigned fraction of reads will be summed and assigned as 'N'.
 #' @param nCores integer. Number of cores to run the function with. Multicore
 #' capability not available in Windows OS.
 #' @return data.table
@@ -458,42 +450,9 @@ hlp_nucFreqTab_mc <- function(x, simplify_IUPAC = "not", nCores){
     }) %>% magrittr::set_names(names(x))
 }
 
-#' Table with genomic and transcriptomic coordinates
+#' Coordinate system table generator
 #'
-#' @param x CompressedGRangesList. Genomic Ranges list containing genomic
-#' alignments data by gene. Constructed via tx_reads().
-#' @param geneAnnot GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().
-#'
-#' @return data.table
-#' @export
-hlp_genCoorTab <- function(x, geneAnnot){
-    if(all(names(x) %in% geneAnnot$name)){
-        lapply(names(x), function(iGene){
-            tmp2 <- geneAnnot[which(geneAnnot$name == iGene)]
-            tmp3 <- c(GenomicAlignments::seqnames(tmp2),
-                      GenomicRanges::strand(tmp2)) %>% as.character() %>% c(iGene)
-            tmpDT <- rep(tmp3, GenomeInfoDb::seqlengths(x[[iGene]])[iGene]) %>%
-                matrix(ncol = 3, byrow = T) %>%
-                cbind(exonBlockGen(iGene, geneAnnot)) %>%
-                cbind(seq(1, GenomeInfoDb::seqlengths(x[[iGene]])[iGene]))
-            tmpDT <- tmpDT[,c(1,4,2,3,5)] %>% data.table::data.table() %>%
-                magrittr::set_colnames(c("chr", "gencoor", "strand", "gene", "txcoor"))
-            tmpDT$chr <- as.factor(tmpDT$chr)
-            tmpDT$gencoor <- as.integer(tmpDT$gencoor)
-            tmpDT$strand <- as.factor(tmpDT$strand)
-            tmpDT$gene <- as.factor(tmpDT$gene)
-            tmpDT$txcoor <- as.integer(tmpDT$txcoor)
-            return(tmpDT)
-        }) %>% magrittr::set_names(names(x))
-    }else{
-        stop("Names of x are not contained in geneAnnot$name")
-    }
-}
-
-#' Table with genomic and transcriptomic coordinates (Multi-core)
-#'
-#' This function is the multi-core version of hlp_genCoorTab(), and is only
-#' available for use in UNIX-like operative systems.
+#' Generates a table with both genomic and transcriptomic coordinates
 #'
 #' @param x CompressedGRangesList. Genomic Ranges list containing genomic
 #' alignments data by gene. Constructed via tx_reads().
@@ -1108,6 +1067,17 @@ warn_nCores <- function(nCores){
     if(nCores == 1){
         cat("Running using 1 core.\n Consider increasing the ",
             "'nCores' argument if function takes too long\n")}
+}
+
+oppStrand <- function(x){switch(x, "-" = "+", "+" = "-")}
+
+rmAmbigStrandAligns <- function(reads){
+    tmp <- GenomicAlignments::strand(reads) == "*"
+    tmp2 <- sum(tmp)
+    if(tmp2 > 0){
+        warning("Removing ", tmp2, " alignments with ambiguous strand (*)\n")
+    }
+    reads[!tmp]
 }
 
 ## usethis namespace: start
