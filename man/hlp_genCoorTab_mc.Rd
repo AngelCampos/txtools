@@ -2,7 +2,7 @@
 % Please edit documentation in R/helpers.R
 \name{hlp_genCoorTab_mc}
 \alias{hlp_genCoorTab_mc}
-\title{Table with genomic and transcriptomic coordinates (Multi-core)}
+\title{Coordinate system table generator}
 \usage{
 hlp_genCoorTab_mc(x, geneAnnot, nCores)
 }
@@ -19,6 +19,5 @@ capability not available in Windows OS.}
 data.table
 }
 \description{
-This function is the multi-core version of hlp_genCoorTab(), and is only
-available for use in UNIX-like operative systems.
+Generates a table with both genomic and transcriptomic coordinates
 }

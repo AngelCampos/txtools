@@ -2,9 +2,7 @@
 
 export(getDumpedAlignments)
 export(hlp_coverageTab_mc)
-export(hlp_genCoorTab)
 export(hlp_genCoorTab_mc)
-export(hlp_nucFreqTab)
 export(hlp_nucFreqTab_mc)
 export(hlp_plot_metageneRegions)
 export(mm_geneAnnot)

@@ -42,7 +42,7 @@ dm3_PEreads <- tx_load_bam(file = PE_BAM_file, pairedEnd = TRUE, loadSeq = T, ve
 
 reads_PE <- tx_reads(reads = dm3_PEreads,
                      geneAnnot = dm3_geneAnnot,
-                     withSeq = T,
+                     withSeq = TRUE,
                      nCores = NCORES,
                      minReads = 1,
                      verbose = FALSE) %>% suppressWarnings()

@@ -13,6 +13,7 @@ tx_generatePairedEndFASTQ(
   libSize,
   fileName_r1,
   fileName_r2,
+  TPM = NULL,
   NB_r = 5,
   NB_mu = 500,
   nCores
@@ -35,6 +36,9 @@ tx_generatePairedEndFASTQ(
 \item{fileName_r1}{character. Name of output file reads1.}
 
 \item{fileName_r2}{character. Name of output file reads2.}
+
+\item{TPM}{numeric. Proportion of reads per gene in gene annotation.
+Overrides negative binomial distribution generation.}
 
 \item{NB_r}{numeric. Target r dispersion parameter. Bigger values of r tend
 to generate a normal distribution. See ?stats::rnbinom()}

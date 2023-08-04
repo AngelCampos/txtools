@@ -27,7 +27,7 @@ tx_plot_numeric(
 \item{txRange}{integer. Range in data to be used, 'txcoor' column is used to
 delimit this range in the data.table.}
 
-\item{plot_type}{character. Type of plot to be output, either "lineplot" or "boxplot".}
+\item{plot_type}{character. Type of plot to be output, either "lineplot" or "barplot".}
 
 \item{lwd}{numeric. Width of line (lineplot)}
 

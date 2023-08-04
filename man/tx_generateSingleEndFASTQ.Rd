@@ -10,6 +10,7 @@ tx_generateSingleEndFASTQ(
   readLen,
   libSize,
   fileName,
+  TPM = NULL,
   NB_r = 5,
   NB_mu = 500,
   nCores
@@ -26,6 +27,8 @@ tx_generateSingleEndFASTQ(
 \item{libSize}{integer. Size of simulated FASTQ file}
 
 \item{fileName}{character. Name of output file.}
+
+\item{TPM}{numeric. Proportion of reads per gene in gene annotation}
 
 \item{NB_r}{numeric. Target r dispersion parameter. Bigger values of r tend
 to generate a normal distribution. See ?stats::rnbinom()}
