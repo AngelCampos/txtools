@@ -1,3 +1,14 @@
+## v0.1.0
+
+* Major: 
+    * Added ignore.strand functionality to load reads regardless if the RNA-seq 
+    library is strand-aware.
+    * New plotting function tx_plot_numeric(): Plots numeric variables along
+    the transcriptomic space.
+    * tx_metagene_*() functions have a normalization argument which yields the
+    are under the curve to be proportional to 1*(transcriptomic window length).
+* Plus minor fixes.
+
 ## v0.0.8
 
 * Fixed loading paired end BAM files when strand sign is defined by read2 

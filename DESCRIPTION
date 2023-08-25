@@ -1,7 +1,7 @@
 Package: txtools
-Title: An interface between GenomicAlignments and transcriptomic representations
-Version: 0.0.9
-Date: 2020-22-12
+Title: An R package facilitating analysis of RNA modifications, structures, and interactions
+Version: 0.1.0
+Date: 2023-24-08
 Authors@R: 
     person(given = "Miguel Angel",
            family = "Garcia-Campos",
@@ -9,10 +9,9 @@ Authors@R:
            email = "angel.campos@ciencias.unam.mx",
            comment = c(ORCID = "0000-0001-5223-8174", 
                        webpage = "https://angelcampos.github.io/"))
-Description: txtools extends the functionality of GenomicAlignments and 
-    GenomicAlignments by filtering and processing RNA-seq reads aligned to a 
-    genome into their transcriptomic counterparts and allows generating 
-    easy-handling summarized tables.
+Description: txtools is an R package that enables the processing, analysis, and
+    visualization of RNA-seq data at the nucleotide-level resolution, seamlessly 
+    integrating alignments to the genome with transcriptomic representation.
 Depends: R (>= 4.0.0)
 License: MIT + file LICENSE
 Encoding: UTF-8
@@ -22,33 +21,32 @@ RoxygenNote: 7.2.1
 Suggests: 
     testthat (>= 2.1.0),
     knitr,
-    rmarkdown
+    rmarkdown,
+    pasillaBamSubset
 Remotes:
     bioc::GenomicRanges,
+    bioc::GenomicAlignments,
     bioc::Biostrings,
     bioc::IRanges,
     bioc::Rsamtools,
     bioc::S4Vectors,
-    bioc::GenomicAlignments,
     bioc::plyranges,
-    bioc::pasillaBamSubset,
     bioc::GenomeInfoDb,
-    bioc::BiocStyle,
     bioc::limma,
     bioc::genefilter,
     bioc::edgeR,
     bioc::BiocGenerics
+    bioc::BiocStyle
 Imports: 
     GenomicRanges,
     Biostrings,
+    BiocStyle,
     IRanges,
     Rsamtools,
     S4Vectors (>= 0.23.20),
     GenomicAlignments,
     plyranges,
-    pasillaBamSubset,
     GenomeInfoDb,
-    BiocStyle,
     limma,
     genefilter,
     edgeR,
