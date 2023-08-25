@@ -3,7 +3,7 @@
 
 <!-- badges: start -->
 
-[![](https://img.shields.io/badge/devel%20version-0.0.8.1-blue.svg)](https://github.com/AngelCampos/txtools)
+[![](https://img.shields.io/badge/devel%20version-0.0.10-blue.svg)](https://github.com/AngelCampos/txtools)
 <!-- badges: end -->
 
 ## Description
@@ -15,7 +15,25 @@ nucleotide resolution, i.e. coverage, read-starts, read-ends, deletions,
 and nucleotide frequency. Attractive plotting is also readily available
 to visualize data.
 
-![mainFunctions](man/figures/readme_1.png)
+The main processing pipeline of txtools consists of 1) converting
+genomic alignments into transcriptomic space and merging paired-end
+reads using `tx_reads()` and 2) summarize counts for ‘readouts’
+(coverage, read-start, read-ends, nucleotide frequency, deletions) along
+the transcriptome using a function of the `tx_makeDT_` family.
+
+![Figure 1. txtools’ main processing pipeline](man/figures/readme_1.png)
+
+Of note, coverage calculation in paired-end reads using txtools
+considers the whole range of the paired alignment. From the start of
+read1 to the end of read2, including the insert which is not directly
+sequenced (Figure 2)
+
+<figure>
+<img src="man/figures/readme_2.png" style="width:60.0%"
+alt="Figure 2. Paired-end reads coverage computation" />
+<figcaption aria-hidden="true">Figure 2. Paired-end reads coverage
+computation</figcaption>
+</figure>
 
 ## Installation
 
@@ -31,10 +49,10 @@ remotes::install_github("AngelCampos/txtools", build_vignettes = TRUE)
 
 ## Quick example
 
-In this small example we will use the ‘Pasilla’ experiment data (from
-its own package) which contains a BAM file for the paired-end alignments
-of a *D. melanogaster* RNA-seq experiment on chromosome 4, along with a
-FASTA file comprising the genome sequence for the same chromosome.
+In this small example we use the ‘Pasilla’ experiment data (from its own
+package) which contains a BAM file for the paired-end alignments of a
+*D. melanogaster* RNA-seq experiment on chromosome 4, along with a FASTA
+file comprising the genome sequence for the same chromosome.
 
 Using txtools we can load the **genome** (FASTA), the **gene
 annotation** (BED-12), and the **RNA-seq reads alignment** (BAM) files
@@ -47,8 +65,8 @@ library(pasillaBamSubset)
 
 # Getting paths to files
 BED_file <- tx_dm3_geneAnnot()
-FASTA_file <- dm3_chr4()
-PE_BAM_file <- untreated3_chr4()
+FASTA_file <- pasillaBamSubset::dm3_chr4() # Data from pasillaBamSubset pkg
+PE_BAM_file <- pasillaBamSubset::untreated3_chr4() # Data from pasillaBamSubset pkg
 
 # Loading D. melanogaster gene annotation, genome, and paired-end bam alignments
 dm3_geneAnnot <- tx_load_bed(BED_file)
@@ -65,17 +83,18 @@ reads_SE <- tx_reads(reads = dm3_PEreads,
                      withSeq = TRUE, 
                      nCores = 1, 
                      minReads = 1)
-#> Processing 75409 reads, using 10 gene models. 
+#> Warning in rmAmbigStrandAligns(reads): Removing 63 alignments with ambiguous strand (*)
+#> Processing 75346 reads, using 10 gene models. 
 #> 10373 alignments overlap 10 gene models 
 #> Assigning alignments to gene model... 
 #> Processing sequences. This may take several minutes depending on geneAnnot size ... 
-#> Output contains: 7173 unique alignments in 10 gene models
+#> Output contains: 7176 unique alignments in 10 gene models
 #> Warning in tx_reads(reads = dm3_PEreads, geneAnnot = dm3_geneAnnot, withSeq =
 #> TRUE, : Some alignments were not assigned to any gene, you can retrieve them
-#> using the tx_getUnassignedAlignments() function.
+#> using the tx_get_unassignedAlignments() function.
 ```
 
-Then we just need to summarize the alignments into a DT. In this case
+Then we just need to summarize the alignments into a txDT. In this case
 using the `tx_makeDT_covNucFreq()` function outputs a table with all the
 base metrics, including read coverage (‘cov’ column), and nucleotide
 frequency (A,C,T,G columns).
@@ -84,7 +103,7 @@ frequency (A,C,T,G columns).
 DT <- tx_makeDT_covNucFreq(reads_SE, geneAnnot = dm3_geneAnnot, genome = dm3_genome)
 ```
 
-The resulting DT comprise all summarized information from the RNA-seq
+The resulting txDT comprise all summarized information from the RNA-seq
 reads aligned to the genome and contained within the genes in the gene
 annotation (this example consists of only the top 10 expressed genes).
 For more information on the columns of DT consult the
@@ -98,7 +117,7 @@ metric we can easily spot locations in which RNA transcripts sequence is
 different from that of the reference sequence.
 
 ``` r
-DT <- tx_add_misincRate(DT, addMisinandTotalCols = TRUE)
+DT <- tx_add_misincRate(DT, addCounts = TRUE)
 DT[which(misincRate > 0.5 & nucTotal > 40),]
 #>     chr gencoor strand      gene txcoor refSeq cov start_5p end_3p A C  G T N -
 #> 1: chr4  939355      - NM_079901   3803      A  90        0      0 0 0 46 0 0 0
@@ -117,8 +136,10 @@ tx_plot_nucFreq(DT, gene = "NM_079901", txRange = window_around(3803, 15))
 
 ## Further documentation
 
-The *txtools* user guide is available as a vignette typing
-`vignette("txtools")` at the R console.
+-   The *txtools* user guide is available as a vignette typing
+    `vignette("txtools")` at the R console.
+-   The use cases code is available at its own repo in:
+    <https://github.com/AngelCampos/txtools_uc>.
 
 ## Current limitations:
 
