@@ -20,24 +20,37 @@ library(pasillaBamSubset)
 library(rtracklayer)
 library(GenomicRanges)
 
-
 ## Used in tests
-## TODO: Check if we can reduce the size of files
-# Gene annotation (BED file)
 gA_sk1 <- tx_load_bed("~/BIGDATA/gene_annotations/yeast/sk1_BROAD_schragi/geneAnnot_sk1_table.bed")
+bam_sk1 <- tx_load_bam("~/WORKSPACE_wexac/m6A/SchwartzCell_data/bam/SchwartzCellWTRep1_Input_AlignedReads.bam",
+                       pairedEnd = TRUE, loadSeq = TRUE)
+genome_sk1 <- tx_load_genome("/home/labs/schwartzlab/schwartz/data/genomes/Yeast_sk1/STAR/sk1.fa")
+
+# gA_sk1 <- gA_sk1[which(gA_sk1$name == "YDR424C" | gA_sk1$name == "YER074W-A" )]
+gA_sk1 <- gA_sk1[seqnames(gA_sk1) == "chr1"]
+exRanges <- exonGRanges(gA_sk1)
+tmp <- findOverlaps(exRanges, exRanges)
+tmp <- tmp[tmp@from != tmp@to]
+gA_sk1 <- gA_sk1[-unique(c(tmp@from, tmp@to))]
+
 ov1 <- GenomicAlignments::findOverlaps(bam_sk1@first, gA_sk1)
 ov2 <- GenomicAlignments::findOverlaps(GenomicAlignments::invertStrand(bam_sk1@last), gA_sk1)
-gA_sk1 <- gA_sk1[which(gA_sk1$name == "YDR424C" | gA_sk1$name == "YER074W-A" )]
 
-# Bam file
-bam_sk1 <- tx_load_bam("~/WORKSPACE_wexac/m6A/SchwartzCell_data/bam/SchwartzCellWTRep1_Input_AlignedReads.bam", pairedEnd = T, loadSeq = T)
-# bam_sk1_mazterSeq <- tx_load_bam("~/WORKSPACE_wexac/m6A/Lib298_yeast_IME4_mazF/bam/298MazFExp3_966rep1_IP_Aligned.out.sorted.bam", pairedEnd = T, loadSeq = T)
-bam_sk1 <- bam_sk1[intersect(ov2@from, ov1@from)]
-use_data(bam_sk1)
+tmpBAM <- bam_sk1[intersect(ov2@from, ov1@from)]
 
-genome_sk1 <- tx_load_genome("/home/labs/schwartzlab/schwartz/data/genomes/Yeast_sk1/STAR/sk1.fa")
-genome_sk1[width(genome_sk1[-17:-18]) %>% which.min]
+
+tmpReads <- tx_reads(reads = tmpBAM, geneAnnot = gA_sk1, minReads = 10,
+                     withSeq = TRUE, ignore.strand = F, nCores = 8)
+
+tmpDT <- tx_makeDT_covNucFreq(tmpReads, geneAnnot = gA_sk1, genome = genome_sk1,
+                              nCores = 8) %>%
+    tx_add_misincRate(minNucReads = 20, addCounts = TRUE)
+
+# tx_plot_nucFreq(tmpDT, "YAL049C", window_around(687,10))
+
+# genome
 genome_sk1 <- genome_sk1[unique(as.character(seqnames(gA_sk1)))]
+use_data(bam_sk1)
 use_data(gA_sk1)
 use_data(genome_sk1)
 
@@ -84,8 +97,8 @@ colnames(sc_rRNAmods_Taoka)[2] <- "gencoor"
 sc_rRNAmods_Taoka <- sc_rRNAmods_Taoka[,c("chr", "gencoor", "nuc")]
 use_data(sc_rRNAmods_Taoka)
 
-sc_txDTL <- readRDS("/home/labs/schwartzlab/miguelg/github_repos/txtools_cs/RDS_out/caseStudy1_txDTL.rds")
+sc_txDTL <- readRDS("/home/labs/schwartzlab/miguelg/github_repos/txtools_cs/results/useCase1.rds")
 use_data(sc_txDTL)
 
-txDTL_Tk <- readRDS("/home/labs/schwartzlab/miguelg/github_repos/txtools_cs/RDS_out/caseStudy3_txDTL.rds")
+txDTL_Tk <- readRDS("/home/labs/schwartzlab/miguelg/github_repos/txtools_cs/results/useCase3_res.rds")
 use_data(txDTL_Tk)

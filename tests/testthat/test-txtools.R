@@ -28,7 +28,8 @@ testthat::expect_equivalent(DTL[DTL$gene == "uc003lam.1",]$txcoor, 1:1924)
 # Test for strand of gene
 testthat::expect_identical(unique(DTL[DTL$gene == "uc003lam.1",]$strand), as.factor("-"))
 testthat::expect_identical(unique(DTL[DTL$gene == "uc010nap.1",]$strand), as.factor("-"))
-# Quick example code ###########
+
+# pasillaBamSubset data tests ##################################################
 
 # Getting paths to files
 BED_file <- tx_dm3_geneAnnot()
@@ -50,10 +51,11 @@ reads_PE <- tx_reads(reads = dm3_PEreads,
 DT <- tx_makeDT_covNucFreq(reads_PE, geneAnnot = dm3_geneAnnot, genome = dm3_genome)
 DT <- tx_add_misincRate(DT, addCounts = TRUE, minNucReads = 10)
 DT <- tx_add_geneRegion(DT, dm3_geneAnnot, NCORES)
+
 # Tests
 testthat::expect_equal(as.character(class(reads_PE[[1]])), "GRanges")
 
-# tx_plot_staEndCov(DT, gene = "NM_001258475", txRange = window_around(200, 10))
+# Sk1 data TESTS ###############################################################
 
 # Test sk1 yeast data
 assigned_aligns <- tx_reads(bam_sk1, gA_sk1, minReads = 1, withSeq = TRUE, verbose = FALSE) %>%
@@ -72,9 +74,8 @@ uA_o <- intersect(GenomicAlignments::findOverlaps(unAssigned@first, gA_sk1)@from
                                 gA_sk1)@from)
 testthat::expect_equal(diff(uA_o) %>% magrittr::equals(1) %>% all(), TRUE) ## All overlap gene annotation
 
-# Most reads have starts or end outside of exon limits
-byGenes <- hlpr_splitReadsByGenes(unAssigned, gA_sk1, "any", 1)
-iGene <- names(byGenes)[1]
+# Most unassigned reads have starts or end outside of exon limits
+byGenes <- hlpr_splitReadsByGenes(unAssigned, gA_sk1, "any", 1, ignore.strand = FALSE)
 anyRemain <- lapply(names(byGenes), function(iGene){
     r1_sta <- GenomicAlignments::start(unAssigned[byGenes[[iGene]]]@first)
     r1_end <- GenomicAlignments::end(unAssigned[byGenes[[iGene]]]@first)
@@ -107,7 +108,7 @@ tmp2 <- S4Vectors::`%in%`(GenomicRanges::end(tmpRanges_r2), GenomicRanges::end(s
     S4Vectors::`%in%`(GenomicRanges::start(tmpRanges_r2), GenomicRanges::start(selExons))
 tmp2[unlist(lapply(tmp2, "length")) == 1] <- TRUE
 which_N[which_N] <- !(all(tmp1) & all(tmp2))
-testthat::expect_equivalent(sum(which_N), 1) # The remaining alginment was left
+testthat::expect_equivalent(sum(which_N), 1) # The remaining alignment was left
 #                                              out due to its gaps not meeting
 #                                              the gene structure
 
@@ -130,8 +131,3 @@ splicing_check <- lapply(1:length(gA_sk1), function(i){
     sum(DT$misincCount)
 }) %>% unlist
 testthat::expect_equivalent(splicing_check, c(0, 0)) # There are some mismatches, got to check them on IGV.
-
-# # Would be useful to know which part of the read falls outside of the exon structure
-# GA_index <- indexAlignmentsByGenomicRegion(bam_sk1, tx_extend_UTR(gA_sk1, 20, 20))
-# GA_index %>% lapply(length) %>% unlist
-# GA_index <- indexAlignmentsByGenomicRegion(bam_sk1, gA_sk1)

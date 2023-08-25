@@ -7,15 +7,15 @@ abstract: |
   transcriptomic data. 
 vignette: >
   %\VignetteIndexEntry{txtools User Guide}
-  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8} 
+  %\VignetteEngine{knitr::rmarkdown}
 output:
   BiocStyle::html_document:
     number_sections: yes
     toc_float: TRUE
     toc_depth: 1
 editor_options: 
-  chunk_output_type: inline
+  chunk_output_type: console
 ---
 
 ```{r, include = FALSE}
@@ -98,7 +98,7 @@ in the form of a FASTA file, in which each entry corresponds to a chromosome,
 loaded with `tx_load_genome()`.
 
 ```{r}
-FASTA_path <- dm3_chr4() # D. melanogaster chr4 built-in pasillaBamSubset
+FASTA_path <- pasillaBamSubset::dm3_chr4() # D. melanogaster chr4 built-in pasillaBamSubset
 genome <- tx_load_genome(fastaFile = FASTA_path)
 ```
 
@@ -109,7 +109,7 @@ TRUE, to specify that the library is paired-end; as we will use the sequence
 information from the alignments we need to set the `loadSeq` argument also to TRUE.
 
 ```{r}
-BAM_path <- untreated3_chr4() # Paired-end BAM file built-in pasillaBamSubset
+BAM_path <- pasillaBamSubset::untreated3_chr4() # Paired-end BAM file built-in pasillaBamSubset
 genAligns <- tx_load_bam(file = BAM_path, pairedEnd = TRUE, loadSeq = TRUE)
 ```
 

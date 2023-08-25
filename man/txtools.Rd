@@ -5,33 +5,54 @@
 \alias{txtools}
 \alias{_PACKAGE}
 \alias{txtools-package}
-\title{txtools: A package to analyze transcriptomic data}
+\title{txtools: A package facilitating analysis of RNA modifications, structures, and interactions}
 \description{
-The txtools package provides functions to analyze genomic data from a
-transcriptomic perspective. It consists on functions which make the br
+txtools enables the processing, analysis, and visualization of RNA-seq data
+at the nucleotide-level resolution, seamlessly integrating alignments to
+the genome with transcriptomic representation. txtools’ main inputs are
+BAM files and a transcriptome annotation, and the main output is a table,
+capturing mismatches,  deletions, and the number of reads beginning and
+ending at each nucleotide in the transcriptomic space. txtools further
+facilitates downstream visualization and analyses.
+}
+\details{
+Most of txtools' functions start with the prefix tx_ and are grouped by
+families:
 }
 \section{tx_load_*()}{
 
-These functions work is to load and process the genomic data into their
-transcriptomic counterparts.
+Load initial data as genomes (FASTA), gene annotations (BED), and mapped
+reads (BAM).
 }
 
-\section{tx_reads()}{
+\section{tx_add_*()}{
 
-These functions work is to perform different tasks to analyze the
-transcriptomic data.
+Add a new variable to the txDT, generally by computing a ratio or frequency.
+Their output is the new txDT. e.g. \code{\link{tx_add_startRatio}}(), which
+adds the start to coverage ratio; \code{\link{tx_add_motifPresence}}(),
+which adds the location of RNA sequence motifs across the transcriptome
 }
 
-\section{Meta-analysis}{
+\section{tx_get_*()}{
 
-These functions work is to aggretate and analyze transcriptomic data to
-perform analyses at the meta-transcript level.
+Extract information from a txDT and generate an object that is NOT a txDT.
+e.g. \code{\link{tx_get_metageneRegions}}() which outputs a metagene matrix
+with each row representing a gene and each column a bin in one of the
+codifying gene regions
 }
 
-\section{Graphic}{
+\section{tx_plot_*()}{
 
-Finally graphical functions are available to visualize and inspect final
-and workflow intermediate results to facilitate the analysis process.
+Plotting functions. e.g. \code{\link{tx_plot_nucFreq}}() and
+\code{\link{tx_plot_staEndCov}}(), which plot the counts of data of
+nucleotide frequency, and read-starts/ends and coverage respectively.
+}
+
+\section{tx_test_*()}{
+
+Use of the txDT objects from experimental data to do statistical tests of
+metrics between groups of samples. e.g. \code{\link{tx_test_ttest}}() which
+performs t-tests using a list of txDTs and a vector of the groups.
 }
 
 \author{
