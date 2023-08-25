@@ -1,20 +1,37 @@
-#' txtools: A package to analyze transcriptomic data
+#' txtools: A package facilitating analysis of RNA modifications, structures, and interactions
 #'
-#' The txtools package provides functions to analyze genomic data from a
-#' transcriptomic perspective. It consists on functions which make the br
+#' txtools enables the processing, analysis, and visualization of RNA-seq data
+#' at the nucleotide-level resolution, seamlessly integrating alignments to
+#' the genome with transcriptomic representation. txtools’ main inputs are
+#' BAM files and a transcriptome annotation, and the main output is a table,
+#' capturing mismatches,  deletions, and the number of reads beginning and
+#' ending at each nucleotide in the transcriptomic space. txtools further
+#' facilitates downstream visualization and analyses.
+#'
+#' Most of txtools' functions start with the prefix tx_ and are grouped by
+#' families:
 #'
 #' @section tx_load_*():
-#' These functions work is to load and process the genomic data into their
-#' transcriptomic counterparts.
-#' @section tx_reads():
-#' These functions work is to perform different tasks to analyze the
-#' transcriptomic data.
-#' @section Meta-analysis:
-#' These functions work is to aggretate and analyze transcriptomic data to
-#' perform analyses at the meta-transcript level.
-#' @section Graphic:
-#' Finally graphical functions are available to visualize and inspect final
-#' and workflow intermediate results to facilitate the analysis process.
+#' Load initial data as genomes (FASTA), gene annotations (BED), and mapped
+#' reads (BAM).
+#' @section tx_add_*():
+#' Add a new variable to the txDT, generally by computing a ratio or frequency.
+#' Their output is the new txDT. e.g. \code{\link{tx_add_startRatio}}(), which
+#' adds the start to coverage ratio; \code{\link{tx_add_motifPresence}}(),
+#' which adds the location of RNA sequence motifs across the transcriptome
+#' @section tx_get_*():
+#' Extract information from a txDT and generate an object that is NOT a txDT.
+#' e.g. \code{\link{tx_get_metageneRegions}}() which outputs a metagene matrix
+#' with each row representing a gene and each column a bin in one of the
+#' codifying gene regions
+#' @section tx_plot_*():
+#' Plotting functions. e.g. \code{\link{tx_plot_nucFreq}}() and
+#' \code{\link{tx_plot_staEndCov}}(), which plot the counts of data of
+#' nucleotide frequency, and read-starts/ends and coverage respectively.
+#' @section tx_test_*():
+#' Use of the txDT objects from experimental data to do statistical tests of
+#' metrics between groups of samples. e.g. \code{\link{tx_test_ttest}}() which
+#' performs t-tests using a list of txDTs and a vector of the groups.
 #'
 #' @docType package
 #' @name txtools
@@ -817,6 +834,7 @@ tx_add_refSeqDT <- function(DT, genome, geneAnnot, nCores = 1){
 #' @return data.table
 #' @export
 tx_add_misincCount <- function(DT){
+    check_refSeq(DT)
     DT <- check_DT(DT) %>% hlp_removeColumnIfPresent("misincCount")
     selNucs <- setdiff(intersect(txtools::IUPAC_code_2nucs, names(DT)), c(".", "N"))
     tmp <- DT[, selNucs, with = FALSE]
@@ -824,7 +842,7 @@ tx_add_misincCount <- function(DT){
     nucsInRef <- unique(DT$refSeq)
     for(i in nucsInRef){
         selNucs <- setdiff(c("A", "C", "G", "T", "-"), i)
-        OUT[which(DT$refSeq == i)] <- rowSums(tmp[which(DT$refSeq == i), selNucs, with = F])
+        OUT[which(DT$refSeq == i)] <- rowSums(tmp[which(DT$refSeq == i), selNucs, with = FALSE])
     }
     tibble::add_column(DT, misincCount = OUT)
 }
