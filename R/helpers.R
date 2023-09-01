@@ -74,11 +74,9 @@ hlpr_splitReadsByGenes <- function(reads, bedR, overlapType, minReads, ignore.st
 # For single-end reads
 hlpr_splitReadsByGenes_singleEnd <- function(reads, bedR, overlapType, minReads, ignore.strand){
     if(ignore.strand){
-        allOver_1 <- GenomicRanges::findOverlaps(GenomicAlignments::first(
-            reads, real.strand = TRUE), bedR, type = overlapType, ignore.strand = TRUE)
+        allOver_1 <- GenomicRanges::findOverlaps(reads, bedR, type = overlapType, ignore.strand = TRUE)
     }else{
-        allOver_1 <- GenomicRanges::findOverlaps(GenomicAlignments::first(
-            reads, real.strand = TRUE), bedR, type = overlapType, ignore.strand = FALSE)
+        allOver_1 <- GenomicRanges::findOverlaps(reads, bedR, type = overlapType, ignore.strand = FALSE)
     }
     split_1 <- split(allOver_1@from, allOver_1@to)
     names(split_1) <- bedR[as.numeric(names(split_1))]$name
@@ -295,13 +293,13 @@ hlpr_ReadsInGene_SingleEnd <- function(reads, iGene, geneAnnot, split_i,
     # tReads$seq_r1 <- S4Vectors::mcols(iReads_r1[pass])$seq
     # Constructing the merged read sequence
     if(iStrand == "+"){
-        tReads$seq1 <- GenomicAlignments::sequenceLayer(GenomicAlignments::cigar(iReads_r1[pass]),
-                                                        S4Vectors::mcols(iReads_r1[pass])$seq,
+        tReads$seq1 <- GenomicAlignments::sequenceLayer(S4Vectors::mcols(iReads_r1[pass])$seq,
+                                                        GenomicAlignments::cigar(iReads_r1[pass]),
                                                         to = "reference-N-regions-removed")
     }else if(iStrand == "-"){
         tReads$seq1 <- Biostrings::reverseComplement(
-            GenomicAlignments::sequenceLayer(GenomicAlignments::cigar(iReads_r1[pass]),
-                                             S4Vectors::mcols(iReads_r1[pass])$seq,
+            GenomicAlignments::sequenceLayer(S4Vectors::mcols(iReads_r1[pass])$seq,
+                                             GenomicAlignments::cigar(iReads_r1[pass]),
                                              to = "reference-N-regions-removed"))
 
     }
