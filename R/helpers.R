@@ -176,9 +176,11 @@ hlpr_ReadsInGene <- function(reads, iGene, geneAnnot, split_i, allExons, minRead
     }
     # Trim overflown reads
     i <- which(Biostrings::nchar(tReads$seq1) > GenomicAlignments::width(tReads))
-    tReads[i]$seq1 <- stringr::str_sub(tReads[i]$seq1, start = 1, GenomicAlignments::width(tReads[i]))
+    tReads[i]$seq1 <- Biostrings::DNAStringSet(stringr::str_sub(as.character(tReads[i]$seq1),
+                                       start = 1, GenomicAlignments::width(tReads[i])))
     i <- which(Biostrings::nchar(tReads$seq2) > GenomicAlignments::width(tReads))
-    tReads[i]$seq2 <- stringr::str_sub(tReads[i]$seq2, start = - GenomicAlignments::width(tReads[i]))
+    tReads[i]$seq2 <- Biostrings::DNAStringSet(stringr::str_sub(as.character(tReads[i]$seq2),
+                                       start = - GenomicAlignments::width(tReads[i])))
     # Calculate overlap
     tReads$diffSeq <- Biostrings::nchar(tReads$seq1) + Biostrings::nchar(tReads$seq2) - GenomicAlignments::width(tReads)
     tReads$oL <- tReads$diffSeq %>% magrittr::is_greater_than(0)
@@ -196,8 +198,8 @@ hlpr_ReadsInGene <- function(reads, iGene, geneAnnot, split_i, allExons, minRead
     # Overlapped reads
     i <- which(tReads$oL)
     if(length(i) > 0){
-        tmp1 <- stringr::str_sub(tReads[i]$seq1, start = -tReads[i]$diffSeq)
-        tmp2 <- stringr::str_sub(tReads[i]$seq2, start = 1, end = tReads[i]$diffSeq)
+        tmp1 <- Biostrings::DNAStringSet(stringr::str_sub(as.character(tReads[i]$seq1), start = -tReads[i]$diffSeq))
+        tmp2 <- Biostrings::DNAStringSet(stringr::str_sub(as.character(tReads[i]$seq2), start = 1, end = tReads[i]$diffSeq))
         ovSeq <- rep(".", length(i))
         for(j in 1:length(i)){
             if(tmp1[j] == tmp2[j]){
@@ -209,13 +211,13 @@ hlpr_ReadsInGene <- function(reads, iGene, geneAnnot, split_i, allExons, minRead
                                                 threshold = 0.16)
             }
         }
-        tReads[i]$mergedSeq <- paste0(stringr::str_sub(tReads[i]$seq1,
-                                                       start = 1,
-                                                       end = Biostrings::nchar(tReads[i]$seq1) -
-                                                           tReads[i]$diffSeq),
-                                      ovSeq, stringr::str_sub(tReads[i]$seq2,
-                                                              start = tReads[i]$diffSeq + 1,
-                                                              end = Biostrings::nchar(tReads[i]$seq2)))
+        tReads[i]$mergedSeq <- paste0(Biostrings::DNAStringSet(stringr::str_sub(as.character(tReads[i]$seq1),
+                                                                                start = 1,
+                                                                                end = Biostrings::nchar(tReads[i]$seq1) -
+                                                                                    tReads[i]$diffSeq)),
+                                      ovSeq, Biostrings::DNAStringSet(stringr::str_sub(as.character(tReads[i]$seq2),
+                                                                                       start = tReads[i]$diffSeq + 1,
+                                                                                       end = Biostrings::nchar(tReads[i]$seq2))))
     }
     # Final reads
     fReads <- tReads
@@ -306,8 +308,8 @@ hlpr_ReadsInGene_SingleEnd <- function(reads, iGene, geneAnnot, split_i,
     # Trim overflowing reads
     i <- which(Biostrings::nchar(tReads$seq1) > GenomicAlignments::width(tReads))
     if(length(i) > 0){
-        tReads[i]$seq1 <- stringr::str_sub(tReads[i]$seq1, start = 1,
-                                           GenomicAlignments::width(tReads[i]))
+        tReads[i]$seq1 <- Biostrings::DNAStringSet(stringr::str_sub(as.character(tReads[i]$seq1), start = 1,
+                                                                    GenomicAlignments::width(tReads[i])))
     }
     # Calculate overlap
     tReads$diffSeq <- Biostrings::nchar(tReads$seq1) - GenomicAlignments::width(tReads)
@@ -551,7 +553,7 @@ hlp_add_refSeqDT <- function (DT, genome, geneAnnot){
         IRanges::shift(IRanges::start(iGA) - 1)
     tmp <- Biostrings::DNAString(
         paste(collapse = "",
-              stringr::str_sub(string = genome[[iChr]],
+              stringr::str_sub(string = as.character(genome[[iChr]]),
                                start = IRanges::start(iBlocks),
                                end = IRanges::end(iBlocks))))
     if (iStr == "-") {
@@ -982,25 +984,25 @@ indexAlignmentsByGenomicRegion <- function(GAlignments, geneAnnot, overlapType =
                                   end = chrLen,
                                   strand = "-")) %>% plyranges::as_granges()
     notExon <- plyranges::setdiff_ranges_directed(allChr_GR, exonic)
-    tmpGR <- GenomicRanges::findOverlaps(notExon, geneAnnot, type = overlapType)@from
+    tmpGR <- GenomicRanges::findOverlaps(notExon, geneAnnot, type = "within")@from
     intronic <- notExon[tmpGR]
     intergen <- notExon[-tmpGR]
     if(class(GAlignments) == "GAlignmentPairs"){
-        ovExonic <- union(
+        ovExonic <- intersect(
             GenomicRanges::findOverlaps(
                 GenomicAlignments::first(GAlignments, real.strand = TRUE),
                 exonic, type = overlapType)@from,
             GenomicRanges::findOverlaps(
                 GenomicAlignments::last(GAlignments, real.strand = TRUE),
                 exonic, type = overlapType)@from)
-        ovIntron <- union(
+        ovIntron <- intersect(
             GenomicRanges::findOverlaps(
                 GenomicAlignments::first(GAlignments, real.strand = TRUE),
                 intronic, type = overlapType)@from,
             GenomicRanges::findOverlaps(
                 GenomicAlignments::last(GAlignments, real.strand = TRUE),
                 intronic, type = overlapType)@from)
-        ovInterg <- union(
+        ovInterg <- intersect(
             GenomicRanges::findOverlaps(
                 GenomicAlignments::first(GAlignments, real.strand = TRUE),
                 intergen, type = overlapType)@from,

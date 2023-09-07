@@ -55,6 +55,10 @@ DT <- tx_add_geneRegion(DT, dm3_geneAnnot, NCORES)
 # Tests
 testthat::expect_equal(as.character(class(reads_PE[[1]])), "GRanges")
 
+DT <- tx_add_motifPresence(DT, motif = "DRACH", nucPositions = 3, nCores = 1)
+motifs <- tx_get_flankSequence(DT = DT, logi_col = "DRACH_motif_3", upFlank = 2, doFlank = 2, addNames = T)
+dm3_seqs <- tx_get_transcriptSeqs(genome = dm3_genome, geneAnnot = dm3_geneAnnot, nCores = 1, outFile = NULL)
+
 # Sk1 data TESTS ###############################################################
 
 # Test sk1 yeast data

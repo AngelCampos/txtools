@@ -3,7 +3,7 @@
 
 <!-- badges: start -->
 
-[![](https://img.shields.io/badge/devel%20version-0.1.0-blue.svg)](https://github.com/AngelCampos/txtools)
+[![](https://img.shields.io/badge/devel%20version-0.1.2-blue.svg)](https://github.com/AngelCampos/txtools)
 <!-- badges: end -->
 
 ## Description
@@ -70,6 +70,9 @@ PE_BAM_file <- pasillaBamSubset::untreated3_chr4() # Data from pasillaBamSubset 
 
 # Loading D. melanogaster gene annotation, genome, and paired-end bam alignments
 dm3_geneAnnot <- tx_load_bed(BED_file)
+#> Warning: multiple methods tables found for 'aperm'
+#> Warning: replacing previous import 'BiocGenerics::aperm' by
+#> 'DelayedArray::aperm' when loading 'SummarizedExperiment'
 dm3_genome <- tx_load_genome(FASTA_file)
 dm3_PEreads <- tx_load_bam(file = PE_BAM_file, pairedEnd = TRUE, loadSeq = TRUE)
 ```

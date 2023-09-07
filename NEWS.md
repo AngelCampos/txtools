@@ -1,3 +1,7 @@
+## v0.1.2
+
+* Bug fix: stringr::str_sub() update broke functions.
+
 ## v0.1.1
 
 * Bug fix: Error processing single-end reads
