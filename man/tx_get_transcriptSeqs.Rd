@@ -12,10 +12,10 @@ tx_get_transcriptSeqs(genome, geneAnnot, outFile = NULL, nCores = 1)
 
 \item{geneAnnot}{GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().}
 
-\item{outFile}{character. If specified, sequences will be written to this filename.
+\item{outFile}{character. If specified, sequences will be written to this file name.
 Otherwise a character vector will be output}
 
-\item{nCores}{integer. Number of cores to run the function with. Multicore
+\item{nCores}{integer. Number of cores to run the function with. Multi-core
 capability not available in Windows OS.}
 }
 \value{
