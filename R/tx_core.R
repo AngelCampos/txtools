@@ -1533,9 +1533,9 @@ tx_get_metageneAtCDS <- function(txDT, geneAnnot, colVars, CDS_align, upFlank, d
 #' @param genome list. The full reference genome sequences, as loaded by
 #' \code{\link{tx_load_genome}}() or prepackaged by BSgenome, see ?BSgenome::available.genomes
 #' @param geneAnnot GRanges. Gene annotation as loaded by \code{\link{tx_load_bed}}().
-#' @param outFile character. If specified, sequences will be written to this filename.
+#' @param outFile character. If specified, sequences will be written to this file name.
 #' Otherwise a character vector will be output
-#' @param nCores integer. Number of cores to run the function with. Multicore
+#' @param nCores integer. Number of cores to run the function with. Multi-core
 #' capability not available in Windows OS.
 #'
 #' @return character
@@ -1547,6 +1547,9 @@ tx_get_transcriptSeqs <- function(genome, geneAnnot, outFile = NULL, nCores = 1)
         subTXOME <- geneAnnot[which(as.logical(GenomicRanges::seqnames(geneAnnot) == iChr))]
         iBlocks <- IRanges::shift(S4Vectors::mcols(subTXOME)$blocks,
                                   IRanges::start(subTXOME) - 1)
+        if(class(iBlocks)[1] != "CompressedIRangesList"){
+            iBlocks <- IRanges::IRangesList(iBlocks, compress = TRUE) # Ensure CompressedIRangesList class
+        }
         tmp <- stringr::str_sub(as.character(genome[[iChr]]), start = IRanges::start(unlist(iBlocks)),
                                 end = IRanges::end(unlist(iBlocks)))
         tmp3 <- lapply(split(tmp, rep(seq_along(iBlocks), times = sapply(iBlocks, length))),
@@ -1563,7 +1566,6 @@ tx_get_transcriptSeqs <- function(genome, geneAnnot, outFile = NULL, nCores = 1)
         Biostrings::writeXStringSet(allSEQS[geneAnnot$name], filepath = outFile, format = "fasta")
     }
 }
-
 
 #' Get metagene regions
 #'
