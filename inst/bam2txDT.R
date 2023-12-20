@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 # Title: Process bam files using txtools to create data.tables ########
 # Author: Miguel Angel Garcia-Campos https://angelcampos.github.io/ ############
-suppressPackageStartupMessages(require(optparse)) 
+suppressPackageStartupMessages(require(optparse))
 t0 <- Sys.time() # Start time
 
 # Parsing Arguments ############################################################
@@ -34,8 +34,8 @@ option_list = list(
                 help="Separate mapped singletons and process separately to rescue those mapped reads (only for pairedEnd == TRUE). [default = %default]",
                 metavar="logical"),
     make_option(c("-s", "--strandMode"), type = "integer", default = 1,
-                help= paste0("Strand mode for loading BAM file. [default = %default]", 
-                             "\n                1 = Direction is given by read 1 e.g. Directional Illumina", 
+                help= paste0("Strand mode for loading BAM file. [default = %default]",
+                             "\n                1 = Direction is given by read 1 e.g. Directional Illumina",
                              "\n                2 = Direction is given by read 2 (or just inverted in single-end files), e.g. Illumina TruSeq PE"),
                 metavar="integer"),
     make_option(c("-S", "--ignoreStrand"), type = "logical", default = FALSE,
@@ -70,52 +70,41 @@ rescueSingle <- opt$rescueSingletons
 ignStrand <- opt$ignoreStrand
 outName <- opt$outName
 
-#Loading/Installing packages ###################################################
-txtools_minVersion <- "0.1.2"
-installLoad_CRAN <- function(package){
-    if (!require(package, character.only = TRUE, quietly = TRUE)) {
-        install.packages(package, dependencies = TRUE, 
-                         repos = "http://cran.us.r-project.org")
-        library(package, character.only = TRUE, quietly = TRUE)
-    }
-}
-installLoad_bioC <- function(package){
-    if (!require("BiocManager", quietly = TRUE))
-        install.packages("BiocManager")
-    if (!require(package, character.only = TRUE, quietly = TRUE)) {
-        BiocManager::install(package)
-        library(package, character.only = TRUE, quietly = TRUE)
-    }
-}
-suppressPackageStartupMessages(installLoad_CRAN("BiocManager"))
-suppressPackageStartupMessages(installLoad_CRAN("magrittr"))
-suppressPackageStartupMessages(installLoad_CRAN("parallel"))
-suppressPackageStartupMessages(installLoad_bioC("Rsamtools"))
-suppressPackageStartupMessages(installLoad_bioC("GenomicRanges"))
-
-if(!requireNamespace("txtools", quietly = TRUE)){
-    BiocManager::install("AngelCampos/txtools")
-}else if(packageVersion("txtools") < txtools_minVersion){
-    BiocManager::install("AngelCampos/txtools")
-    suppressPackageStartupMessages(library("txtools"))
+# Checking/loading packages ############################################################
+pkgs <- c("BiocManager", "magrittr", "parallel", "Rsamtools", "GenomicRanges", "txtools")
+insPkgs <- pkgs[!pkgs %in% as.character(installed.packages()[,1])]
+if(length(insPkgs) > 0){
+    stop("The following packages are missing: ", paste0("'", insPkgs, "'", collapse = " "), ".\n")
 }else{
-    suppressPackageStartupMessages(library("txtools"))
+    library("BiocManager")
+    library("magrittr")
+    library("parallel")
+    library("Rsamtools")
+    library("GenomicRanges")
+    library("txtools")
+}
+txtools_minVersion <- "0.1.2"
+if(packageVersion("txtools") < txtools_minVersion){
+    stop("txtools needs to be version ", txtools_minVersion, " or higher\n",
+         "Please update it following instructions at: https://github.com/AngelCampos/txtools\n")
 }
 
 # Process arguments ############################################################
 # Load sequence or not
-if(dtType == "cov"){
+if(is.null(dtType)){
+    stop("-d --DT_datatype argument cannot be left empty\n")
+}else if(dtType == "cov"){
     lSeq <- FALSE
 }else if(dtType == "covNuc"){
     lSeq <- TRUE
 }else{
-    stop("-d --DT_datatype argument must be one of the options: 'cov' or 'covNuc'")
+    stop("-d --DT_datatype argument must be one of the options: 'cov' or 'covNuc'\n")
 }
 # Check yieldSize to be integer
 txtools:::check_integer_arg(ySize, "ySize")
 # Set OUTPUT filename
 if(outName == "auto"){
-    outName <- basename(BAMfile) %>% 
+    outName <- basename(BAMfile) %>%
         gsub(x = ., pattern = ".bam$", replacement = ".txDT.rds", perl = T)
 }
 
@@ -154,19 +143,19 @@ if(!rescueSingle){
     tmpFile1 <- tempfile(); tmpFile2 <- tempfile()
     invisible(filterBam(file = BAMfile, destination = tmpFile1, param = filtParam_1))
     invisible(filterBam(file = BAMfile, destination = tmpFile2, param = filtParam_2))
-    tmpBAM_1 <- tx_load_bam(file = tmpFile1, 
+    tmpBAM_1 <- tx_load_bam(file = tmpFile1,
                             pairedEnd = TRUE,
                             loadSeq = lSeq,
-                            verbose = verb, 
-                            yieldSize = ySize, 
-                            scanFlag = "default", 
+                            verbose = verb,
+                            yieldSize = ySize,
+                            scanFlag = "default",
                             strandMode = strM)
     if(verb){cat("\nLoading singletons bam file\n")}
     tmpBAM_2 <- tx_load_bam(file = tmpFile2,
                             pairedEnd = FALSE,
                             loadSeq = lSeq,
                             verbose = verb,
-                            yieldSize = ySize, 
+                            yieldSize = ySize,
                             scanFlag = "default",
                             strandMode = strM)
     t1 <- Sys.time() # Loading BAM files
@@ -181,21 +170,21 @@ if(!rescueSingle){
                         nCores = nCores,
                         minReads = minR,
                         withSeq = lSeq,
-                        verbose = verb, 
+                        verbose = verb,
                         ignore.strand = ignStrand)
 }else if(rescueSingle){
     tmp_txReads_1 <- tx_reads(reads = tmpBAM_1,
                               minReads = minR,
                               geneAnnot = gA,
-                              nCores = nCores, 
+                              nCores = nCores,
                               withSeq = lSeq,
-                              verbose = verb, 
+                              verbose = verb,
                               ignore.strand = ignStrand)
-    tmp_txReads_2 <- tx_reads(reads = tmpBAM_2, 
-                              geneAnnot = gA, 
-                              nCores = nCores, 
+    tmp_txReads_2 <- tx_reads(reads = tmpBAM_2,
+                              geneAnnot = gA,
+                              nCores = nCores,
                               withSeq = lSeq,
-                              verbose = verb, 
+                              verbose = verb,
                               ignore.strand = ignStrand)
     # Merge lists gene-wise
     allGenes <- union(names(tmp_txReads_1), names(tmp_txReads_2))
@@ -212,8 +201,8 @@ if(!rescueSingle){
             seqlevels(tmp1) <- allGenes; seqlevels(tmp2) <- allGenes
             return(c(tmp1, tmp2))
         }
-    }) %>% GenomicRanges::GRangesList() %>% 
-        magrittr::set_names(allGenes) %>% 
+    }) %>% GenomicRanges::GRangesList() %>%
+        magrittr::set_names(allGenes) %>%
         GenomicRanges::GRangesList()
 }
 
@@ -227,8 +216,8 @@ if(dtType == "cov"){
     if(verb){
         cat("Generating coverage data.table")
     }
-    OUT <- tx_makeDT_coverage(x = txReads, 
-                              geneAnnot = gA, 
+    OUT <- tx_makeDT_coverage(x = txReads,
+                              geneAnnot = gA,
                               nCores = nCores,
                               fullDT = makeFULL,
                               genome = GENOME)
@@ -236,7 +225,7 @@ if(dtType == "cov"){
     if(verb){
         cat("Generating coverage and nucleotide frequency data.table. \n")
     }
-    OUT <- tx_makeDT_covNucFreq(x = txReads, 
+    OUT <- tx_makeDT_covNucFreq(x = txReads,
                                 geneAnnot = gA,
                                 nCores = nCores,
                                 fullDT = makeFULL,
@@ -252,7 +241,7 @@ saveRDS(object = OUT, file = outName)
 # Report #######################################################################
 timeBam <- t1 - t0 # Time loading BAM
 timePrc <- t2 - t1 # Time processing
-timeTot <- t2 - t0 # Total time 
+timeTot <- t2 - t0 # Total time
 
 reportName <- basename(outName) %>% gsub(x = ., pattern = ".rds$", replacement = ".log", perl = T)
 
@@ -267,12 +256,12 @@ report <- c("BAM file name:", BAMfile,
             "    Fraction of total reads in output:", round(length(uniqReadsInOut)/bamLen, 4),
             "Total time taken:", paste(round(timeTot, 2), units(timeTot), sep = " "),
             "    Loading BAM time:", paste(round(timeBam, 2), units(timeBam), sep = " "),
-            "    Processing time:", paste(round(timePrc, 2), units(timePrc), sep = " ")) %>% 
+            "    Processing time:", paste(round(timePrc, 2), units(timePrc), sep = " ")) %>%
     matrix(ncol = 2, byrow =T)
-write.table(x = report, 
-            file = reportName, 
-            sep = "\t", 
-            quote = FALSE, 
+write.table(x = report,
+            file = reportName,
+            sep = "\t",
+            quote = FALSE,
             row.names = FALSE,
             col.names = FALSE)
 
