@@ -1,12 +1,12 @@
 Package: txtools
 Title: An R package facilitating analysis of RNA modifications, structures, and interactions
-Version: 0.1.2.1
+Version: 0.1.2.2
 Date: 2023-24-08
 Authors@R: 
     person(given = "Miguel Angel",
            family = "Garcia-Campos",
            role = c("aut", "cre"),
-           email = "angel.campos@ciencias.unam.mx",
+           email = "garciacampos.bioinfo@gmail.com",
            comment = c(ORCID = "0000-0001-5223-8174", 
                        webpage = "https://angelcampos.github.io/"))
 Description: txtools is an R package that enables the processing, analysis, and

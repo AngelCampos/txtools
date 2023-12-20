@@ -3,7 +3,7 @@
 
 <!-- badges: start -->
 
-[![](https://img.shields.io/badge/devel%20version-0.1.2-blue.svg)](https://github.com/AngelCampos/txtools)
+[![](https://img.shields.io/badge/devel%20version-0.1.2.2-blue.svg)](https://github.com/AngelCampos/txtools)
 <!-- badges: end -->
 
 ## Description
@@ -21,7 +21,12 @@ reads using `tx_reads()` and 2) summarize counts for ‘readouts’
 (coverage, read-start, read-ends, nucleotide frequency, deletions) along
 the transcriptome using a function of the `tx_makeDT_` family.
 
-![Figure 1. txtools’ main processing pipeline](man/figures/readme_1.png)
+<figure>
+<img src="man/figures/readme_1.png"
+alt="Figure 1. txtools’ main processing pipeline" />
+<figcaption aria-hidden="true">Figure 1. txtools’ main processing
+pipeline</figcaption>
+</figure>
 
 Of note, coverage calculation in paired-end reads using txtools
 considers the whole range of the paired alignment. From the start of
@@ -70,9 +75,6 @@ PE_BAM_file <- pasillaBamSubset::untreated3_chr4() # Data from pasillaBamSubset 
 
 # Loading D. melanogaster gene annotation, genome, and paired-end bam alignments
 dm3_geneAnnot <- tx_load_bed(BED_file)
-#> Warning: multiple methods tables found for 'aperm'
-#> Warning: replacing previous import 'BiocGenerics::aperm' by
-#> 'DelayedArray::aperm' when loading 'SummarizedExperiment'
 dm3_genome <- tx_load_genome(FASTA_file)
 dm3_PEreads <- tx_load_bam(file = PE_BAM_file, pairedEnd = TRUE, loadSeq = TRUE)
 ```
@@ -139,31 +141,31 @@ tx_plot_nucFreq(DT, gene = "NM_079901", txRange = window_around(3803, 15))
 
 ## Further documentation
 
--   The *txtools* user guide is available as a vignette typing
-    `vignette("txtools")` at the R console.
--   The use cases code is available at its own repo in:
-    <https://github.com/AngelCampos/txtools_uc>.
+- The *txtools* user guide is available as a vignette typing
+  `vignette("txtools")` at the R console.
+- The use cases code is available at its own repo in:
+  <https://github.com/AngelCampos/txtools_uc>.
 
 ## Current limitations:
 
--   Insertions: txtools is not able to deal with insertions. This is
-    mainly because insertions are not part of the original
-    trasncriptomic nor genomic reference space as they would alter the
-    length of the gene model. This could be an added feature in future
-    versions but is not a priority.
+- Insertions: txtools is not able to deal with insertions. This is
+  mainly because insertions are not part of the original trasncriptomic
+  nor genomic reference space as they would alter the length of the gene
+  model. This could be an added feature in future versions but is not a
+  priority.
 
--   Potentially long processing times: Loading big BAM files into R
-    commonly requires a lot of time, having this in mind txtools
-    provides a progress bar to keep users informed about the loading
-    status. Most importantly, depending on the ammount of both loaded
-    reads and the size of the *Gene Annotation* tx_reads() processing
-    time can take several minutes. A solution to this issue is the use
-    of multi-threadding which has been incorporated into tx_reads() and
-    other functions, but such functionality is only available for UNIX
-    and MAC OS.
+- Potentially long processing times: Loading big BAM files into R
+  commonly requires a lot of time, having this in mind txtools provides
+  a progress bar to keep users informed about the loading status. Most
+  importantly, depending on the ammount of both loaded reads and the
+  size of the *Gene Annotation* tx_reads() processing time can take
+  several minutes. A solution to this issue is the use of
+  multi-threadding which has been incorporated into tx_reads() and other
+  functions, but such functionality is only available for UNIX and MAC
+  OS.
 
 ## Additional notes:
 
--   As many R packages meant for high-throughput data analysis and
-    manipulation, using ***txtools*** may require high ammounts of RAM
-    memory, depending mainly on the size of BAM files being processed.
+- As many R packages meant for high-throughput data analysis and
+  manipulation, using ***txtools*** may require high ammounts of RAM
+  memory, depending mainly on the size of BAM files being processed.
