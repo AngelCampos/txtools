@@ -84,3 +84,20 @@
 #' @format data.table
 #'
 "sc_rRNAmods_Taoka"
+
+
+#' txtools' core cols
+#'
+#' txtools' core column names
+#'
+#' @format character
+#'
+"txCoreCols"
+
+#' txtools' core cols and refSeq
+#'
+#' txtools' core column names including refSeq
+#'
+#' @format character
+#'
+"txCoreCols_refSeq"
