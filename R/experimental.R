@@ -1,18 +1,33 @@
-# Plot meta gene by bins
-tx_plot_metaGeneByBins <- function(DT, colName, nBins = 100, FUN = "mean", minTxLength = 300,
-                                   minReadsPerGene = 100, smooth = TRUE, na.rm = TRUE){
-    if(nBins >= minTxLength){stop("Number of bins most be smaller than minimum",
-                                  "transcript length.")}
-    if(!(colName %in% colnames(DT))){stop("colName is not a column in DT.")}
-    nStarts <- DT[, sum(DT$start_5p), by = DT$gene][order(DT$V1, decreasing = T),]
-    DT <- DT[DT$gene %in% nStarts$gene[nStarts$V1 >= minReadsPerGene]]
-    geneLens <- tx_get_geneLengths(DT)
-    DT <- DT[DT$gene %in% names(geneLens)[geneLens > minTxLength]]
-    GENES <- as.character(unique(DT$gene))
-    if(length(GENES) < 1){stop("No genes after filtering parameters")}
+#' Plot metagene by bins
+#'
+#' @param txDT  data.table. A table as output by the \code{\link{tx_makeDT_coverage}}(),
+#' \code{\link{tx_makeDT_nucFreq}}() or \code{\link{tx_makeDT_covNucFreq}}() functions.
+#' @param colName character. Name of the column of numeric (or logical) class to be plot
+#' @param nBins integer. Number of bins to divide each gene on
+#' @param FUN character. Function to be used to summarize values across bins and genes.
+#' @param minTxLength integer. Minimum transcript length to be included in analysis.
+#' @param smooth logical. Set to FALSE for not smoothing line.
+#' @param na.rm logical. Remove NA values from computations, by default is TRUE.
+#'
+#' @return ggplot
+tx_plot_metaGeneByBins <- function(txDT, colName, nBins = 100, FUN = "mean",
+                                   minTxLength = 300, smooth = TRUE, na.rm = TRUE){
+    if(nBins >= minTxLength){
+        stop("Number of bins most be smaller than minimum",
+             "transcript length.")
+    }
+    if(!(colName %in% colnames(txDT))){
+        stop("colName is not a column in txDT.")
+    }
+    geneLens <- tx_get_geneLengths(txDT)
+    txDT <- txDT[txDT$gene %in% names(geneLens)[geneLens > minTxLength]]
+    GENES <- as.character(unique(txDT$gene))
+    if(length(GENES) < 1){
+        stop("No genes after filtering parameters")
+    }
     meanCovBinned <- parallel::mclapply(seq(GENES), function(i){
         iGene <- GENES[i]
-        tmpDT <- DT[DT$gene == iGene,]
+        tmpDT <- txDT[txDT$gene == iGene,]
         tmpDT$group <- tmpDT$txcoor %>% ggplot2::cut_number(n = nBins)
         out <- tapply(tmpDT[[colName]], tmpDT$group, FUN, na.rm = na.rm)
         out[is.nan(out)] <- NA
@@ -23,57 +38,19 @@ tx_plot_metaGeneByBins <- function(DT, colName, nBins = 100, FUN = "mean", minTx
                      score = meanCovBinned)
     plotTitle <- paste("METAGENE BY BINS -", FUN, colName) %>% toupper()
     plotSub <- paste0("n(genes) =", length(GENES), ", minTxLen =", minTxLength,
-                      ", minReadsPerGene =", minReadsPerGene, ", smooth.sp =", smooth)
+                      ", smooth.sp =", smooth)
     Y_axis <- paste(FUN, colName)
     if(smooth){
         DF$smooth <- stats::smooth.spline(DF$score)$y
-        ggplot2::ggplot(DF, ggplot2::aes(x = DF$bins, y = DF$smooth)) +
+        ggplot2::ggplot(DF, ggplot2::aes(x = .data$bins, y = .data$smooth)) +
             ggplot2::geom_line() + ggplot2::theme_classic() +
             ggplot2::ggtitle(plotTitle, plotSub) + ggplot2::ylab(Y_axis)
     }else{
-        ggplot2::ggplot(DF, ggplot2::aes(x = DF$bins, y = DF$score)) +
+        ggplot2::ggplot(DF, ggplot2::aes(x = .data$bins, y = .data$score)) +
             ggplot2::geom_line() + ggplot2::theme_classic() +
             ggplot2::ggtitle(plotTitle, plotSub) + ggplot2::ylab(Y_axis)
     }
 }
-
-# tx_plot_metaGeneByBins <- function(DT, colName, nBins = 100, FUN = "mean", minTxLength = 300,
-#                                    minReadsPerGene = 100, smooth = TRUE, na.rm = TRUE){
-#     if(nBins >= minTxLength){stop("Number of bins most be smaller than minimum",
-#                                   "transcript length.")}
-#     if(!(colName %in% colnames(DT))){stop("colName is not a column in DT.")}
-#     tapply(txDTn[["start_5p"]], txDT$gene, sum)
-#     nStarts <- DT[, sum(start_5p), by = gene][order(V1, decreasing = T),]
-#     DT <- DT[gene %in% nStarts$gene[nStarts$V1 >= minReadsPerGene]]
-#     geneLens <- tx_get_geneLengths(DT)
-#     DT <- DT[gene %in% names(geneLens)[geneLens > minTxLength]]
-#     GENES <- as.character(unique(DT$gene))
-#     if(length(GENES) < 1){stop("No genes after filtering parameters")}
-#     meanCovBinned <- mclapply(seq(GENES), function(i){
-#         iGene <- GENES[i]
-#         tmpDT <- DT[gene == iGene,]
-#         tmpDT$group <- tmpDT$txcoor %>% cut_number(n = nBins)
-#         out <- tapply(tmpDT[[colName]], tmpDT$group, FUN, na.rm = na.rm)
-#         out[is.nan(out)] <- NA
-#         out
-#     }) %>% do.call(what = "rbind") %>% apply(MARGIN = 2, FUN = FUN, na.rm = na.rm) %>% set_names(NULL)
-#     DF <- data.frame(bins = seq(meanCovBinned) %>% as.numeric,
-#                      score = meanCovBinned)
-#     plotTitle <- paste("METAGENE BY BINS -", FUN, colName) %>% toupper()
-#     plotSub <- paste0("n(genes) =", length(GENES), ", minTxLen =", minTxLength,
-#                       ", minReadsPerGene =", minReadsPerGene, ", smooth.sp =", smooth)
-#     Y_axis <- paste(FUN, colName)
-#     if(smooth){
-#         DF$smooth <- smooth.spline(DF$score)$y
-#         ggplot(DF, aes(x = bins, y = smooth)) + geom_line() + theme_classic() +
-#             ggtitle(plotTitle, plotSub) + ylab(Y_axis)
-#     }else{
-#         ggplot(DF, aes(x = bins, y = score)) + geom_line() + theme_classic() +
-#             ggtitle(plotTitle, plotSub) + ylab(Y_axis)
-#     }
-# }
-
-# load_all()
 
 # Combine lists of transcript reads processed by tx_reads
 tx_combineTxReadsList <- function(txReadsList){

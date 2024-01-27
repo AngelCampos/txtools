@@ -218,8 +218,10 @@ tx_plot_numeric <- function(DT, gene, colVars, txRange = 1:nrow(DT),
                                               fill = tmpData$variable)) +
             ggplot2::geom_bar(stat = "identity") +
             ggplot2::guides(fill = ggplot2::guide_legend(nrow = 1, byrow = TRUE, title = "")) +
-            ggplot2::facet_grid(.data$variable~., scales = scales) +
             ggplot2::scale_fill_brewer(palette = "Set1")
+        if(length(colVars) > 1){
+            tmpGG <- tmpGG + ggplot2::facet_grid(.data$variable~., scales = scales)
+        }
     }else if(plot_type == "lineplot"){
         tmpGG <- ggplot2::ggplot(tmpData,
                                  ggplot2::aes(x = tmpData$pos,

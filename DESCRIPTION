@@ -1,7 +1,7 @@
 Package: txtools
 Title: An R package facilitating analysis of RNA modifications, structures, and interactions
-Version: 0.1.2.4
-Date: 2023-24-08
+Version: 1.0.0
+Date: 2024-26-01
 Authors@R: 
     person(given = "Miguel Angel",
            family = "Garcia-Campos",
@@ -21,50 +21,51 @@ RoxygenNote: 7.2.1
 Suggests: 
     testthat (>= 2.1.0),
     knitr,
-    rmarkdown,
-    pasillaBamSubset
+    rmarkdown
 Remotes:
-    bioc::GenomicRanges,
-    bioc::GenomicAlignments,
-    bioc::Biostrings,
-    bioc::IRanges,
-    bioc::Rsamtools,
-    bioc::S4Vectors,
-    bioc::plyranges,
-    bioc::GenomeInfoDb,
-    bioc::limma,
-    bioc::genefilter,
-    bioc::edgeR,
     bioc::BiocGenerics,
-    bioc::BiocStyle
+    bioc::BiocStyle,
+    bioc::Biostrings,
+    bioc::edgeR,
+    bioc::genefilter,
+    bioc::GenomeInfoDb,
+    bioc::GenomicAlignments,
+    bioc::GenomicRanges, 
+    bioc::IRanges,
+    bioc::limma,
+    bioc::pasillaBamSubset,
+    bioc::plyranges,
+    bioc::Rsamtools,
+    bioc::S4Vectors
 Imports: 
-    GenomicRanges,
-    Biostrings,
-    BiocStyle,
-    IRanges,
-    Rsamtools,
-    S4Vectors (>= 0.23.20),
-    GenomicAlignments,
-    plyranges,
-    GenomeInfoDb,
-    limma,
-    genefilter,
-    edgeR,
     BiocGenerics,
-    magrittr,
-    stringr,
+    BiocStyle,
+    Biostrings,
     data.table,
-    tibble,
-    utils,
-    rlang (>= 0.4.3),
+    dplyr,
+    edgeR,
+    forcats,
+    genefilter,
+    GenomeInfoDb,
+    GenomicAlignments,
+    GenomicRanges,
     ggplot2,
     ggseqlogo,
-    tidyr,
-    methods,
-    forcats,
-    RcppRoll,
+    IRanges,
     lifecycle,
-    dplyr
+    limma,
+    pasillaBamSubset,
+    magrittr,
+    methods,
+    plyranges,
+    RcppRoll,
+    rlang (>= 0.4.3),
+    Rsamtools,
+    S4Vectors (>= 0.23.20),
+    stringr,
+    tibble,
+    tidyr,
+    utils
 VignetteBuilder: knitr
 biocViews: DataImport, DataRepresentation, Coverage, 
     Epitranscriptomics, RNASeq, Transcription

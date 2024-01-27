@@ -56,7 +56,7 @@ performs t-tests using a list of txDTs and a vector of the groups.
 }
 
 \author{
-\strong{Maintainer}: Miguel Angel Garcia-Campos \email{angel.campos@ciencias.unam.mx} (\href{https://orcid.org/0000-0001-5223-8174}{ORCID}) (https://angelcampos.github.io/)
+\strong{Maintainer}: Miguel Angel Garcia-Campos \email{garciacampos.bioinfo@gmail.com} (\href{https://orcid.org/0000-0001-5223-8174}{ORCID}) (https://angelcampos.github.io/)
 
 }
 \keyword{Coverage}
