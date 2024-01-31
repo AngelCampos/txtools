@@ -82,10 +82,9 @@ tx_plot_nucFreq <- function(DT,
         tmpGG <- tmpGG + ggplot2::theme(axis.text.x = ggplot2::element_blank())
     }
     if(!showLegend){
-        tmpGG <- tmpGG + ggplot2::theme(legend.position="none")
-    }else{
-        tmpGG
+        tmpGG <- tmpGG + ggplot2::theme(legend.position = "none")
     }
+    tmpGG
 }
 
 
@@ -154,10 +153,9 @@ tx_plot_staEndCov <- function(
         tmpGG <- tmpGG + ggplot2::theme(axis.text.x = ggplot2::element_blank())
     }
     if(!showLegend){
-        tmpGG <- tmpGG + ggplot2::theme(legend.position="none")
-    }else{
-        tmpGG
+        tmpGG <- tmpGG + ggplot2::theme(legend.position = "none")
     }
+    tmpGG
 }
 
 #' Numeric plot

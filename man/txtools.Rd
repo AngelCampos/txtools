@@ -3,7 +3,6 @@
 \docType{package}
 \name{txtools}
 \alias{txtools}
-\alias{_PACKAGE}
 \alias{txtools-package}
 \title{txtools: A package facilitating analysis of RNA modifications, structures, and interactions}
 \description{
