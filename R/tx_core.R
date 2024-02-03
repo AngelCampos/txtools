@@ -157,10 +157,10 @@ tx_load_bed <- function(bedfile){
     if(length(S4Vectors::mcols(tmp)) == 2){
         tmp$itemRGgb <- NA
         tmp$thick <- tmp@ranges
-        tmp$blocks <- IRanges::IRangesList(
-            S4Vectors::splitAsList(IRanges::IRanges(start = 1, end = IRanges::end(tmp) -
-                                       IRanges::start(tmp) + 1)),
-            compress = TRUE)
+        tmp$blocks <- IRanges::IRangesList(S4Vectors::splitAsList(
+            IRanges::IRanges(start = 1, end = IRanges::end(tmp) - IRanges::start(tmp) + 1),
+            factor(seq(length(tmpI)))), compress = TRUE) %>%
+            magrittr::set_names(NULL)
     }
     # Check no duplicated gene names
     dupN <- duplicated(tmp$name)
