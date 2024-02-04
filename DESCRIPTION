@@ -70,3 +70,4 @@ VignetteBuilder: knitr
 biocViews: DataImport, DataRepresentation, Coverage, 
     Epitranscriptomics, RNASeq, Transcription
 Roxygen: list(markdown = TRUE)
+URL: https://angelcampos.github.io/txtools/
