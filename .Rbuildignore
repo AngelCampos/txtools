@@ -14,4 +14,3 @@ references.bib
 ^_pkgdown\.yml$
 ^docs$
 ^pkgdown$
-^\.github$
