@@ -1,300 +1,300 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>/authors.html</loc>
+    <loc>https://angelcampos.github.io/txtools/authors.html</loc>
   </url>
   <url>
-    <loc>/LICENSE.html</loc>
+    <loc>https://angelcampos.github.io/txtools/LICENSE.html</loc>
   </url>
   <url>
-    <loc>/LICENSE-text.html</loc>
+    <loc>https://angelcampos.github.io/txtools/LICENSE-text.html</loc>
   </url>
   <url>
-    <loc>/index.html</loc>
+    <loc>https://angelcampos.github.io/txtools/index.html</loc>
   </url>
   <url>
-    <loc>/reference/index.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/index.html</loc>
   </url>
   <url>
-    <loc>/reference/hid_aggregate_DTlist.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/hid_aggregate_DTlist.html</loc>
   </url>
   <url>
-    <loc>/reference/hlp_coverageTab_mc.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/hlp_coverageTab_mc.html</loc>
   </url>
   <url>
-    <loc>/reference/hlp_genCoorTab_mc.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/hlp_genCoorTab_mc.html</loc>
   </url>
   <url>
-    <loc>/reference/hlp_nucFreqTab_mc.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/hlp_nucFreqTab_mc.html</loc>
   </url>
   <url>
-    <loc>/reference/IUPAC_code_2nucs.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/IUPAC_code_2nucs.html</loc>
   </url>
   <url>
-    <loc>/reference/IUPAC_CODE_MAP_extended.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/IUPAC_CODE_MAP_extended.html</loc>
   </url>
   <url>
-    <loc>/reference/IUPAC_code_simpl.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/IUPAC_code_simpl.html</loc>
   </url>
   <url>
-    <loc>/reference/txtools.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/txtools.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_add_diffNucToRef.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_add_diffNucToRef.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_add_diffNucToRefRatio.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_add_diffNucToRefRatio.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_add_endRatio.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_add_endRatio.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_add_motifPresence.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_add_motifPresence.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_add_nucTotal.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_add_nucTotal.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_add_pos.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_add_pos.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_add_refSeqDT.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_add_refSeqDT.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_add_siteAnnotation.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_add_siteAnnotation.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_add_startRatio.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_add_startRatio.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_complete_DT.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_complete_DT.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_counts.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_counts.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_cutEnds_DT.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_cutEnds_DT.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_dm3_geneAnnot.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_dm3_geneAnnot.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_extend_UTR.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_extend_UTR.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_filter_maxWidth.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_filter_maxWidth.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_load_bam.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_load_bam.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_load_bed.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_load_bed.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_load_genome.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_load_genome.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_makeDT_coverage.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_makeDT_coverage.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_makeDT_covNucFreq.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_makeDT_covNucFreq.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_makeDT_nucFreq.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_makeDT_nucFreq.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_merge_DT.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_merge_DT.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_plot_nucFreq.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_plot_nucFreq.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_plot_staEndCov.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_plot_staEndCov.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_reads.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_reads.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_sample_GRList.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_sample_GRList.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_split_DT.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_split_DT.html</loc>
   </url>
   <url>
-    <loc>/reference/window_around.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/window_around.html</loc>
   </url>
   <url>
-    <loc>/reference/annotSites_RRACH.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/annotSites_RRACH.html</loc>
   </url>
   <url>
-    <loc>/reference/bam_sk1.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/bam_sk1.html</loc>
   </url>
   <url>
-    <loc>/reference/gA_sk1.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/gA_sk1.html</loc>
   </url>
   <url>
-    <loc>/reference/genome_sk1.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/genome_sk1.html</loc>
   </url>
   <url>
-    <loc>/reference/getDumpedAlignments.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/getDumpedAlignments.html</loc>
   </url>
   <url>
-    <loc>/reference/mm_geneAnnot.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/mm_geneAnnot.html</loc>
   </url>
   <url>
-    <loc>/reference/sc_geneAnnot.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/sc_geneAnnot.html</loc>
   </url>
   <url>
-    <loc>/reference/sc_rRNAmods_Taoka.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/sc_rRNAmods_Taoka.html</loc>
   </url>
   <url>
-    <loc>/reference/sc_txDTL.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/sc_txDTL.html</loc>
   </url>
   <url>
-    <loc>/reference/tk_faGenome.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tk_faGenome.html</loc>
   </url>
   <url>
-    <loc>/reference/tk_geneAnnot.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tk_geneAnnot.html</loc>
   </url>
   <url>
-    <loc>/reference/txDTL_Tk.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/txDTL_Tk.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_add_endRatio1bpUS.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_add_endRatio1bpUS.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_add_misincCount.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_add_misincCount.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_add_misincRate.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_add_misincRate.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_add_misincRateNucSpec.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_add_misincRateNucSpec.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_add_rollingMean.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_add_rollingMean.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_add_startRatio1bpDS.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_add_startRatio1bpDS.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_data_caseStudy2.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_data_caseStudy2.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_generateSingleEndFASTQ.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_generateSingleEndFASTQ.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_get_flankSequence.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_get_flankSequence.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_get_flanksFromLogicAnnot.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_get_flanksFromLogicAnnot.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_get_geneLengths.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_get_geneLengths.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_get_metageneAtCDS.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_get_metageneAtCDS.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_get_transcriptSeqs.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_get_transcriptSeqs.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_load_rdsDT.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_load_rdsDT.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_orderDT.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_orderDT.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_plot_ggseqlogo.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_plot_ggseqlogo.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_plot_metageneAtCDS.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_plot_metageneAtCDS.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_shift_geneWise.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_shift_geneWise.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_test_LRTedgeR.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_test_LRTedgeR.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_test_ttest.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_test_ttest.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_unifyTxDTL.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_unifyTxDTL.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_add_spliceSitesLogical.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_add_spliceSitesLogical.html</loc>
   </url>
   <url>
-    <loc>/reference/sc_faGenome.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/sc_faGenome.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_add_endRatio1bpDS.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_add_endRatio1bpDS.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_add_startRatio1bpUS.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_add_startRatio1bpUS.html</loc>
   </url>
   <url>
-    <loc>/reference/hlp_plot_metageneRegions.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/hlp_plot_metageneRegions.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_add_exonNumber.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_add_exonNumber.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_add_exonPlace.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_add_exonPlace.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_add_geneRegion.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_add_geneRegion.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_add_relTxPos.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_add_relTxPos.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_cut_geneAnnotBytxDT.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_cut_geneAnnotBytxDT.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_get_metageneRegions.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_get_metageneRegions.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_plot_metageneExons.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_plot_metageneExons.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_plot_metageneRegions.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_plot_metageneRegions.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_sampleByGenes.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_sampleByGenes.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_generatePairedEndFASTQ.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_generatePairedEndFASTQ.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_get_metageneExons.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_get_metageneExons.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_get_unassignedAlignments.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_get_unassignedAlignments.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_plot_numeric.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_plot_numeric.html</loc>
   </url>
   <url>
-    <loc>/reference/txCoreCols.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/txCoreCols.html</loc>
   </url>
   <url>
-    <loc>/reference/txCoreCols_refSeq.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/txCoreCols_refSeq.html</loc>
   </url>
   <url>
-    <loc>/reference/tx_plot_metaGeneByBins.html</loc>
+    <loc>https://angelcampos.github.io/txtools/reference/tx_plot_metaGeneByBins.html</loc>
   </url>
   <url>
-    <loc>/404.html</loc>
+    <loc>https://angelcampos.github.io/txtools/404.html</loc>
   </url>
   <url>
-    <loc>/articles/index.html</loc>
+    <loc>https://angelcampos.github.io/txtools/articles/index.html</loc>
   </url>
   <url>
-    <loc>/articles/txtools.html</loc>
+    <loc>https://angelcampos.github.io/txtools/articles/txtools.html</loc>
   </url>
   <url>
-    <loc>/news/index.html</loc>
+    <loc>https://angelcampos.github.io/txtools/news/index.html</loc>
   </url>
 </urlset>
