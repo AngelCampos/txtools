@@ -54,6 +54,13 @@ metrics between groups of samples. e.g. \code{\link{tx_test_ttest}}() which
 performs t-tests using a list of txDTs and a vector of the groups.
 }
 
+\seealso{
+Useful links:
+\itemize{
+  \item \doi{10.1101/2023.08.24.554738}
+}
+
+}
 \author{
 \strong{Maintainer}: Miguel Angel Garcia-Campos \email{garciacampos.bioinfo@gmail.com} (\href{https://orcid.org/0000-0001-5223-8174}{ORCID}) (https://angelcampos.github.io/)
 

@@ -1,0 +1,13 @@
+citHeader("To cite txtools in publications use:")
+
+citEntry(
+  entry    = "Article",
+  title    = "txtools: an R package facilitating analysis of RNA modifications, structures, and interactions",
+  author   = "Garcia-Campos, Miguel Angel and Schwartz, Schraga",
+  journal  = "bioRxiv",
+  year     = "2023",
+  pages    = "2023--08",
+  url      = "https://doi.org/10.1101/2023.08.24.554738",
+  textVersion = paste(
+  )
+)
