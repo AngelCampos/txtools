@@ -1824,6 +1824,24 @@ tx_counts <- function(x){
     magrittr::set_names(as.integer(tmp), names(tmp))
 }
 
+#' Combine txreads
+#'
+#' Combine transcript reads processed by tx_reads(), objects must be inside
+#' a simple list.
+#'
+#' @param txReadsList list. A list of CompressedGRangesList objects generated
+#' via \code{\link{tx_reads}}().
+#'
+#' @return CompressedGRangesList
+#' @export
+tx_combineTxReads <- function(txReadsList){
+    tmp <- lapply(txReadsList, function(x) unlist(x)) %>%
+        GenomicRanges::GRangesList() %>%
+        unlist()
+    GenomicRanges::GRangesList(split(tmp, GenomicAlignments::seqnames(tmp)),
+                               compress = TRUE)
+}
+
 # Built-in data loading functions ##############################################
 
 #' D. melanogaster gene annotation subset path

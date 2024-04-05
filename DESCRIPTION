@@ -1,6 +1,6 @@
 Package: txtools
 Title: An R package facilitating analysis of RNA modifications, structures, and interactions
-Version: 1.0.3
+Version: 1.0.4
 Date: 2024-26-01
 Authors@R: 
     person(given = "Miguel Angel",
@@ -70,4 +70,4 @@ VignetteBuilder: knitr
 biocViews: DataImport, DataRepresentation, Coverage, 
     Epitranscriptomics, RNASeq, Transcription
 Roxygen: list(markdown = TRUE)
-URL: https://doi.org/10.1101/2023.08.24.554738
+URL: https://doi.org/10.1093/nar/gkae203

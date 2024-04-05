@@ -1,3 +1,9 @@
+## v0.1.4
+
+* Added tx_combineTxReads() to combine reads processed by tx_reads().
+* Setup pkgdown [website](https://angelcampos.github.io/txtools).
+* Bug fix: Loading Bed-6 gene annotations broke due to a dependency update.
+
 ## v0.1.2
 
 * Bug fix: stringr::str_sub() update broke functions.

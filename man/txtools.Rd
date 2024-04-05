@@ -57,7 +57,7 @@ performs t-tests using a list of txDTs and a vector of the groups.
 \seealso{
 Useful links:
 \itemize{
-  \item \doi{10.1101/2023.08.24.554738}
+  \item \doi{10.1093/nar/gkae203}
 }
 
 }

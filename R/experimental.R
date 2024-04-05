@@ -52,14 +52,6 @@ tx_plot_metaGeneByBins <- function(txDT, colName, nBins = 100, FUN = "mean",
     }
 }
 
-# Combine lists of transcript reads processed by tx_reads
-tx_combineTxReadsList <- function(txReadsList){
-    tmp <- lapply(txReadsList, function(x) unlist(x)) %>%
-        GenomicRanges::GRangesList() %>%
-        unlist()
-    split(tmp, GenomicAlignments::seqnames(tmp))
-}
-
 # Ideas for functions ##########################################################
 
 # # Apply a function in a binned manner to a data.table column
