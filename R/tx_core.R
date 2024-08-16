@@ -54,14 +54,17 @@ NULL
 #' @param pairedEnd logical. Set to FALSE if reads in BAM file are single-end,
 #' set to TRUE if reads are paired-end.
 #' @param yieldSize numeric. Number of reads to be processed at a time
-#' @param scanFlag integer. Flag used to filter reads.
-#' See \code{\link[Rsamtools]{ScanBamParam}}
+#' @param scanFlag integer. Flag used to filter reads. Built with
+#' the \code{\link[Rsamtools]{scanBamFlag}} function.
 #' @param loadSeq logical. Set to TRUE for loading the sequences contained
 #' in the BAM file
 #' @param strandMode numeric. \itemize{
 #' \item 1 (default): Strand of the pair is that of its **first** alignment: Directional Illumina (Ligation), Standard SOLiD. (Single-end No change in strand)
 #' \item 2: strand of the pair is strand of its **last** alignment: dUTP, NSR, NNSR, Illumina stranded TruSeq PE protocol. (Single-end: Change to inverse strand)
 #' \item 0: strand of the pair is set to '*' (unspecified). This mode is no longer supported by \code{\link{tx_reads}}() .} More info: \code{\link[GenomicAlignments]{GAlignmentPairs-class}}.
+#' @param loadSecondaryAligns logical. Set to FALSE to discard alignments labeled
+#' in the BAM file as secondary and load only primary alignments, set to TRUE to
+#' load only secondary alignments, leave as NA to load both primary and secondary alignments.
 #' @param verbose logical. Set to FALSE to show less information.
 #'
 #' @return GRanges
@@ -74,7 +77,7 @@ NULL
 #' summary(hg19_bam)
 tx_load_bam <- function(file, pairedEnd, yieldSize = 100000,
                         scanFlag = "default", loadSeq = FALSE, strandMode = 1,
-                        verbose = TRUE){
+                        loadSecondaryAligns = NA, verbose = TRUE){
     if(!is.logical(pairedEnd)){stop("Argument 'pairedEnd' must be of class logical")}
     if(!is.logical(loadSeq)){stop("Argument 'loadSeq' must be of class logical")}
     if(verbose){cat("Reading number of records in file \n")}
@@ -82,9 +85,11 @@ tx_load_bam <- function(file, pairedEnd, yieldSize = 100000,
     if(scanFlag == "default" & pairedEnd){
         scanFlag <- Rsamtools::scanBamFlag(isDuplicate = FALSE,
                                            isNotPassingQualityControls = FALSE,
+                                           isSecondaryAlignment = loadSecondaryAligns,
                                            isPaired = TRUE)
     }else if(scanFlag == "default" & !pairedEnd){
         scanFlag <- Rsamtools::scanBamFlag(isDuplicate = FALSE,
+                                           isSecondaryAlignment = loadSecondaryAligns,
                                            isNotPassingQualityControls = FALSE)
     }
     if(loadSeq){

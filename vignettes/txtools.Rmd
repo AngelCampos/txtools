@@ -110,7 +110,7 @@ information from the alignments we need to set the `loadSeq` argument also to TR
 
 ```{r}
 BAM_path <- pasillaBamSubset::untreated3_chr4() # Paired-end BAM file built-in pasillaBamSubset
-genAligns <- tx_load_bam(file = BAM_path, pairedEnd = TRUE, loadSeq = TRUE)
+genAligns <- tx_load_bam(file = BAM_path, pairedEnd = TRUE, loadSeq = TRUE, loadSecondaryAligns = FALSE)
 ```
 
 These three functions make loading the necessary input data a painless process.

@@ -1,18 +1,25 @@
-## v0.1.4
+# txtools 0.1.5
+
+* Added the `loadSecondaryAligns` argument to `tx_load_bam()` so that secondary 
+alignments can be easily discarded by setting it to FALSE. The same effect can be
+accomplished by inputing a scanFlag built with the `Rsamtools::scanBamFlag()` 
+helper, but this way it is a more streamlined feature.
+
+# txtools 0.1.4
 
 * Added tx_combineTxReads() to combine reads processed by tx_reads().
 * Setup pkgdown [website](https://angelcampos.github.io/txtools).
 * Bug fix: Loading Bed-6 gene annotations broke due to a dependency update.
 
-## v0.1.2
+# txtools 0.1.2
 
 * Bug fix: stringr::str_sub() update broke functions.
 
-## v0.1.1
+# txtools 0.1.1
 
 * Bug fix: Error processing single-end reads
 
-## v0.1.0
+# txtools 0.1.0
 
 * Major: 
     * Added ignore.strand functionality to load reads regardless if the RNA-seq 
@@ -23,7 +30,7 @@
     are under the curve to be proportional to 1*(transcriptomic window length).
 * Plus minor fixes.
 
-## v0.0.8
+# txtools 0.0.8
 
 * Fixed loading paired end BAM files when strand sign is defined by read2 
 ("last").
@@ -36,7 +43,7 @@
     * Added "splicingSite" option to tx_get_metageAtCDS() and 
     tx_plot_metageneAtCDS().
 
-## v0.0.7
+# txtools 0.0.7
 
 * General Update
 * Added vignette "txtools_user_guide"
@@ -53,34 +60,34 @@ txcoor order. Changing name of function tx_add_misincorpRateNucSpec()
 in favor of tx_add_misincRateNucSpec(), so that it conforms to other function 
 names, former can be used as alias but has been deprecated.
 
-## v0.0.6
+# txtools 0.0.6
 
 * Fixed a bug detected when loading BAM files with mappings with empty 
 sequence field
 * 0.0.6.2 patch: Fixed bug related with spurious paired-end alignments, R1 and
 R2 order is wrong.
 
-## v0.0.5
+# txtools 0.0.5
 
 * Update Bioconductor remotes.
 * Adding tx_core_mc() which is deprecated as alias of tx_reads().
 * Fix bug in tx_complete_DT() which added refSeq before necessary.
 
-## v0.0.4
+# txtools 0.0.4
 
 * Uni and Multi-core functions merged into unique functions 
 capable of using multi-cores with the parallel package.
 
-## v0.0.3
+# txtools 0.0.3
 
 * Bug fixed when using BED6 annotation
 
-## v0.0.2
+# txtools 0.0.2
 
 * Updating plotting function tx_plot_staEndCov() to remove 
 coverage counts.
 * Other minor changes
 
-## v0.0.1 
+# txtools 0.0.1 
 
 * Initial draft of package

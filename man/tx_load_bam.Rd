@@ -11,6 +11,7 @@ tx_load_bam(
   scanFlag = "default",
   loadSeq = FALSE,
   strandMode = 1,
+  loadSecondaryAligns = NA,
   verbose = TRUE
 )
 }
@@ -22,8 +23,8 @@ set to TRUE if reads are paired-end.}
 
 \item{yieldSize}{numeric. Number of reads to be processed at a time}
 
-\item{scanFlag}{integer. Flag used to filter reads.
-See \code{\link[Rsamtools]{ScanBamParam}}}
+\item{scanFlag}{integer. Flag used to filter reads. Built with
+the \code{\link[Rsamtools]{scanBamFlag}} function.}
 
 \item{loadSeq}{logical. Set to TRUE for loading the sequences contained
 in the BAM file}
@@ -32,6 +33,10 @@ in the BAM file}
 \item 1 (default): Strand of the pair is that of its \strong{first} alignment: Directional Illumina (Ligation), Standard SOLiD. (Single-end No change in strand)
 \item 2: strand of the pair is strand of its \strong{last} alignment: dUTP, NSR, NNSR, Illumina stranded TruSeq PE protocol. (Single-end: Change to inverse strand)
 \item 0: strand of the pair is set to '*' (unspecified). This mode is no longer supported by \code{\link{tx_reads}}() .} More info: \code{\link[GenomicAlignments]{GAlignmentPairs-class}}.}
+
+\item{loadSecondaryAligns}{logical. Set to FALSE to discard alignments labeled
+in the BAM file as secondary and load only primary alignments, set to TRUE to
+load only secondary alignments, leave as NA to load both primary and secondary alignments.}
 
 \item{verbose}{logical. Set to FALSE to show less information.}
 }
