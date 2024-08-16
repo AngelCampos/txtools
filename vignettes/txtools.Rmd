@@ -3,8 +3,9 @@ title: "txtools User Guide"
 author: "Miguel Angel Garcia-Campos"
 package: txtools
 abstract: |
-  txtools is an R package for processing and analysis of
-  transcriptomic data. 
+   R package that enables the processing, analysis, and visualization of 
+   RNA-seq data at the nucleotide-level resolution, seamlessly integrating 
+   alignments to the genome with transcriptomic representation.
 vignette: >
   %\VignetteIndexEntry{txtools User Guide}
   %\VignetteEncoding{UTF-8} 

@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 # txtools <a href=''><img src='man/figures/logo.png' align="right" height="139" /></a>
 
 <!-- badges: start -->
-`r badger::badge_devel("AngelCampos/txtools", "blue")`
+`r badger::badge_github_version("AngelCampos/txtools", "blue")`
 <!-- badges: end -->
 
 ## Description 

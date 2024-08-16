@@ -1,11 +1,11 @@
-# txtools 0.1.5
+# txtools 1.0.5
 
 * Added the `loadSecondaryAligns` argument to `tx_load_bam()` so that secondary 
 alignments can be easily discarded by setting it to FALSE. The same effect can be
 accomplished by inputing a scanFlag built with the `Rsamtools::scanBamFlag()` 
 helper, but this way it is a more streamlined feature.
 
-# txtools 0.1.4
+# txtools 1.0.4
 
 * Added tx_combineTxReads() to combine reads processed by tx_reads().
 * Setup pkgdown [website](https://angelcampos.github.io/txtools).
