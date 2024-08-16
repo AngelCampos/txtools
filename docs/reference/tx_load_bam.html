@@ -14,7 +14,7 @@ GenomicAlignments object."><meta property="og:image" content="https://angelcampo
     
     <a class="navbar-brand me-2" href="../index.html">txtools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.5</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -61,6 +61,7 @@ GenomicAlignments object.</p>
 <span>  scanFlag <span class="op">=</span> <span class="st">"default"</span>,</span>
 <span>  loadSeq <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  strandMode <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  loadSecondaryAligns <span class="op">=</span> <span class="cn">NA</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -81,8 +82,8 @@ set to TRUE if reads are paired-end.</p></dd>
 
 
 <dt>scanFlag</dt>
-<dd><p>integer. Flag used to filter reads.
-See <code><a href="https://rdrr.io/pkg/Rsamtools/man/ScanBamParam-class.html" class="external-link">ScanBamParam</a></code></p></dd>
+<dd><p>integer. Flag used to filter reads. Built with
+the <code><a href="https://rdrr.io/pkg/Rsamtools/man/ScanBamParam-class.html" class="external-link">scanBamFlag</a></code> function.</p></dd>
 
 
 <dt>loadSeq</dt>
@@ -95,6 +96,12 @@ in the BAM file</p></dd>
 <li><p>2: strand of the pair is strand of its <strong>last</strong> alignment: dUTP, NSR, NNSR, Illumina stranded TruSeq PE protocol. (Single-end: Change to inverse strand)</p></li>
 <li><p>0: strand of the pair is set to '*' (unspecified). This mode is no longer supported by <code><a href="tx_reads.html">tx_reads</a></code>() .</p></li>
 </ul><p>More info: <code><a href="https://rdrr.io/pkg/GenomicAlignments/man/GAlignmentPairs-class.html" class="external-link">GAlignmentPairs-class</a></code>.</p></dd>
+
+
+<dt>loadSecondaryAligns</dt>
+<dd><p>logical. Set to FALSE to discard alignments labeled
+in the BAM file as secondary and load only primary alignments, set to TRUE to
+load only secondary alignments, leave as NA to load both primary and secondary alignments.</p></dd>
 
 
 <dt>verbose</dt>

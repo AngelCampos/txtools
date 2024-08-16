@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">txtools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.5</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -41,7 +41,89 @@
       
     </div>
 
-  </main></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.5" id="txtools-015">txtools 0.1.5<a class="anchor" aria-label="anchor" href="#txtools-015"></a></h2>
+<ul><li>Added the <code>loadSecondaryAligns</code> argument to <code><a href="../reference/tx_load_bam.html">tx_load_bam()</a></code> so that secondary alignments can be easily discarded by setting it to FALSE. The same effect can be accomplished by inputing a scanFlag built with the <code><a href="https://rdrr.io/pkg/Rsamtools/man/ScanBamParam-class.html" class="external-link">Rsamtools::scanBamFlag()</a></code> helper, but this way it is a more streamlined feature.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.4" id="txtools-014">txtools 0.1.4<a class="anchor" aria-label="anchor" href="#txtools-014"></a></h2>
+<ul><li>Added tx_combineTxReads() to combine reads processed by tx_reads().</li>
+<li>Setup pkgdown <a href="https://angelcampos.github.io/txtools">website</a>.</li>
+<li>Bug fix: Loading Bed-6 gene annotations broke due to a dependency update.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.2" id="txtools-012">txtools 0.1.2<a class="anchor" aria-label="anchor" href="#txtools-012"></a></h2>
+<ul><li>Bug fix: stringr::str_sub() update broke functions.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1" id="txtools-011">txtools 0.1.1<a class="anchor" aria-label="anchor" href="#txtools-011"></a></h2>
+<ul><li>Bug fix: Error processing single-end reads</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.0" id="txtools-010">txtools 0.1.0<a class="anchor" aria-label="anchor" href="#txtools-010"></a></h2>
+<ul><li>Major:
+<ul><li>Added ignore.strand functionality to load reads regardless if the RNA-seq library is strand-aware.</li>
+<li>New plotting function tx_plot_numeric(): Plots numeric variables along the transcriptomic space.</li>
+<li>tx_metagene_<em>() functions have a normalization argument which yields the are under the curve to be proportional to 1</em>(transcriptomic window length).</li>
+</ul></li>
+<li>Plus minor fixes.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.8" id="txtools-008">txtools 0.0.8<a class="anchor" aria-label="anchor" href="#txtools-008"></a></h2>
+<ul><li>Fixed loading paired end BAM files when strand sign is defined by read2 (“last”).</li>
+<li>Bugs fixed</li>
+<li>Minor improvements:
+<ul><li>Loading genome name as first word separated by spaces</li>
+<li>Edited main vignette tutorial “txtools”</li>
+<li>Added bam2txDT.R script in inst/ dir</li>
+</ul></li>
+<li>Patch 0.0.8.1:
+<ul><li>Added “splicingSite” option to tx_get_metageAtCDS() and tx_plot_metageneAtCDS().</li>
+</ul></li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.7" id="txtools-007">txtools 0.0.7<a class="anchor" aria-label="anchor" href="#txtools-007"></a></h2>
+<ul><li>General Update</li>
+<li>Added vignette “txtools_user_guide”</li>
+<li>Changed tx_add_diffNucToRef() for tx_add_misincCount()</li>
+<li>Changed tx_add_diffNucToRefRatio() for tx_add_misincRate()</li>
+<li>Fix minor bugs</li>
+<li>
+<strong>0.0.7.4 patch</strong>: Fixed a bug that incorrectly included alignments with N operations in their CIGAR strings (gaps), that didn’t match the gene structure.</li>
+<li>Removed plotly conversion in tx_plot_*() functions. As can be easily done by the user with plotly::ggplotly()</li>
+<li>
+<strong>0.0.7.8 patch</strong>: Fixed tx_orderDT() so that order is not affected by levels in the ‘gene’ factor; accordingly fix tx_unifyTxDTL() so DTs have the same txcoor order. Changing name of function tx_add_misincorpRateNucSpec() in favor of tx_add_misincRateNucSpec(), so that it conforms to other function names, former can be used as alias but has been deprecated.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.6" id="txtools-006">txtools 0.0.6<a class="anchor" aria-label="anchor" href="#txtools-006"></a></h2>
+<ul><li>Fixed a bug detected when loading BAM files with mappings with empty sequence field</li>
+<li>0.0.6.2 patch: Fixed bug related with spurious paired-end alignments, R1 and R2 order is wrong.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.5" id="txtools-005">txtools 0.0.5<a class="anchor" aria-label="anchor" href="#txtools-005"></a></h2>
+<ul><li>Update Bioconductor remotes.</li>
+<li>Adding tx_core_mc() which is deprecated as alias of tx_reads().</li>
+<li>Fix bug in tx_complete_DT() which added refSeq before necessary.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.4" id="txtools-004">txtools 0.0.4<a class="anchor" aria-label="anchor" href="#txtools-004"></a></h2>
+<ul><li>Uni and Multi-core functions merged into unique functions capable of using multi-cores with the parallel package.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.3" id="txtools-003">txtools 0.0.3<a class="anchor" aria-label="anchor" href="#txtools-003"></a></h2>
+<ul><li>Bug fixed when using BED6 annotation</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.2" id="txtools-002">txtools 0.0.2<a class="anchor" aria-label="anchor" href="#txtools-002"></a></h2>
+<ul><li>Updating plotting function tx_plot_staEndCov() to remove coverage counts.</li>
+<li>Other minor changes</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.0.1" id="txtools-001">txtools 0.0.1<a class="anchor" aria-label="anchor" href="#txtools-001"></a></h2>
+<ul><li>Initial draft of package</li>
+</ul></div>
+  </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">

@@ -33,7 +33,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">txtools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.5</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -117,7 +117,7 @@ the processing of data in two stages:</p>
 <img src="../reference/figures/readme_1.png" alt="Fig 1. txtools main processing workflow"><div class="figcaption">Fig 1. txtools main processing workflow</div>
 </div>
 <p>The intermediate output in Step 1 is of class <code>GRanges</code>
-from the <em><a href="https://bioconductor.org/packages/3.17/GenomicRanges" class="external-link">GenomicRanges</a></em>
+from the <em><a href="https://bioconductor.org/packages/3.13/GenomicRanges" class="external-link">GenomicRanges</a></em>
 package, while that of Step 2, and final output of the main txtools
 processing pipeline, is of class <code>data.table</code> from the <em><a href="https://CRAN.R-project.org/package=data.table" class="external-link">data.table</a></em>
 package, which is an extension of the <code>data.frame</code> class.</p>
@@ -131,7 +131,7 @@ necessary, and instead use a subset of the gene annotation while
 developing the analysis pipeline and only at late stages run over the
 complete transcriptome.</p>
 </blockquote>
-<p><em>For this example we will use the data of the </em><a href="https://bioconductor.org/packages/3.17/pasillaBamSubset" class="external-link">pasillaBamSubset</a><em>
+<p><em>For this example we will use the data of the </em><a href="https://bioconductor.org/packages/3.13/pasillaBamSubset" class="external-link">pasillaBamSubset</a><em>
 package. A subset of reads aligned to the chromosome 4 of D.
 melanogaster.</em></p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
@@ -166,7 +166,7 @@ files</strong>. These files can be loaded into R using
 paired-end; as we will use the sequence information from the alignments
 we need to set the <code>loadSeq</code> argument also to TRUE.</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>BAM_path <span class="ot">&lt;-</span> pasillaBamSubset<span class="sc">::</span><span class="fu">untreated3_chr4</span>() <span class="co"># Paired-end BAM file built-in pasillaBamSubset</span></span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>genAligns <span class="ot">&lt;-</span> <span class="fu">tx_load_bam</span>(<span class="at">file =</span> BAM_path, <span class="at">pairedEnd =</span> <span class="cn">TRUE</span>, <span class="at">loadSeq =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>genAligns <span class="ot">&lt;-</span> <span class="fu">tx_load_bam</span>(<span class="at">file =</span> BAM_path, <span class="at">pairedEnd =</span> <span class="cn">TRUE</span>, <span class="at">loadSeq =</span> <span class="cn">TRUE</span>, <span class="at">loadSecondaryAligns =</span> <span class="cn">FALSE</span>)</span>
 <span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co">#&gt; Reading number of records in file </span></span>
 <span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="co">#&gt; 175346 number of BAM records </span></span>
 <span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="co">#&gt; Loading BAM file </span></span>
@@ -727,7 +727,7 @@ the start of the CDS as well as upstream and downstream flanks.</p>
 of genes. Using as input the reference genome and the gene annotation
 loaded with <code><a href="../reference/tx_load_bed.html">tx_load_bed()</a></code>.</p>
 <p>The output of this function can be either a DNAStringSet from the
-<em><a href="https://bioconductor.org/packages/3.17/Biostrings" class="external-link">Biostrings</a></em>
+<em><a href="https://bioconductor.org/packages/3.13/Biostrings" class="external-link">Biostrings</a></em>
 package, or (when providing a file name) a FASTA file.</p>
 <p>Bellow an example showing the sequences of the genes in the D.
 melanogaster gene annotation, and the DNAStringSet as output.</p>
@@ -757,7 +757,7 @@ compared to a control group.</p>
 <li><p>t test: In the case of comparing continuous variables a t-test
 can show the unlikeliness that both groups have the same mean. e.g. whe
 comparing start to coverage rate.</p></li>
-<li><p>Likelihood Ratio test (from <em><a href="https://bioconductor.org/packages/3.17/edgeR" class="external-link">edgeR</a></em>
+<li><p>Likelihood Ratio test (from <em><a href="https://bioconductor.org/packages/3.13/edgeR" class="external-link">edgeR</a></em>
 package): For comparing count data that are of the type of trial and
 success between groups, for example when comparing start to coverage
 ratio but directly with the count data, considering coverage counts as
@@ -772,94 +772,89 @@ URL]</em></p>
 <div class="section level2">
 <h2 class="unnumbered" id="session-info">Session info<a class="anchor" aria-label="anchor" href="#session-info"></a>
 </h2>
-<pre><code><span><span class="co">#&gt; R version 4.3.1 (2023-06-16 ucrt)</span></span>
-<span><span class="co">#&gt; Platform: x86_64-w64-mingw32/x64 (64-bit)</span></span>
-<span><span class="co">#&gt; Running under: Windows 10 x64 (build 19045)</span></span>
+<pre><code><span><span class="co">#&gt; R version 4.1.0 (2021-05-18)</span></span>
+<span><span class="co">#&gt; Platform: x86_64-pc-linux-gnu (64-bit)</span></span>
+<span><span class="co">#&gt; Running under: CentOS Linux 7 (Core)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Matrix products: default</span></span>
-<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; BLAS:   /apps/RH7U2/gnu/R/4.1.0/lib64/R/lib/libRblas.so</span></span>
+<span><span class="co">#&gt; LAPACK: /apps/RH7U2/gnu/R/4.1.0/lib64/R/lib/libRlapack.so</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; locale:</span></span>
-<span><span class="co">#&gt; [1] LC_COLLATE=English_United States.utf8 </span></span>
-<span><span class="co">#&gt; [2] LC_CTYPE=English_United States.utf8   </span></span>
-<span><span class="co">#&gt; [3] LC_MONETARY=English_United States.utf8</span></span>
-<span><span class="co">#&gt; [4] LC_NUMERIC=C                          </span></span>
-<span><span class="co">#&gt; [5] LC_TIME=English_United States.utf8    </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; time zone: America/Mexico_City</span></span>
-<span><span class="co">#&gt; tzcode source: internal</span></span>
+<span><span class="co">#&gt;  [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              </span></span>
+<span><span class="co">#&gt;  [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    </span></span>
+<span><span class="co">#&gt;  [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   </span></span>
+<span><span class="co">#&gt;  [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 </span></span>
+<span><span class="co">#&gt;  [9] LC_ADDRESS=C               LC_TELEPHONE=C            </span></span>
+<span><span class="co">#&gt; [11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; attached base packages:</span></span>
 <span><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; other attached packages:</span></span>
-<span><span class="co">#&gt; [1] pasillaBamSubset_0.38.0 BiocStyle_2.28.1        txtools_1.0.4          </span></span>
-<span><span class="co">#&gt; [4] testthat_3.2.1          devtools_2.4.5          usethis_2.2.2          </span></span>
+<span><span class="co">#&gt; [1] pasillaBamSubset_0.34.0 BiocStyle_2.28.0        txtools_1.0.5          </span></span>
+<span><span class="co">#&gt; [4] testthat_3.1.4          devtools_2.4.3          usethis_2.1.6          </span></span>
 <span><span class="co">#&gt; [7] magrittr_2.0.3         </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
-<span><span class="co">#&gt;   [1] rstudioapi_0.15.0           jsonlite_1.8.8             </span></span>
-<span><span class="co">#&gt;   [3] farver_2.1.1                rmarkdown_2.25             </span></span>
-<span><span class="co">#&gt;   [5] fs_1.6.3                    BiocIO_1.10.0              </span></span>
-<span><span class="co">#&gt;   [7] zlibbioc_1.46.0             ragg_1.2.7                 </span></span>
-<span><span class="co">#&gt;   [9] vctrs_0.6.3                 memoise_2.0.1              </span></span>
-<span><span class="co">#&gt;  [11] Rsamtools_2.16.0            RCurl_1.98-1.12            </span></span>
-<span><span class="co">#&gt;  [13] RcppRoll_0.3.0              htmltools_0.5.7            </span></span>
-<span><span class="co">#&gt;  [15] S4Arrays_1.2.0              forcats_1.0.0              </span></span>
-<span><span class="co">#&gt;  [17] sass_0.4.7                  bslib_0.5.1                </span></span>
-<span><span class="co">#&gt;  [19] htmlwidgets_1.6.4           desc_1.4.3                 </span></span>
-<span><span class="co">#&gt;  [21] cachem_1.0.8                GenomicAlignments_1.36.0   </span></span>
-<span><span class="co">#&gt;  [23] mime_0.12                   lifecycle_1.0.4            </span></span>
-<span><span class="co">#&gt;  [25] pkgconfig_2.0.3             Matrix_1.6-1.1             </span></span>
-<span><span class="co">#&gt;  [27] R6_2.5.1                    fastmap_1.1.1              </span></span>
-<span><span class="co">#&gt;  [29] GenomeInfoDbData_1.2.11     MatrixGenerics_1.14.0      </span></span>
-<span><span class="co">#&gt;  [31] shiny_1.8.0                 digest_0.6.33              </span></span>
-<span><span class="co">#&gt;  [33] colorspace_2.1-0            AnnotationDbi_1.64.1       </span></span>
-<span><span class="co">#&gt;  [35] S4Vectors_0.38.2            rprojroot_2.0.4            </span></span>
-<span><span class="co">#&gt;  [37] pkgload_1.3.4               textshaping_0.3.7          </span></span>
-<span><span class="co">#&gt;  [39] GenomicRanges_1.52.0        RSQLite_2.3.1              </span></span>
-<span><span class="co">#&gt;  [41] labeling_0.4.3              fansi_1.0.4                </span></span>
-<span><span class="co">#&gt;  [43] httr_1.4.7                  abind_1.4-5                </span></span>
-<span><span class="co">#&gt;  [45] compiler_4.3.1              remotes_2.4.2.1            </span></span>
-<span><span class="co">#&gt;  [47] bit64_4.0.5                 withr_2.5.0                </span></span>
-<span><span class="co">#&gt;  [49] BiocParallel_1.34.2         DBI_1.2.1                  </span></span>
-<span><span class="co">#&gt;  [51] pkgbuild_1.4.3              DelayedArray_0.26.7        </span></span>
-<span><span class="co">#&gt;  [53] sessioninfo_1.2.2           rjson_0.2.21               </span></span>
-<span><span class="co">#&gt;  [55] tools_4.3.1                 httpuv_1.6.13              </span></span>
-<span><span class="co">#&gt;  [57] ggseqlogo_0.1               glue_1.6.2                 </span></span>
-<span><span class="co">#&gt;  [59] restfulr_0.0.15             promises_1.2.1             </span></span>
-<span><span class="co">#&gt;  [61] grid_4.3.1                  generics_0.1.3             </span></span>
-<span><span class="co">#&gt;  [63] gtable_0.3.4                tidyr_1.3.0                </span></span>
-<span><span class="co">#&gt;  [65] data.table_1.14.8           utf8_1.2.3                 </span></span>
-<span><span class="co">#&gt;  [67] XVector_0.40.0              BiocGenerics_0.48.1        </span></span>
-<span><span class="co">#&gt;  [69] pillar_1.9.0                stringr_1.5.0              </span></span>
-<span><span class="co">#&gt;  [71] limma_3.56.2                genefilter_1.82.1          </span></span>
-<span><span class="co">#&gt;  [73] later_1.3.2                 splines_4.3.1              </span></span>
-<span><span class="co">#&gt;  [75] dplyr_1.1.3                 lattice_0.21-8             </span></span>
-<span><span class="co">#&gt;  [77] survival_3.5-7              rtracklayer_1.60.1         </span></span>
-<span><span class="co">#&gt;  [79] bit_4.0.5                   annotate_1.80.0            </span></span>
-<span><span class="co">#&gt;  [81] tidyselect_1.2.0            locfit_1.5-9.8             </span></span>
-<span><span class="co">#&gt;  [83] Biostrings_2.68.1           miniUI_0.1.1.1             </span></span>
-<span><span class="co">#&gt;  [85] knitr_1.44                  bookdown_0.35              </span></span>
-<span><span class="co">#&gt;  [87] IRanges_2.34.1              edgeR_3.42.4               </span></span>
-<span><span class="co">#&gt;  [89] SummarizedExperiment_1.30.2 stats4_4.3.1               </span></span>
-<span><span class="co">#&gt;  [91] xfun_0.40                   Biobase_2.60.0             </span></span>
-<span><span class="co">#&gt;  [93] brio_1.1.4                  matrixStats_1.0.0          </span></span>
-<span><span class="co">#&gt;  [95] stringi_1.7.12              yaml_2.3.7                 </span></span>
-<span><span class="co">#&gt;  [97] evaluate_0.21               codetools_0.2-19           </span></span>
-<span><span class="co">#&gt;  [99] tibble_3.2.1                BiocManager_1.30.22        </span></span>
-<span><span class="co">#&gt; [101] cli_3.6.1                   xtable_1.8-4               </span></span>
-<span><span class="co">#&gt; [103] systemfonts_1.0.5           munsell_0.5.0              </span></span>
-<span><span class="co">#&gt; [105] jquerylib_0.1.4             Rcpp_1.0.11                </span></span>
-<span><span class="co">#&gt; [107] GenomeInfoDb_1.38.5         png_0.1-8                  </span></span>
-<span><span class="co">#&gt; [109] XML_3.99-0.14               parallel_4.3.1             </span></span>
-<span><span class="co">#&gt; [111] ellipsis_0.3.2              pkgdown_2.0.7              </span></span>
-<span><span class="co">#&gt; [113] ggplot2_3.4.3               blob_1.2.4                 </span></span>
-<span><span class="co">#&gt; [115] profvis_0.3.8               urlchecker_1.0.1           </span></span>
-<span><span class="co">#&gt; [117] plyranges_1.20.0            bitops_1.0-7               </span></span>
-<span><span class="co">#&gt; [119] scales_1.2.1                purrr_1.0.2                </span></span>
-<span><span class="co">#&gt; [121] crayon_1.5.2                rlang_1.1.1                </span></span>
-<span><span class="co">#&gt; [123] KEGGREST_1.42.0</span></span></code></pre>
+<span><span class="co">#&gt;   [1] colorspace_2.1-0            rjson_0.2.21               </span></span>
+<span><span class="co">#&gt;   [3] ellipsis_0.3.2              rprojroot_2.0.3            </span></span>
+<span><span class="co">#&gt;   [5] XVector_0.34.0              GenomicRanges_1.48.0       </span></span>
+<span><span class="co">#&gt;   [7] fs_1.6.3                    rstudioapi_0.13            </span></span>
+<span><span class="co">#&gt;   [9] farver_2.1.1                remotes_2.4.2              </span></span>
+<span><span class="co">#&gt;  [11] bit64_4.0.5                 AnnotationDbi_1.56.2       </span></span>
+<span><span class="co">#&gt;  [13] fansi_1.0.4                 splines_4.1.0              </span></span>
+<span><span class="co">#&gt;  [15] cachem_1.0.8                knitr_1.44                 </span></span>
+<span><span class="co">#&gt;  [17] RcppRoll_0.3.0              pkgload_1.3.0              </span></span>
+<span><span class="co">#&gt;  [19] jsonlite_1.8.7              Rsamtools_2.8.0            </span></span>
+<span><span class="co">#&gt;  [21] annotate_1.72.0             png_0.1-8                  </span></span>
+<span><span class="co">#&gt;  [23] BiocManager_1.30.22         compiler_4.1.0             </span></span>
+<span><span class="co">#&gt;  [25] httr_1.4.7                  Matrix_1.4-1               </span></span>
+<span><span class="co">#&gt;  [27] fastmap_1.1.1               limma_3.56.2               </span></span>
+<span><span class="co">#&gt;  [29] cli_3.6.1                   htmltools_0.5.6            </span></span>
+<span><span class="co">#&gt;  [31] prettyunits_1.1.1           tools_4.1.0                </span></span>
+<span><span class="co">#&gt;  [33] gtable_0.3.4                glue_1.6.2                 </span></span>
+<span><span class="co">#&gt;  [35] GenomeInfoDbData_1.2.7      dplyr_1.1.3                </span></span>
+<span><span class="co">#&gt;  [37] Rcpp_1.0.11                 Biobase_2.54.0             </span></span>
+<span><span class="co">#&gt;  [39] jquerylib_0.1.4             pkgdown_2.0.7              </span></span>
+<span><span class="co">#&gt;  [41] vctrs_0.6.3                 Biostrings_2.62.0          </span></span>
+<span><span class="co">#&gt;  [43] rtracklayer_1.54.0          ggseqlogo_0.1              </span></span>
+<span><span class="co">#&gt;  [45] xfun_0.40                   stringr_1.5.0              </span></span>
+<span><span class="co">#&gt;  [47] plyranges_1.20.0            ps_1.7.1                   </span></span>
+<span><span class="co">#&gt;  [49] brio_1.1.3                  lifecycle_1.0.3            </span></span>
+<span><span class="co">#&gt;  [51] restfulr_0.0.15             XML_3.99-0.6               </span></span>
+<span><span class="co">#&gt;  [53] edgeR_3.42.4                zlibbioc_1.40.0            </span></span>
+<span><span class="co">#&gt;  [55] scales_1.2.1                ragg_1.2.5                 </span></span>
+<span><span class="co">#&gt;  [57] MatrixGenerics_1.6.0        parallel_4.1.0             </span></span>
+<span><span class="co">#&gt;  [59] SummarizedExperiment_1.24.0 yaml_2.3.7                 </span></span>
+<span><span class="co">#&gt;  [61] memoise_2.0.1               ggplot2_3.4.3              </span></span>
+<span><span class="co">#&gt;  [63] sass_0.4.7                  stringi_1.7.12             </span></span>
+<span><span class="co">#&gt;  [65] RSQLite_2.3.1               genefilter_1.74.1          </span></span>
+<span><span class="co">#&gt;  [67] S4Vectors_0.38.1            BiocIO_1.4.0               </span></span>
+<span><span class="co">#&gt;  [69] desc_1.4.1                  BiocGenerics_0.40.0        </span></span>
+<span><span class="co">#&gt;  [71] pkgbuild_1.3.1              BiocParallel_1.28.3        </span></span>
+<span><span class="co">#&gt;  [73] GenomeInfoDb_1.36.2         rlang_1.1.1                </span></span>
+<span><span class="co">#&gt;  [75] pkgconfig_2.0.3             systemfonts_1.0.4          </span></span>
+<span><span class="co">#&gt;  [77] matrixStats_1.0.0           bitops_1.0-7               </span></span>
+<span><span class="co">#&gt;  [79] evaluate_0.22               lattice_0.20-45            </span></span>
+<span><span class="co">#&gt;  [81] purrr_1.0.2                 labeling_0.4.3             </span></span>
+<span><span class="co">#&gt;  [83] GenomicAlignments_1.36.0    bit_4.0.5                  </span></span>
+<span><span class="co">#&gt;  [85] processx_3.7.0              tidyselect_1.2.0           </span></span>
+<span><span class="co">#&gt;  [87] bookdown_0.35               R6_2.5.1                   </span></span>
+<span><span class="co">#&gt;  [89] IRanges_2.34.1              generics_0.1.3             </span></span>
+<span><span class="co">#&gt;  [91] DelayedArray_0.20.0         DBI_1.1.3                  </span></span>
+<span><span class="co">#&gt;  [93] pillar_1.9.0                withr_2.5.1                </span></span>
+<span><span class="co">#&gt;  [95] survival_3.3-1              KEGGREST_1.34.0            </span></span>
+<span><span class="co">#&gt;  [97] RCurl_1.98-1.6              tibble_3.2.1               </span></span>
+<span><span class="co">#&gt;  [99] crayon_1.5.2                utf8_1.2.3                 </span></span>
+<span><span class="co">#&gt; [101] rmarkdown_2.25              locfit_1.5-9.8             </span></span>
+<span><span class="co">#&gt; [103] grid_4.1.0                  data.table_1.14.8          </span></span>
+<span><span class="co">#&gt; [105] blob_1.2.4                  callr_3.7.3                </span></span>
+<span><span class="co">#&gt; [107] forcats_1.0.0               digest_0.6.33              </span></span>
+<span><span class="co">#&gt; [109] xtable_1.8-4                tidyr_1.3.0                </span></span>
+<span><span class="co">#&gt; [111] textshaping_0.3.6           stats4_4.1.0               </span></span>
+<span><span class="co">#&gt; [113] munsell_0.5.0               bslib_0.5.1                </span></span>
+<span><span class="co">#&gt; [115] sessioninfo_1.2.2</span></span></code></pre>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>
