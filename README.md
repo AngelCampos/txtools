@@ -137,7 +137,7 @@ data in the DT at an specific location.
 tx_plot_nucFreq(DT, gene = "NM_079901", txRange = window_around(3803, 15))
 ```
 
-![](man/figures/README-plotNucFreq-1.svg)<!-- -->
+![](man/figures/README-plotNucFreq-1.png)<!-- -->
 
 ## Further documentation
 
