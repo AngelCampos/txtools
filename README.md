@@ -49,7 +49,7 @@ commands in the R console:
 ``` r
 if (!requireNamespace("remotes", quietly = TRUE))
     install.packages("remotes")
-remotes::install_github("AngelCampos/txtools", build_vignettes = TRUE)
+remotes::install_github("AngelCampos/txtools")
 ```
 
 ## Quick example
@@ -67,6 +67,7 @@ into R with ease.
 # Load packages
 library(txtools)
 library(pasillaBamSubset)
+#> Warning: package 'pasillaBamSubset' was built under R version 4.2.0
 
 # Getting paths to files
 BED_file <- tx_dm3_geneAnnot()
