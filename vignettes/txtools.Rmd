@@ -1,20 +1,19 @@
 ---
 title: "txtools User Guide"
-author: "Miguel Angel Garcia-Campos"
 package: txtools
 abstract: |
    R package that enables the processing, analysis, and visualization of 
    RNA-seq data at the nucleotide-level resolution, seamlessly integrating 
    alignments to the genome with transcriptomic representation.
 vignette: >
-  %\VignetteIndexEntry{txtools User Guide}
+  %\VignetteIndexEntry{txtools}
   %\VignetteEncoding{UTF-8} 
   %\VignetteEngine{knitr::rmarkdown}
 output:
-  BiocStyle::html_document:
-    number_sections: yes
-    toc_float: TRUE
-    toc_depth: 1
+  html_document:
+      number_sections: yes
+      toc_float: TRUE
+      toc_depth: 1
 editor_options: 
   chunk_output_type: console
 ---
@@ -59,9 +58,9 @@ coordinates space.
 ![Fig 1. txtools main processing workflow](../man/figures/readme_1.png)
 
 The intermediate output in Step 1 is of class `GRanges` from the 
-`r BiocStyle::Biocpkg("GenomicRanges")` package, while that of Step 2, and final 
+"GenomicRanges" package, while that of Step 2, and final 
 output of the main txtools processing pipeline, is of class `data.table` from 
-the `r CRANpkg("data.table")` package, which is an extension of the `data.frame` class.
+the "data.table" package, which is an extension of the `data.frame` class.
 
 > Current txtools development has favored functionality on the more common 
 table structure, as it offers extendability and versatility but at the price
@@ -71,7 +70,7 @@ transcriptome at early development stages, unless necessary, and instead use
 a subset of the gene annotation while developing the analysis pipeline and only
 at late stages run over the complete transcriptome.
 
-*For this example we will use the data of the `r BiocStyle::Biocpkg("pasillaBamSubset")`
+*For this example we will use the data of the "pasillaBamSubset"
 package. A subset of reads aligned to the chromosome 4 of D. melanogaster.*
 
 ```{r}
@@ -266,7 +265,7 @@ of a 'C'.
 *The result of using a `tx_add_()` function is the same txDT input with the*
 *difference of a new column of the desired metric, hence it is possible to*
 *chain tx_add functions in succession with the pipe operator `%>%` from the*
-*`r CRANpkg("magrittr")` package.*
+"magrittr" package.*
 
 ```{r}
 library("magrittr")
@@ -412,7 +411,7 @@ tx_plot_nucFreq(DT_covNucFreq, gene = selSite$gene, txRange = window_around(selS
 
 ## ggseqlogo plot
 
-`tx_plot_ggseqlogo()`: This function allows to quickly plot a `r BiocStyle::CRANpkg("ggseqlogo")`
+`tx_plot_ggseqlogo()`: This function allows to quickly plot a "ggseqlogo"`
 using as input a txDT and a logical annotation which marks the center position
 to be plot. It is useful to identify motif sequences in sites that have been
 selected, for example for passing certain thresholds of specific metrics.
@@ -515,7 +514,7 @@ tx_get_metageneAtCDS(txDT = DT_covNucFreq, geneAnnot = geneAnnot,
 input the reference genome and the gene annotation loaded with `tx_load_bed()`.
 
 The output of this function can be either a DNAStringSet from the 
-`r BiocStyle::Biocpkg("Biostrings")` package, or (when providing a file name) a
+"Biostrings" package, or (when providing a file name) a
 FASTA file.
 
 Bellow an example showing the sequences of the genes in the D. melanogaster
@@ -535,7 +534,7 @@ control group.
 unlikeliness that both groups have the same mean. e.g. whe comparing start to
 coverage rate.
 
-- Likelihood Ratio test (from `r BiocStyle::Biocpkg("edgeR")` package): For 
+- Likelihood Ratio test (from "edgeR" package): For 
 comparing count data that are of the type of trial and success between groups, 
 for example when comparing start to coverage ratio but directly with the count 
 data, considering coverage counts as number of trials and the number of read-starts as successes.

@@ -1,3 +1,7 @@
+# txtools 1.0.6
+
+Removed BiocStyle dependency, by 
+
 # txtools 1.0.5
 
 * Added the `loadSecondaryAligns` argument to `tx_load_bam()` so that secondary 

@@ -62,12 +62,10 @@ use_data(bam_sk1)
 use_data(gA_sk1)
 use_data(genome_sk1)
 
-# seqnames(gA_sk1)
-# gA_sk1[]
-
 FASTA_path <- dm3_chr4() # D. melanogaster chr4 built-in pasillaBamSubset
-genome <- tx_load_genome(fastaFile = FASTA_path)
 BAM_path <- untreated3_chr4() # Paired-end BAM file built-in pasillaBamSubset
+
+genome <- tx_load_genome(fastaFile = FASTA_path)
 genAligns <- tx_load_bam(file = BAM_path, pairedEnd = TRUE, loadSeq = TRUE)
 fullGeneAnnot <- tx_load_bed(system.file("extdata", "dm3_chr4_RefSeqGenes_UCSC.bed", package = "txtools"))
 

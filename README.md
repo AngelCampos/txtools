@@ -3,7 +3,7 @@
 
 <!-- badges: start -->
 
-[![](https://img.shields.io/badge/devel%20version-1.0.5-blue.svg)](https://github.com/AngelCampos/txtools)
+[![](https://img.shields.io/badge/devel%20version-1.0.6-blue.svg)](https://github.com/AngelCampos/txtools)
 <!-- badges: end -->
 
 ## Description
@@ -138,7 +138,7 @@ data in the DT at an specific location.
 tx_plot_nucFreq(DT, gene = "NM_079901", txRange = window_around(3803, 15))
 ```
 
-![](man/figures/README-plotNucFreq-1.png)<!-- -->
+![](man/figures/README-plotNucFreq-1.svg)<!-- -->
 
 ## Further documentation
 
